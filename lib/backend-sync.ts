@@ -1,4 +1,4 @@
-import type { FinanceEntry, Goal, Habit, Note, PlanItem, PrayerLog, Profile, Project, Reminder, ReligiousState, Task } from './command-center-store'
+import type { FinanceEntry, Goal, Habit, Note, PlanItem, PrayerLog, Profile, Project, Reminder, ReligiousState, Task, WeeklyReview } from './command-center-store'
 
 type RemoteProfile = {
   city: string
@@ -103,6 +103,8 @@ type RemoteReligious = {
   quranProgress: ReligiousState['quran']
   dhikrSessions: ReligiousState['dhikr']
 }
+
+type RemoteWeeklyReview = Omit<WeeklyReview, 'updatedAt'> & { updatedAt: string | Date }
 
 async function request<T>(url: string, init?: RequestInit): Promise<T | null> {
   try {
@@ -223,6 +225,19 @@ function asPrayerStatus(value: string): PrayerLog['status'] {
   return value === 'done' || value === 'missed' ? value : 'pending'
 }
 
+export function mapRemoteWeeklyReview(item: RemoteWeeklyReview): WeeklyReview {
+  return {
+    id: item.id,
+    weekStart: item.weekStart,
+    weekEnd: item.weekEnd,
+    wentWell: item.wentWell ?? '',
+    blockers: item.blockers ?? '',
+    nextGoal: item.nextGoal ?? '',
+    status: item.status === 'completed' ? 'completed' : 'draft',
+    updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : new Date(item.updatedAt).toLocaleString('ar-EG'),
+  }
+}
+
 export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
   return {
     city: item.city || 'القاهرة',
@@ -234,7 +249,7 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
 }
 
 export async function hydrateRemoteData() {
-  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse, reminders] = await Promise.all([
+  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse, reminders, reviewResponse] = await Promise.all([
     request<{ items: RemoteTask[] }>('/api/tasks'),
     request<{ items: RemoteNote[] }>('/api/notes'),
     request<{ items: RemoteHabit[] }>('/api/habits'),
@@ -246,6 +261,7 @@ export async function hydrateRemoteData() {
     request<{ user: { name: string }; profile: RemoteProfile }>('/api/profile'),
     request<{ religious: RemoteReligious }>('/api/religious'),
     request<{ items: RemoteReminder[] }>('/api/reminders'),
+    request<{ review: RemoteWeeklyReview }>('/api/review'),
   ])
   return {
     tasks: tasks?.items?.map(mapRemoteTask) ?? null,
@@ -268,6 +284,7 @@ export async function hydrateRemoteData() {
       : null,
     religious: religiousResponse?.religious ? mapRemoteReligious(religiousResponse.religious) : null,
     reminders: reminders?.items?.map(mapRemoteReminder) ?? null,
+    weeklyReview: reviewResponse?.review ? mapRemoteWeeklyReview(reviewResponse.review) : null,
   }
 }
 
@@ -281,6 +298,13 @@ export function updateRemoteReminder(id: string, patch: Partial<Reminder>) {
 
 export function archiveRemoteReminder(id: string) {
   return request<{ ok: boolean }>(`/api/reminders/${id}`, { method: 'DELETE' })
+}
+
+export function updateRemoteWeeklyReview(review: WeeklyReview) {
+  return request<{ review: RemoteWeeklyReview }>('/api/review', {
+    method: 'PATCH',
+    body: JSON.stringify(review),
+  })
 }
 
 export function updateRemoteReligious(religious: ReligiousState) {
