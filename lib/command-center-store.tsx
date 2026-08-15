@@ -82,6 +82,24 @@ export type Reminder = {
   repeatLabel?: string
 }
 
+export type EntertainmentStatus = 'want' | 'watching' | 'completed'
+export type EntertainmentType = 'movie' | 'series'
+
+export type EntertainmentItem = {
+  id: string
+  title: string
+  type: EntertainmentType
+  genre: string
+  year?: number
+  note?: string
+  status: EntertainmentStatus
+  rating?: number
+  impression?: string
+  recommend: boolean
+  downloadWanted: boolean
+  createdAt: string
+}
+
 export type PrayerLog = {
   id: string
   name: string
@@ -138,6 +156,7 @@ type CommandCenterContextValue = {
   budget: Budget
   religious: ReligiousState
   reminders: Reminder[]
+  entertainment: EntertainmentItem[]
   updateProfile: (patch: Partial<Profile>) => void
   completeOnboarding: (profile: Omit<Profile, 'onboardingComplete'>) => void
   toggleTask: (id: string) => void
@@ -162,6 +181,10 @@ type CommandCenterContextValue = {
   toggleReminder: (id: string) => void
   snoozeReminder: (id: string) => void
   archiveReminder: (id: string) => void
+  addEntertainment: (input: Pick<EntertainmentItem, 'title' | 'type' | 'genre'> & Partial<Pick<EntertainmentItem, 'year' | 'note' | 'status' | 'rating' | 'impression' | 'recommend' | 'downloadWanted'>>) => void
+  updateEntertainment: (id: string, patch: Partial<EntertainmentItem>) => void
+  moveEntertainment: (id: string, status: EntertainmentStatus) => void
+  archiveEntertainment: (id: string) => void
   addNote: (input: Pick<Note, 'title' | 'body' | 'tag'>) => void
   toggleNotePin: (id: string) => void
   archiveNote: (id: string) => void
@@ -252,21 +275,28 @@ const initialReminders: Reminder[] = [
   { id: 'reminder-4', title: 'مراجعة الميزانية الشهرية', kind: 'finance', dueAt: 'غدًا، ١٨:٠٠', status: 'pending', repeatLabel: 'شهري' },
 ]
 
+const initialEntertainment: EntertainmentItem[] = [
+  { id: 'entertainment-1', title: 'The Bear', type: 'series', genre: 'دراما', year: 2022, note: 'مناسب لمشاهدة حلقة قصيرة بعد يوم العمل.', status: 'watching', rating: undefined, recommend: true, downloadWanted: false, createdAt: 'منذ يومين' },
+  { id: 'entertainment-2', title: 'Interstellar', type: 'movie', genre: 'خيال علمي', year: 2014, note: 'فيلم لإعادة المشاهدة في نهاية الأسبوع.', status: 'completed', rating: 5, impression: 'تجربة بصرية وتأملية ممتازة.', recommend: true, downloadWanted: false, createdAt: 'منذ أسبوع' },
+  { id: 'entertainment-3', title: 'Severance', type: 'series', genre: 'غموض', year: 2022, note: 'أريد أن أبدأه عندما أفرغ من المسلسل الحالي.', status: 'want', recommend: false, downloadWanted: true, createdAt: 'اليوم' },
+  { id: 'entertainment-4', title: 'Perfect Days', type: 'movie', genre: 'دراما هادئة', year: 2023, status: 'want', recommend: true, downloadWanted: false, createdAt: 'منذ 3 أيام' },
+]
+
 const STORAGE_KEY = 'personal-command-center-state-v2'
-type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[] }
+type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[] }
 
 function loadInitialState(): PersistedState {
-  if (typeof window === 'undefined') return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders }
+  if (typeof window === 'undefined') return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment }
   try {
     const saved = window.localStorage.getItem(STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved) as Partial<PersistedState>
-      return { profile: { ...initialProfile, ...parsed.profile }, tasks: parsed.tasks ?? initialTasks, notes: parsed.notes ?? initialNotes, habits: parsed.habits ?? initialHabits, planItems: parsed.planItems ?? initialPlanItems, goals: parsed.goals ?? initialGoals, projects: parsed.projects ?? initialProjects, financeEntries: parsed.financeEntries ?? initialFinanceEntries, budget: parsed.budget ?? initialBudget, religious: parsed.religious ?? initialReligious, reminders: parsed.reminders ?? initialReminders }
+      return { profile: { ...initialProfile, ...parsed.profile }, tasks: parsed.tasks ?? initialTasks, notes: parsed.notes ?? initialNotes, habits: parsed.habits ?? initialHabits, planItems: parsed.planItems ?? initialPlanItems, goals: parsed.goals ?? initialGoals, projects: parsed.projects ?? initialProjects, financeEntries: parsed.financeEntries ?? initialFinanceEntries, budget: parsed.budget ?? initialBudget, religious: parsed.religious ?? initialReligious, reminders: parsed.reminders ?? initialReminders, entertainment: parsed.entertainment ?? initialEntertainment }
     }
   } catch {
     // Keep the product usable if storage is unavailable or malformed.
   }
-  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders }
+  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment }
 }
 
 const StoreContext = createContext<CommandCenterContextValue | null>(null)
@@ -284,11 +314,12 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [budget, setBudget] = useState<Budget>(initial.budget)
   const [religious, setReligious] = useState<ReligiousState>(initial.religious)
   const [reminders, setReminders] = useState<Reminder[]>(initial.reminders)
+  const [entertainment, setEntertainment] = useState<EntertainmentItem[]>(initial.entertainment)
   const remoteHydrated = useRef(false)
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders }))
-  }, [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders])
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment }))
+  }, [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment])
 
   useEffect(() => {
     if (remoteHydrated.current) return
@@ -320,6 +351,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     budget,
     religious,
     reminders,
+    entertainment,
     updateProfile: (patch) => {
       setProfile((current) => ({ ...current, ...patch }))
       void updateRemoteProfile(patch)
@@ -453,6 +485,32 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setReminders((items) => items.filter((reminder) => reminder.id !== id))
       void archiveRemoteReminder(id)
     },
+    addEntertainment: (input) => {
+      const item: EntertainmentItem = {
+        id: `entertainment-${Date.now()}`,
+        title: input.title,
+        type: input.type,
+        genre: input.genre,
+        year: input.year,
+        note: input.note,
+        status: input.status ?? 'want',
+        rating: input.rating,
+        impression: input.impression,
+        recommend: input.recommend ?? false,
+        downloadWanted: input.downloadWanted ?? false,
+        createdAt: 'الآن',
+      }
+      setEntertainment((items) => [item, ...items])
+    },
+    updateEntertainment: (id, patch) => {
+      setEntertainment((items) => items.map((item) => item.id === id ? { ...item, ...patch } : item))
+    },
+    moveEntertainment: (id, status) => {
+      setEntertainment((items) => items.map((item) => item.id === id ? { ...item, status } : item))
+    },
+    archiveEntertainment: (id) => {
+      setEntertainment((items) => items.filter((item) => item.id !== id))
+    },
     addNote: (input) => {
       setNotes((items) => [{ id: `note-${Date.now()}`, pinned: false, createdAt: 'الآن', ...input }, ...items])
       void createRemoteNote(input)
@@ -490,7 +548,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'snoozed' } : item))
       void updateRemotePlanItem(id, { status: 'snoozed' })
     },
-  }), [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders])
+  }), [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }
