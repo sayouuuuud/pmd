@@ -1,6 +1,7 @@
 import {
   boolean,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -60,6 +61,17 @@ export const userProfile = pgTable('user_profile', {
   workWindow: text('work_window').notNull().default('09:00 - 17:00'),
   focusGoal: text('focus_goal').notNull().default('إنجاز أهم خطوة كل يوم'),
   onboardingComplete: boolean('onboarding_complete').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const religiousSettings = pgTable('religious_settings', {
+  userId: text('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
+  city: text('city').notNull().default('القاهرة'),
+  calculationMethod: text('calculation_method').notNull().default('مخصص'),
+  prayerLogs: jsonb('prayer_logs').notNull().default([]),
+  quranProgress: jsonb('quran_progress').notNull().default({}),
+  dhikrSessions: jsonb('dhikr_sessions').notNull().default({}),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })

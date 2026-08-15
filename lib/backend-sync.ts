@@ -1,4 +1,4 @@
-import type { FinanceEntry, Goal, Habit, Note, PlanItem, Profile, Project, Task } from './command-center-store'
+import type { FinanceEntry, Goal, Habit, Note, PlanItem, PrayerLog, Profile, Project, ReligiousState, Task } from './command-center-store'
 
 type RemoteProfile = {
   city: string
@@ -84,6 +84,14 @@ type RemoteFinanceEntry = {
 type RemoteBudget = {
   monthlyLimit: number
   currency: string
+}
+
+type RemoteReligious = {
+  city: string
+  calculationMethod: string
+  prayerLogs: PrayerLog[]
+  quranProgress: ReligiousState['quran']
+  dhikrSessions: ReligiousState['dhikr']
 }
 
 async function request<T>(url: string, init?: RequestInit): Promise<T | null> {
@@ -189,8 +197,22 @@ export function mapRemoteFinanceEntry(item: RemoteFinanceEntry): FinanceEntry {
   return { id: item.id, title: item.title, amount: Math.max(0, Number(item.amount) || 0), kind: asFinanceKind(item.kind), category: item.category || 'عام', localDate: item.localDate, note: item.note ?? undefined, projectId: item.projectId ?? undefined, goalId: item.goalId ?? undefined }
 }
 
+function asPrayerStatus(value: string): PrayerLog['status'] {
+  return value === 'done' || value === 'missed' ? value : 'pending'
+}
+
+export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
+  return {
+    city: item.city || 'القاهرة',
+    calculationMethod: item.calculationMethod || 'مخصص',
+    prayerLogs: Array.isArray(item.prayerLogs) ? item.prayerLogs.map((prayer) => ({ ...prayer, status: asPrayerStatus(prayer.status) })) : [],
+    quran: { reference: item.quranProgress?.reference || 'ورد اليوم', targetMinutes: Math.max(1, Number(item.quranProgress?.targetMinutes) || 20), completedMinutes: Math.max(0, Number(item.quranProgress?.completedMinutes) || 0) },
+    dhikr: { morning: Boolean(item.dhikrSessions?.morning), evening: Boolean(item.dhikrSessions?.evening), lastSession: item.dhikrSessions?.lastSession },
+  }
+}
+
 export async function hydrateRemoteData() {
-  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse] = await Promise.all([
+  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse] = await Promise.all([
     request<{ items: RemoteTask[] }>('/api/tasks'),
     request<{ items: RemoteNote[] }>('/api/notes'),
     request<{ items: RemoteHabit[] }>('/api/habits'),
@@ -200,6 +222,7 @@ export async function hydrateRemoteData() {
     request<{ items: RemoteFinanceEntry[] }>('/api/finance'),
     request<{ budget: RemoteBudget }>('/api/finance/budget'),
     request<{ user: { name: string }; profile: RemoteProfile }>('/api/profile'),
+    request<{ religious: RemoteReligious }>('/api/religious'),
   ])
   return {
     tasks: tasks?.items?.map(mapRemoteTask) ?? null,
@@ -220,7 +243,15 @@ export async function hydrateRemoteData() {
           onboardingComplete: profileResponse.profile.onboardingComplete,
         }
       : null,
+    religious: religiousResponse?.religious ? mapRemoteReligious(religiousResponse.religious) : null,
   }
+}
+
+export function updateRemoteReligious(religious: ReligiousState) {
+  return request<{ religious: RemoteReligious }>('/api/religious', {
+    method: 'PATCH',
+    body: JSON.stringify({ city: religious.city, calculationMethod: religious.calculationMethod, prayerLogs: religious.prayerLogs, quranProgress: religious.quran, dhikrSessions: religious.dhikr }),
+  })
 }
 
 export function updateRemoteProfile(profile: Partial<Profile>) {

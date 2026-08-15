@@ -93,6 +93,7 @@
 | Account / Profile | مكتمل جزئيًا | جدول `user_profile` وmigration، Profile API محمي بملكية المستخدم، hydration وoptimistic persistence، صفحة `/account` عربية، ورابط حسابي في TopNav؛ التحقق الفعلي بجلسة وقاعدة بيانات ينتظر credentials |
 | Projects / Goals | مكتمل جزئيًا | Kanban عربي للمشاريع، بطاقات أهداف مع التقدم، علاقة `goal → project → task` عبر `goal_id` و`project_id`، store محلي مع remote hydration، APIs محمية، وmigration `0002_zippy_pestilence.sql`؛ drag-and-drop والتحرير التفصيلي لاحقًا |
 | Finance | مكتمل جزئيًا | Workspace مالية عربية، ميزانية شهرية، دخل ومصروفات، تحليل تصنيفات، روابط اختيارية بالمشاريع والأهداف، localStorage fallback، APIs محمية، وmigration `0003_tough_raza.sql`؛ الاتصال الفعلي بقاعدة البيانات ينتظر credentials |
+| Religious | مكتمل جزئيًا | متابعة الصلوات والورد والأذكار وإعدادات المدينة، دمج الصلاة والورد مع خطة اليوم، localStorage fallback، API محمي، وmigration `0004_lethal_shen.sql`؛ مواقيت الصلاة الخارجية والمزامنة الفعلية ينتظران مصدرًا موثوقًا وcredentials |
 
 ---
 
