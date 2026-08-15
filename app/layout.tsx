@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Cairo } from 'next/font/google'
 import './globals.css'
+import { CommandCenterProvider } from '@/lib/command-center-store'
 
 const _cairo = Cairo({ subsets: ['arabic', 'latin'] })
 
@@ -42,7 +43,9 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className="bg-background">
       <body className="font-sans antialiased">
-        {children}
+        <CommandCenterProvider>
+          {children}
+        </CommandCenterProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

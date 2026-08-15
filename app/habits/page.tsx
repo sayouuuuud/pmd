@@ -1,12 +1,7 @@
 import { Repeat } from 'lucide-react'
 import { PageShell } from '@/components/layout/page-shell'
+import { HabitsWorkspace } from '@/components/habits/habits-workspace'
 
 export default function HabitsPage() {
-  return (
-    <PageShell
-      title="العادات"
-      description="تابع عاداتك اليومية بـ Streaks وإحصائيات أسبوعية"
-      icon={Repeat}
-    />
-  )
+  return <PageShell title="العادات" description="ابنِ استمرارية صغيرة تتراكم إلى تغيير كبير." icon={Repeat}><HabitsWorkspace /></PageShell>
 }
