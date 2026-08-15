@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
   AlignJustify,
@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { useCommandCenter } from '@/lib/command-center-store'
 import { authClient } from '@/lib/auth-client'
+import { GlobalSearchDialog } from '@/components/search/global-search-dialog'
 
 const navItems = [
   { href: '/', label: 'الرئيسية', icon: LayoutGrid },
@@ -50,9 +51,11 @@ const gregorianDate = new Intl.DateTimeFormat('ar-EG', {
 
 export function TopNav() {
   const pathname = usePathname()
-  const { addTask, addNote } = useCommandCenter()
+  const router = useRouter()
+  const { addTask, addNote, reminders } = useCommandCenter()
   const { data: session } = authClient.useSession()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [type, setType] = useState<'task' | 'note'>('task')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -96,12 +99,12 @@ export function TopNav() {
                 <Plus className="h-4 w-4 text-card" />
               </span>
             </button>
-            <button aria-label="البحث الشامل" className="hidden h-11 w-11 items-center justify-center rounded-full bg-card sm:flex">
+            <button type="button" aria-label="البحث الشامل" onClick={() => setSearchOpen(true)} className="hidden h-11 w-11 items-center justify-center rounded-full bg-card sm:flex">
               <Search className="h-4 w-4" />
             </button>
-            <button aria-label="التنبيهات" className="relative flex h-11 w-11 items-center justify-center rounded-full bg-card">
+            <button type="button" aria-label="التنبيهات" onClick={() => router.push('/reminders')} className="relative flex h-11 w-11 items-center justify-center rounded-full bg-card">
               <Bell className="h-4 w-4" />
-              <span className="absolute top-2.5 left-2.5 h-1.5 w-1.5 rounded-full bg-primary" />
+              {reminders.some((reminder) => reminder.status === 'pending') && <span className="absolute top-2.5 left-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">{Math.min(9, reminders.filter((reminder) => reminder.status === 'pending').length)}</span>}
             </button>
             {session && <button type="button" onClick={() => void authClient.signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login' } } })} className="hidden rounded-full bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted sm:block">خروج</button>}
             <button aria-label="القائمة" className="flex h-11 w-11 items-center justify-center rounded-full bg-card">
@@ -129,6 +132,8 @@ export function TopNav() {
           })}
         </nav>
       </header>
+
+      <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {quickAddOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-foreground/30 p-4 pt-24 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="إضافة سريعة">

@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteNote, archiveRemoteProject, archiveRemoteTask, createRemoteFinanceEntry, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteTask } from './backend-sync'
+import { archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteNote, archiveRemoteProject, archiveRemoteTask, archiveRemoteReminder, createRemoteFinanceEntry, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteTask } from './backend-sync'
 
 type Priority = 'high' | 'medium' | 'low'
 type TaskStatus = 'todo' | 'in-progress' | 'done'
@@ -9,6 +9,8 @@ export type GoalStatus = 'active' | 'paused' | 'completed'
 export type GoalHorizon = 'quarter' | 'year' | 'someday'
 export type ProjectStatus = 'backlog' | 'in-progress' | 'done'
 export type FinanceKind = 'expense' | 'income'
+export type ReminderKind = 'task' | 'habit' | 'prayer' | 'quran' | 'finance'
+export type ReminderStatus = 'pending' | 'done' | 'snoozed'
 
 export type Profile = {
   name: string
@@ -70,6 +72,16 @@ export type Budget = {
   currency: string
 }
 
+export type Reminder = {
+  id: string
+  title: string
+  kind: ReminderKind
+  dueAt: string
+  status: ReminderStatus
+  sourceId?: string
+  repeatLabel?: string
+}
+
 export type PrayerLog = {
   id: string
   name: string
@@ -125,6 +137,7 @@ type CommandCenterContextValue = {
   financeEntries: FinanceEntry[]
   budget: Budget
   religious: ReligiousState
+  reminders: Reminder[]
   updateProfile: (patch: Partial<Profile>) => void
   completeOnboarding: (profile: Omit<Profile, 'onboardingComplete'>) => void
   toggleTask: (id: string) => void
@@ -145,6 +158,10 @@ type CommandCenterContextValue = {
   addWirdProgress: (minutes: number) => void
   toggleDhikr: (session: 'morning' | 'evening') => void
   updateReligiousSettings: (patch: Pick<ReligiousState, 'city' | 'calculationMethod'>) => void
+  addReminder: (input: Pick<Reminder, 'title' | 'kind' | 'dueAt'> & Partial<Pick<Reminder, 'sourceId' | 'repeatLabel'>>) => void
+  toggleReminder: (id: string) => void
+  snoozeReminder: (id: string) => void
+  archiveReminder: (id: string) => void
   addNote: (input: Pick<Note, 'title' | 'body' | 'tag'>) => void
   toggleNotePin: (id: string) => void
   archiveNote: (id: string) => void
@@ -228,21 +245,28 @@ const initialPlanItems: PlanItem[] = [
   { id: 'plan-6', time: '17:00', title: 'فترة راحة بدون شاشة', kind: 'rest', status: 'pending' },
 ]
 
+const initialReminders: Reminder[] = [
+  { id: 'reminder-1', title: 'إكمال تحضير العرض التقديمي', kind: 'task', dueAt: 'اليوم، ١١:٣٠', status: 'pending', sourceId: 'task-3' },
+  { id: 'reminder-2', title: 'صلاة الظهر', kind: 'prayer', dueAt: 'اليوم، ١٢:١٥', status: 'pending', sourceId: 'plan-3' },
+  { id: 'reminder-3', title: 'ورد القرآن — ٢٠ دقيقة', kind: 'quran', dueAt: 'اليوم، ١٣:٠٠', status: 'pending', sourceId: 'plan-4' },
+  { id: 'reminder-4', title: 'مراجعة الميزانية الشهرية', kind: 'finance', dueAt: 'غدًا، ١٨:٠٠', status: 'pending', repeatLabel: 'شهري' },
+]
+
 const STORAGE_KEY = 'personal-command-center-state-v2'
-type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState }
+type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[] }
 
 function loadInitialState(): PersistedState {
-  if (typeof window === 'undefined') return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious }
+  if (typeof window === 'undefined') return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders }
   try {
     const saved = window.localStorage.getItem(STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved) as Partial<PersistedState>
-      return { profile: { ...initialProfile, ...parsed.profile }, tasks: parsed.tasks ?? initialTasks, notes: parsed.notes ?? initialNotes, habits: parsed.habits ?? initialHabits, planItems: parsed.planItems ?? initialPlanItems, goals: parsed.goals ?? initialGoals, projects: parsed.projects ?? initialProjects, financeEntries: parsed.financeEntries ?? initialFinanceEntries, budget: parsed.budget ?? initialBudget, religious: parsed.religious ?? initialReligious }
+      return { profile: { ...initialProfile, ...parsed.profile }, tasks: parsed.tasks ?? initialTasks, notes: parsed.notes ?? initialNotes, habits: parsed.habits ?? initialHabits, planItems: parsed.planItems ?? initialPlanItems, goals: parsed.goals ?? initialGoals, projects: parsed.projects ?? initialProjects, financeEntries: parsed.financeEntries ?? initialFinanceEntries, budget: parsed.budget ?? initialBudget, religious: parsed.religious ?? initialReligious, reminders: parsed.reminders ?? initialReminders }
     }
   } catch {
     // Keep the product usable if storage is unavailable or malformed.
   }
-  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious }
+  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders }
 }
 
 const StoreContext = createContext<CommandCenterContextValue | null>(null)
@@ -259,16 +283,17 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [financeEntries, setFinanceEntries] = useState<FinanceEntry[]>(initial.financeEntries)
   const [budget, setBudget] = useState<Budget>(initial.budget)
   const [religious, setReligious] = useState<ReligiousState>(initial.religious)
+  const [reminders, setReminders] = useState<Reminder[]>(initial.reminders)
   const remoteHydrated = useRef(false)
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious }))
-  }, [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious])
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders }))
+  }, [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders])
 
   useEffect(() => {
     if (remoteHydrated.current) return
     remoteHydrated.current = true
-    void hydrateRemoteData().then(({ tasks: remoteTasks, notes: remoteNotes, habits: remoteHabits, planItems: remotePlanItems, goals: remoteGoals, projects: remoteProjects, financeEntries: remoteFinanceEntries, budget: remoteBudget, profile: remoteProfile, religious: remoteReligious }) => {
+    void hydrateRemoteData().then(({ tasks: remoteTasks, notes: remoteNotes, habits: remoteHabits, planItems: remotePlanItems, goals: remoteGoals, projects: remoteProjects, financeEntries: remoteFinanceEntries, budget: remoteBudget, profile: remoteProfile, religious: remoteReligious, reminders: remoteReminders }) => {
       if (remoteTasks) setTasks(remoteTasks)
       if (remoteNotes) setNotes(remoteNotes)
       if (remoteHabits) setHabits(remoteHabits)
@@ -279,6 +304,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       if (remoteBudget) setBudget(remoteBudget)
       if (remoteProfile) setProfile(remoteProfile)
       if (remoteReligious) setReligious(remoteReligious)
+      if (remoteReminders) setReminders(remoteReminders)
     })
   }, [])
 
@@ -293,6 +319,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     financeEntries,
     budget,
     religious,
+    reminders,
     updateProfile: (patch) => {
       setProfile((current) => ({ ...current, ...patch }))
       void updateRemoteProfile(patch)
@@ -402,6 +429,30 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         return next
       })
     },
+    addReminder: (input) => {
+      const reminder: Reminder = { id: `reminder-${Date.now()}`, status: 'pending', ...input }
+      setReminders((items) => [reminder, ...items])
+      void createRemoteReminder(input)
+    },
+    toggleReminder: (id) => {
+      setReminders((items) => items.map((reminder) => {
+        if (reminder.id !== id) return reminder
+        const status = reminder.status === 'done' ? 'pending' : 'done'
+        void updateRemoteReminder(id, { status })
+        return { ...reminder, status }
+      }))
+    },
+    snoozeReminder: (id) => {
+      setReminders((items) => items.map((reminder) => {
+        if (reminder.id !== id) return reminder
+        void updateRemoteReminder(id, { status: 'snoozed', dueAt: 'لاحقًا اليوم' })
+        return { ...reminder, status: 'snoozed', dueAt: 'لاحقًا اليوم' }
+      }))
+    },
+    archiveReminder: (id) => {
+      setReminders((items) => items.filter((reminder) => reminder.id !== id))
+      void archiveRemoteReminder(id)
+    },
     addNote: (input) => {
       setNotes((items) => [{ id: `note-${Date.now()}`, pinned: false, createdAt: 'الآن', ...input }, ...items])
       void createRemoteNote(input)
@@ -439,7 +490,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'snoozed' } : item))
       void updateRemotePlanItem(id, { status: 'snoozed' })
     },
-  }), [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious])
+  }), [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

@@ -217,6 +217,22 @@ export const budget = pgTable('budget', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
+export const reminder = pgTable('reminder', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  kind: text('kind').notNull().default('task'),
+  dueAt: text('due_at').notNull(),
+  status: text('status').notNull().default('pending'),
+  sourceId: text('source_id'),
+  repeatLabel: text('repeat_label'),
+  archivedAt: timestamp('archived_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  reminderUserUpdatedIndex: uniqueIndex('reminder_user_updated_idx').on(table.userId, table.updatedAt),
+}))
+
 export const weeklyReview = pgTable('weekly_review', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
@@ -249,6 +265,7 @@ export const schema = {
   weeklyReview,
   financeEntry,
   budget,
+  reminder,
 }
 
 export type GoalRecord = typeof goal.$inferSelect
@@ -258,3 +275,4 @@ export type NoteRecord = typeof note.$inferSelect
 export type UserProfileRecord = typeof userProfile.$inferSelect
 export type FinanceEntryRecord = typeof financeEntry.$inferSelect
 export type BudgetRecord = typeof budget.$inferSelect
+export type ReminderRecord = typeof reminder.$inferSelect

@@ -1,4 +1,4 @@
-import type { FinanceEntry, Goal, Habit, Note, PlanItem, PrayerLog, Profile, Project, ReligiousState, Task } from './command-center-store'
+import type { FinanceEntry, Goal, Habit, Note, PlanItem, PrayerLog, Profile, Project, Reminder, ReligiousState, Task } from './command-center-store'
 
 type RemoteProfile = {
   city: string
@@ -84,6 +84,16 @@ type RemoteFinanceEntry = {
 type RemoteBudget = {
   monthlyLimit: number
   currency: string
+}
+
+type RemoteReminder = {
+  id: string
+  title: string
+  kind: string
+  dueAt: string
+  status: string
+  sourceId: string | null
+  repeatLabel: string | null
 }
 
 type RemoteReligious = {
@@ -197,6 +207,18 @@ export function mapRemoteFinanceEntry(item: RemoteFinanceEntry): FinanceEntry {
   return { id: item.id, title: item.title, amount: Math.max(0, Number(item.amount) || 0), kind: asFinanceKind(item.kind), category: item.category || 'عام', localDate: item.localDate, note: item.note ?? undefined, projectId: item.projectId ?? undefined, goalId: item.goalId ?? undefined }
 }
 
+function asReminderKind(value: string): Reminder['kind'] {
+  return value === 'habit' || value === 'prayer' || value === 'quran' || value === 'finance' ? value : 'task'
+}
+
+function asReminderStatus(value: string): Reminder['status'] {
+  return value === 'done' || value === 'snoozed' ? value : 'pending'
+}
+
+export function mapRemoteReminder(item: RemoteReminder): Reminder {
+  return { id: item.id, title: item.title, kind: asReminderKind(item.kind), dueAt: item.dueAt, status: asReminderStatus(item.status), sourceId: item.sourceId ?? undefined, repeatLabel: item.repeatLabel ?? undefined }
+}
+
 function asPrayerStatus(value: string): PrayerLog['status'] {
   return value === 'done' || value === 'missed' ? value : 'pending'
 }
@@ -212,7 +234,7 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
 }
 
 export async function hydrateRemoteData() {
-  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse] = await Promise.all([
+  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse, reminders] = await Promise.all([
     request<{ items: RemoteTask[] }>('/api/tasks'),
     request<{ items: RemoteNote[] }>('/api/notes'),
     request<{ items: RemoteHabit[] }>('/api/habits'),
@@ -223,6 +245,7 @@ export async function hydrateRemoteData() {
     request<{ budget: RemoteBudget }>('/api/finance/budget'),
     request<{ user: { name: string }; profile: RemoteProfile }>('/api/profile'),
     request<{ religious: RemoteReligious }>('/api/religious'),
+    request<{ items: RemoteReminder[] }>('/api/reminders'),
   ])
   return {
     tasks: tasks?.items?.map(mapRemoteTask) ?? null,
@@ -244,7 +267,20 @@ export async function hydrateRemoteData() {
         }
       : null,
     religious: religiousResponse?.religious ? mapRemoteReligious(religiousResponse.religious) : null,
+    reminders: reminders?.items?.map(mapRemoteReminder) ?? null,
   }
+}
+
+export function createRemoteReminder(input: Pick<Reminder, 'title' | 'kind' | 'dueAt'> & Partial<Pick<Reminder, 'sourceId' | 'repeatLabel'>>) {
+  return request<{ item: RemoteReminder }>('/api/reminders', { method: 'POST', body: JSON.stringify(input) })
+}
+
+export function updateRemoteReminder(id: string, patch: Partial<Reminder>) {
+  return request<{ item: RemoteReminder }>(`/api/reminders/${id}`, { method: 'PATCH', body: JSON.stringify(patch) })
+}
+
+export function archiveRemoteReminder(id: string) {
+  return request<{ ok: boolean }>(`/api/reminders/${id}`, { method: 'DELETE' })
 }
 
 export function updateRemoteReligious(religious: ReligiousState) {
