@@ -220,7 +220,7 @@ export function MoneyWorkspace() {
 
       <ContentCard className="lg:col-span-7" title="آخر العمليات" description="كل العمليات التي سجلتها هذا الشهر، مع إمكانية الأرشفة بدل الحذف النهائي.">
         <div className="space-y-2">
-          {monthEntries.slice(0, 8).map((entry) => <article key={entry.id} className="flex items-center gap-3 rounded-2xl bg-muted/60 px-3 py-3">
+          {monthEntries.slice(0, 8).map((entry) => <article key={entry.id} id={`finance-${entry.id}`} className="scroll-mt-24 flex items-center gap-3 rounded-2xl bg-muted/60 px-3 py-3">
             <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${entry.kind === 'income' ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning-foreground'}`}>{entry.kind === 'income' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4" />}</div>
             <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{entry.title}</p><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{entry.localDate} · {entry.category}</p></div>
             <span className={`text-sm font-semibold ${entry.kind === 'income' ? 'text-success' : 'text-foreground'}`}>{entry.kind === 'income' ? '+' : '-'}{formatAmount(entry.amount, budget.currency)}</span>

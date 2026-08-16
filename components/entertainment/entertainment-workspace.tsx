@@ -167,7 +167,7 @@ export function EntertainmentWorkspace() {
 }
 
 function EntertainmentCard({ item, onMove, onUpdate, onArchive }: { item: EntertainmentItem; onMove: (status: EntertainmentStatus) => void; onUpdate: (patch: Partial<EntertainmentItem>) => void; onArchive: () => void }) {
-  return <article className="rounded-2xl border border-border bg-background p-3 shadow-sm">
+  return <article id={`entertainment-${item.id}`} className="scroll-mt-24 rounded-2xl border border-border bg-background p-3 shadow-sm">
     <div className="flex items-start gap-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground">{item.type === 'movie' ? <Film className="h-5 w-5" /> : <Tv className="h-5 w-5" />}</div>
       <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="truncate text-sm font-semibold">{item.title}</h3><button type="button" onClick={onArchive} aria-label={`أرشفة ${item.title}`} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"><Archive className="h-4 w-4" /></button></div><p className="mt-1 text-xs text-muted-foreground">{item.type === 'movie' ? 'فيلم' : 'مسلسل'} · {item.genre}{item.year ? ` · ${item.year}` : ''}</p></div>
