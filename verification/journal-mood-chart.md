@@ -10,3 +10,5 @@
 - TypeScript check passed before this verification.
 
 - Empty-month check: `http://localhost:3004/journal?date=2025-01-01` rendered the message `لا توجد تدوينات مزاجية في يناير ٢٠٢٥ بعد...` instead of an empty chart or runtime failure.
+
+- Production check: `https://pmd-jet.vercel.app/journal` loaded successfully after deployment `dpl_HkXj9GYfTRBz4Lu3sHVMpZonVJer`, whose Vercel metadata points to commit `d99b7b4` and state `READY`. The published page exposed the same Arabic mood chart and journal content.
