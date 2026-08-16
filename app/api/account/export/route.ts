@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { getCurrentUser, backendUnavailable, unauthorized } from '@/server/auth/session'
-import { budget, dailyPlanItem, financeEntry, goal, habit, habitLog, note, project, religiousSettings, reminder, subtask, task, user, userProfile, weeklyReview } from '@/server/db/schema'
+import { budget, dailyPlanItem, entertainmentItem, financeEntry, goal, habit, habitLog, journalEntry, note, project, religiousSettings, reminder, subtask, task, user, userProfile, weeklyReview } from '@/server/db/schema'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       db.select().from(religiousSettings).where(eq(religiousSettings.userId, currentUser.id)).limit(1),
       db.select().from(budget).where(eq(budget.userId, currentUser.id)).limit(1),
     ])
-    const [goals, projects, tasks, subtasks, notes, habits, habitLogs, planItems, reviews, financeEntries, reminders] = await Promise.all([
+    const [goals, projects, tasks, subtasks, notes, habits, habitLogs, planItems, reviews, financeEntries, reminders, journalEntries, entertainment] = await Promise.all([
       db.select().from(goal).where(eq(goal.userId, currentUser.id)),
       db.select().from(project).where(eq(project.userId, currentUser.id)),
       db.select().from(task).where(eq(task.userId, currentUser.id)),
@@ -33,6 +33,8 @@ export async function GET(request: Request) {
       db.select().from(weeklyReview).where(eq(weeklyReview.userId, currentUser.id)),
       db.select().from(financeEntry).where(eq(financeEntry.userId, currentUser.id)),
       db.select().from(reminder).where(eq(reminder.userId, currentUser.id)),
+      db.select().from(journalEntry).where(eq(journalEntry.userId, currentUser.id)),
+      db.select().from(entertainmentItem).where(eq(entertainmentItem.userId, currentUser.id)),
     ])
 
     return json({
@@ -40,7 +42,7 @@ export async function GET(request: Request) {
       version: 1,
       exportedAt: new Date().toISOString(),
       user: accountUser ?? { id: currentUser.id, name: currentUser.name, email: currentUser.email },
-      data: { profile: profile[0] ?? null, religious: religious[0] ?? null, budget: budgetRow[0] ?? null, goals, projects, tasks, subtasks, notes, habits, habitLogs, planItems, weeklyReviews: reviews, financeEntries, reminders },
+      data: { profile: profile[0] ?? null, religious: religious[0] ?? null, budget: budgetRow[0] ?? null, goals, projects, tasks, subtasks, notes, habits, habitLogs, planItems, weeklyReviews: reviews, financeEntries, reminders, journalEntries, entertainment },
     })
   } catch {
     return backendUnavailable()
