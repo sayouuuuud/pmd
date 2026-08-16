@@ -676,3 +676,7 @@
 أضيفت توكنات `chart-blue` و`chart-teal` و`chart-amber` و`chart-red` و`chart-violet` و`chart-pink` و`chart-emerald` و`chart-slate` إلى `app/globals.css`، واستُبدلت بها القيم السداسية المباشرة في donut وشرائط تصنيفات المصروفات داخل `MoneyWorkspace`.
 اختُبرت `/money` بصريًا داخل RTL، وبقيت النسب والبيانات والمقارنة الشهرية وألوان المخطط متسقة. راجعت console ولم تظهر أخطاء runtime أو hydration. التفاصيل في `verification/money-chart-semantic-colors-browser.md` و`verification/interaction-smoke-tests.md`.
 نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
+## سجل دفعة — نموذج المصادقة بالمكونات المشتركة — 2026-08-16
+اعتمد `AuthForm` على `Input` المشترك في حقول الاسم والبريد وكلمة المرور، وعلى `Button` المشترك لزر الدخول وإنشاء الحساب، مع الحفاظ على منطق Better Auth والتحقق المحلي ورسائل الخطأ وخصائص RTL و`dir="ltr"` للبيانات الإنجليزية.
+اختُبرت `/login` بصريًا، ثم بُدّل النموذج إلى وضع إنشاء الحساب دون إرسال بيانات أو تنفيذ مصادقة، وظهر حقل الاسم وتغير الزر كما هو متوقع. التفاصيل في `verification/auth-form-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة.

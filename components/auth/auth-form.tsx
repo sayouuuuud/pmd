@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { ArrowLeft, Loader2, LockKeyhole, Mail, UserRound } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth-client'
 
 function getArabicAuthError(message?: string) {
@@ -65,11 +67,11 @@ export function AuthForm() {
     </div>
 
     <form className="space-y-4" onSubmit={submit} noValidate>
-      {mode === 'signup' && <label className="block"><span className="mb-2 block text-sm font-medium">الاسم</span><div className="relative"><UserRound className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input required value={name} onChange={(event) => setName(event.target.value)} className="h-12 w-full rounded-2xl border border-input bg-background pr-10 pl-4 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="اسمك" /></div></label>}
-      <label className="block"><span className="mb-2 block text-sm font-medium">البريد الإلكتروني</span><div className="relative"><Mail className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-12 w-full rounded-2xl border border-input bg-background pr-10 pl-4 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="you@example.com" dir="ltr" /></div></label>
-      <label className="block"><span className="mb-2 block text-sm font-medium">كلمة المرور</span><div className="relative"><LockKeyhole className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-12 w-full rounded-2xl border border-input bg-background pr-10 pl-4 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="٨ أحرف على الأقل" dir="ltr" /></div></label>
+      {mode === 'signup' && <label className="block"><span className="mb-2 block text-sm font-medium">الاسم</span><div className="relative"><UserRound className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input required value={name} onChange={(event) => setName(event.target.value)} className="h-12 rounded-2xl pr-10 pl-4" placeholder="اسمك" /></div></label>}
+      <label className="block"><span className="mb-2 block text-sm font-medium">البريد الإلكتروني</span><div className="relative"><Mail className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-12 rounded-2xl pr-10 pl-4" placeholder="you@example.com" dir="ltr" /></div></label>
+      <label className="block"><span className="mb-2 block text-sm font-medium">كلمة المرور</span><div className="relative"><LockKeyhole className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-12 rounded-2xl pr-10 pl-4" placeholder="٨ أحرف على الأقل" dir="ltr" /></div></label>
       {error && <div role="alert" className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm leading-6 text-destructive">{error}</div>}
-      <button disabled={loading} className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-60">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}{mode === 'signin' ? 'دخول إلى حسابي' : 'إنشاء الحساب'}</button>
+      <Button type="submit" disabled={loading} className="h-12 w-full rounded-2xl px-4 text-sm font-semibold">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}{mode === 'signin' ? 'دخول إلى حسابي' : 'إنشاء الحساب'}</Button>
     </form>
 
     <button type="button" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError('') }} className="mt-6 w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground">{mode === 'signin' ? 'لسه معندكش حساب؟ أنشئ حساب جديد' : 'عندك حساب بالفعل؟ سجل الدخول'}</button>
