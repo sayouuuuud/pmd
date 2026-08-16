@@ -15,9 +15,10 @@ const kindLabels: Record<ArchiveKind | 'all', string> = {
   reminder: 'التذكيرات',
   entertainment: 'الترفيه',
   journal: 'اليوميات',
+  board: 'السبورة',
 }
 
-const kindOptions: Array<ArchiveKind | 'all'> = ['all', 'task', 'note', 'habit', 'goal', 'project', 'finance', 'reminder', 'entertainment', 'journal']
+const kindOptions: Array<ArchiveKind | 'all'> = ['all', 'task', 'note', 'habit', 'goal', 'project', 'finance', 'reminder', 'entertainment', 'journal', 'board']
 
 function formatDate(value: string) {
   const date = new Date(value)

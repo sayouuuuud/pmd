@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent, PointerEvent as ReactPointerEvent } from 'react'
-import { ArrowLeft, Check, ChevronLeft, CirclePlus, Lightbulb, MoveLeft, Plus, Target, Trash2, ZoomIn, ZoomOut } from 'lucide-react'
+import { Archive, ArrowLeft, Check, ChevronLeft, CirclePlus, Lightbulb, MoveLeft, Plus, Target, ZoomIn, ZoomOut } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
-import { useCommandCenter } from '@/lib/command-center-store'
+import { useCommandCenter, type BoardArchivePayload } from '@/lib/command-center-store'
 
 type BoardLane = 'ideas' | 'next' | 'doing' | 'done'
 type BoardColor = 'yellow' | 'blue' | 'green' | 'pink'
@@ -14,6 +14,7 @@ type BoardDocument = { id: string; title: string; notes: BoardNote[] }
 type Pan = { x: number; y: number }
 
 const STORAGE_KEY = 'personal-command-center-board-v2'
+const RESTORE_QUEUE_KEY = 'personal-command-center-board-restore-queue'
 const BOARD_WIDTH = 1120
 const BOARD_HEIGHT = 620
 const lanes: { id: BoardLane; title: string; description: string }[] = [
@@ -32,7 +33,7 @@ const seedNotes: BoardNote[] = [
 const initialBoards: BoardDocument[] = [{ id: 'board-main', title: 'لوحة البداية', notes: seedNotes }]
 
 export function BoardWorkspace() {
-  const { goals, projects, tasks } = useCommandCenter()
+  const { goals, projects, tasks, archiveBoardNote } = useCommandCenter()
   const [boards, setBoards] = useState<BoardDocument[]>(initialBoards)
   const [activeBoardId, setActiveBoardId] = useState(initialBoards[0].id)
   const [title, setTitle] = useState('')
@@ -80,6 +81,30 @@ export function BoardWorkspace() {
   useEffect(() => {
     if (isReady) window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ boards, activeBoardId }))
   }, [activeBoardId, boards, isReady])
+
+  useEffect(() => {
+    if (!isReady) return
+    try {
+      const queued = JSON.parse(window.localStorage.getItem(RESTORE_QUEUE_KEY) ?? '[]') as unknown
+      if (!Array.isArray(queued) || queued.length === 0) return
+      setBoards((current) => {
+        const next = current.map((board) => ({ ...board, notes: [...board.notes] }))
+        for (const entry of queued) {
+          if (!isRecord(entry) || typeof entry.id !== 'string' || typeof entry.boardId !== 'string') continue
+          const targetBoardId = next.some((board) => board.id === entry.boardId) ? entry.boardId : next[0]?.id
+          if (!targetBoardId || next.some((board) => board.notes.some((note) => note.id === entry.id))) continue
+          const restored = normalizeNotes([entry])[0]
+          if (!restored) continue
+          const target = next.find((board) => board.id === targetBoardId)
+          if (target) target.notes = [restored, ...target.notes]
+        }
+        return next
+      })
+      window.localStorage.removeItem(RESTORE_QUEUE_KEY)
+    } catch {
+      // Keep the board usable when a queued archive payload is malformed.
+    }
+  }, [isReady])
 
   useEffect(() => {
     if (!isPanning) return
@@ -135,8 +160,12 @@ export function BoardWorkspace() {
     updateActiveNotes((current) => current.map((note) => note.id === id ? { ...note, lane: nextLane } : note))
   }
 
-  function removeNote(id: string) {
-    updateActiveNotes((current) => current.filter((note) => note.id !== id))
+  function archiveNote(id: string) {
+    const note = activeBoard.notes.find((item) => item.id === id)
+    if (!note) return
+    const payload: BoardArchivePayload = { ...note, boardId: activeBoard.id, boardTitle: activeBoard.title }
+    archiveBoardNote(payload)
+    updateActiveNotes((current) => current.filter((item) => item.id !== id))
   }
 
   function moveNotePosition(id: string, clientX: number, clientY: number) {
@@ -169,7 +198,7 @@ export function BoardWorkspace() {
 
       {showComposer && <form onSubmit={addNote} className="rounded-3xl border border-border bg-card p-4 shadow-sm"><div className="grid gap-3 md:grid-cols-[1fr_1.4fr_160px_120px_auto] md:items-end"><label className="space-y-2"><span className="text-xs font-semibold">العنوان</span><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="مثال: فكرة للويك إند" className="w-full rounded-2xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary" /></label><label className="space-y-2"><span className="text-xs font-semibold">ملاحظة قصيرة</span><input value={body} onChange={(event) => setBody(event.target.value)} placeholder="ما الخطوة أو الفكرة؟" className="w-full rounded-2xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary" /></label><label className="space-y-2"><span className="text-xs font-semibold">المكان</span><select value={lane} onChange={(event) => setLane(event.target.value as BoardLane)} className="w-full rounded-2xl border border-border bg-background px-3 py-2.5 text-sm outline-none">{lanes.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label><label className="space-y-2"><span className="text-xs font-semibold">اللون</span><select value={color} onChange={(event) => setColor(event.target.value as BoardColor)} className="w-full rounded-2xl border border-border bg-background px-3 py-2.5 text-sm outline-none"><option value="yellow">أصفر</option><option value="blue">أزرق</option><option value="green">أخضر</option><option value="pink">وردي</option></select></label><button type="submit" className="flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground"><Plus className="h-4 w-4" /> إضافة</button></div></form>}
 
-      <section className="rounded-3xl border border-border bg-muted/35 p-3 sm:p-4"><div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-2"><div><h2 className="text-sm font-semibold">{activeBoard.title}</h2><p className="mt-1 text-[11px] text-muted-foreground">اسحب الخلفية للتحريك، واسحب البطاقات لإعادة ترتيبها داخل المساحة.</p></div><div className="flex items-center gap-1 rounded-full border border-border bg-card p-1"><button type="button" aria-label="تصغير اللوحة" onClick={() => setZoom((current) => Math.max(0.7, Number((current - 0.1).toFixed(1))))} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><ZoomOut className="h-4 w-4" /></button><span className="min-w-12 text-center text-[11px] font-semibold">{Math.round(zoom * 100)}%</span><button type="button" aria-label="تكبير اللوحة" onClick={() => setZoom((current) => Math.min(1.4, Number((current + 0.1).toFixed(1))))} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><ZoomIn className="h-4 w-4" /></button><button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }) }} className="rounded-full px-2 py-1 text-[11px] font-semibold text-primary hover:bg-muted">إعادة ضبط</button></div></div><div ref={boardRef} className={`relative min-h-[420px] overflow-hidden rounded-2xl border border-dashed border-border bg-background/80 ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}><div onPointerDown={startPan} style={{ width: BOARD_WIDTH, height: BOARD_HEIGHT, transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: 'top left' }} className="relative select-none bg-[radial-gradient(circle_at_1px_1px,hsl(var(--border)/.7)_1px,transparent_0)] [background-size:24px_24px]">{activeBoard.notes.map((note) => <BoardNoteCard key={note.id} note={note} onMove={moveNote} onRemove={removeNote} onDragEnd={(event) => moveNotePosition(note.id, event.clientX, event.clientY)} />)}{activeBoard.notes.length === 0 && <p className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">هذه السبورة فارغة. أضف أول فكرة لتبدأ.</p>}</div></div></section>
+      <section className="rounded-3xl border border-border bg-muted/35 p-3 sm:p-4"><div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-2"><div><h2 className="text-sm font-semibold">{activeBoard.title}</h2><p className="mt-1 text-[11px] text-muted-foreground">اسحب الخلفية للتحريك، واسحب البطاقات لإعادة ترتيبها داخل المساحة.</p></div><div className="flex items-center gap-1 rounded-full border border-border bg-card p-1"><button type="button" aria-label="تصغير اللوحة" onClick={() => setZoom((current) => Math.max(0.7, Number((current - 0.1).toFixed(1))))} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><ZoomOut className="h-4 w-4" /></button><span className="min-w-12 text-center text-[11px] font-semibold">{Math.round(zoom * 100)}%</span><button type="button" aria-label="تكبير اللوحة" onClick={() => setZoom((current) => Math.min(1.4, Number((current + 0.1).toFixed(1))))} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><ZoomIn className="h-4 w-4" /></button><button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }) }} className="rounded-full px-2 py-1 text-[11px] font-semibold text-primary hover:bg-muted">إعادة ضبط</button></div></div><div ref={boardRef} className={`relative min-h-[420px] overflow-hidden rounded-2xl border border-dashed border-border bg-background/80 ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}><div onPointerDown={startPan} style={{ width: BOARD_WIDTH, height: BOARD_HEIGHT, transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: 'top left' }} className="relative select-none bg-[radial-gradient(circle_at_1px_1px,hsl(var(--border)/.7)_1px,transparent_0)] [background-size:24px_24px]">{activeBoard.notes.map((note) => <BoardNoteCard key={note.id} note={note} onMove={moveNote} onArchive={archiveNote} onDragEnd={(event) => moveNotePosition(note.id, event.clientX, event.clientY)} />)}{activeBoard.notes.length === 0 && <p className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">هذه السبورة فارغة. أضف أول فكرة لتبدأ.</p>}</div></div></section>
 
       <ContentCard title="مرتبط بمساحتك" description="أفكارك لا تعيش وحدها؛ هذه آخر الأهداف والمشاريع والمهام التي تستحق النظر."><div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">{connectedCards.map((card) => <div key={card.id} className="flex items-center gap-3 rounded-2xl bg-muted/70 p-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-card text-primary"><card.icon className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">{card.kind}</p><p className="truncate text-sm font-semibold">{card.title}</p><p className="mt-1 text-[11px] text-muted-foreground">{card.detail}</p></div><ChevronLeft className="mr-auto h-4 w-4 text-muted-foreground" /></div>)}</div></ContentCard>
     </div>
@@ -178,10 +207,10 @@ export function BoardWorkspace() {
 
 const noteColors: Record<BoardColor, string> = { yellow: 'bg-[#fff7c7]', blue: 'bg-[#e4f0ff]', green: 'bg-[#e5f7e8]', pink: 'bg-[#ffe7ef]' }
 
-function BoardNoteCard({ note, onMove, onRemove, onDragEnd }: { note: BoardNote; onMove: (id: string, lane: BoardLane) => void; onRemove: (id: string) => void; onDragEnd: (event: React.DragEvent<HTMLElement>) => void }) {
+function BoardNoteCard({ note, onMove, onArchive, onDragEnd }: { note: BoardNote; onMove: (id: string, lane: BoardLane) => void; onArchive: (id: string) => void; onDragEnd: (event: React.DragEvent<HTMLElement>) => void }) {
   const currentIndex = lanes.findIndex((lane) => lane.id === note.lane)
   const nextLane = lanes[Math.min(lanes.length - 1, currentIndex + 1)].id
-  return <article draggable onDragEnd={onDragEnd} style={{ left: note.x, top: note.y }} className={`absolute w-56 rounded-2xl p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${noteColors[note.color]}`}><div className="flex items-start justify-between gap-2"><div><h3 className="text-sm font-bold text-slate-800">{note.title}</h3>{note.body && <p className="mt-2 text-xs leading-6 text-slate-700/80">{note.body}</p>}</div><button type="button" aria-label="حذف الملاحظة" onClick={() => onRemove(note.id)} className="rounded-full p-1 text-slate-500 opacity-0 transition hover:bg-black/5 group-hover:opacity-100"><Trash2 className="h-3.5 w-3.5" /></button></div><div className="mt-4 flex items-center justify-between text-[10px] text-slate-600/70"><span>{note.createdAt}</span>{note.lane !== 'done' && <button type="button" onClick={() => onMove(note.id, nextLane)} className="flex items-center gap-1 rounded-full bg-white/50 px-2 py-1 font-semibold hover:bg-white/80">للمرحلة التالية <ArrowLeft className="h-3 w-3" /></button>}</div><span className="mt-3 inline-flex rounded-full bg-white/40 px-2 py-1 text-[10px] text-slate-600">{lanes[currentIndex].title}</span></article>
+  return <article draggable onDragEnd={onDragEnd} style={{ left: note.x, top: note.y }} className={`absolute w-56 rounded-2xl p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${noteColors[note.color]}`}><div className="flex items-start justify-between gap-2"><div><h3 className="text-sm font-bold text-slate-800">{note.title}</h3>{note.body && <p className="mt-2 text-xs leading-6 text-slate-700/80">{note.body}</p>}</div><button type="button" aria-label="أرشفة الملاحظة" onClick={() => onArchive(note.id)} className="rounded-full p-1 text-slate-500 opacity-0 transition hover:bg-black/5 group-hover:opacity-100"><Archive className="h-3.5 w-3.5" /></button></div><div className="mt-4 flex items-center justify-between text-[10px] text-slate-600/70"><span>{note.createdAt}</span>{note.lane !== 'done' && <button type="button" onClick={() => onMove(note.id, nextLane)} className="flex items-center gap-1 rounded-full bg-white/50 px-2 py-1 font-semibold hover:bg-white/80">للمرحلة التالية <ArrowLeft className="h-3 w-3" /></button>}</div><span className="mt-3 inline-flex rounded-full bg-white/40 px-2 py-1 text-[10px] text-slate-600">{lanes[currentIndex].title}</span></article>
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

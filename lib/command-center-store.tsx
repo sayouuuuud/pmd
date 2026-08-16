@@ -176,8 +176,21 @@ export type JournalEntry = {
   updatedAt: string
 }
 
-export type ArchiveKind = 'task' | 'note' | 'habit' | 'goal' | 'project' | 'finance' | 'reminder' | 'entertainment' | 'journal'
-export type ArchivedPayload = Task | Note | Habit | Goal | Project | FinanceEntry | Reminder | EntertainmentItem | JournalEntry
+export type BoardArchivePayload = {
+  id: string
+  title: string
+  body: string
+  lane: 'ideas' | 'next' | 'doing' | 'done'
+  color: 'yellow' | 'blue' | 'green' | 'pink'
+  createdAt: string
+  x: number
+  y: number
+  boardId: string
+  boardTitle: string
+}
+
+export type ArchiveKind = 'task' | 'note' | 'habit' | 'goal' | 'project' | 'finance' | 'reminder' | 'entertainment' | 'journal' | 'board'
+export type ArchivedPayload = Task | Note | Habit | Goal | Project | FinanceEntry | Reminder | EntertainmentItem | JournalEntry | BoardArchivePayload
 export type ArchivedItem = {
   id: string
   kind: ArchiveKind
@@ -246,6 +259,7 @@ type CommandCenterContextValue = {
   updateJournalEntry: (id: string, patch: Partial<Pick<JournalEntry, 'localDate' | 'title' | 'body' | 'mood'>>) => void
   archiveJournalEntry: (id: string) => void
   archiveHabit: (id: string) => void
+  archiveBoardNote: (payload: BoardArchivePayload) => void
   addHabit: (input: Pick<Habit, 'title' | 'target'> & Partial<Pick<Habit, 'icon' | 'frequency'>>) => void
   restoreArchivedItem: (id: string) => void
   saveWeeklyReview: (patch: Pick<WeeklyReview, 'wentWell' | 'blockers' | 'nextGoal'> & Partial<Pick<WeeklyReview, 'status'>>) => void
@@ -855,6 +869,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setHabits((items) => items.filter((habit) => habit.id !== id))
       void fetch(`/api/habits/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => null)
     },
+    archiveBoardNote: (payload) => {
+      addArchivedItem('board', payload, `السبورة · ${payload.boardTitle}`)
+    },
     addHabit: (input) => {
       const title = input.title.trim().slice(0, 100)
       if (!title) return
@@ -885,8 +902,18 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         case 'reminder': setReminders((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Reminder, ...items]); break
         case 'entertainment': setEntertainment((items) => items.some((entry) => entry.id === id) ? items : [item.payload as EntertainmentItem, ...items]); break
         case 'journal': setJournal((items) => items.some((entry) => entry.id === id) ? items : [item.payload as JournalEntry, ...items]); break
+        case 'board': {
+          try {
+            const queue = JSON.parse(window.localStorage.getItem('personal-command-center-board-restore-queue') ?? '[]')
+            const nextQueue = Array.isArray(queue) ? [...queue.filter((entry) => entry && entry.id !== id), item.payload as BoardArchivePayload] : [item.payload as BoardArchivePayload]
+            window.localStorage.setItem('personal-command-center-board-restore-queue', JSON.stringify(nextQueue))
+          } catch {
+            // The board can still be restored manually if local storage is unavailable.
+          }
+          break
+        }
       }
-      void restoreRemoteArchive(item.kind, id)
+      if (item.kind !== 'board') void restoreRemoteArchive(item.kind, id)
     },
     toggleHabit: (id) => {
       const localDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
