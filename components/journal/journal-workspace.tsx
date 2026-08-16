@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { BookOpenText, CalendarDays, Check, Clock3, Feather, Save, Smile, Trash2 } from 'lucide-react'
+import { BookOpenText, CalendarDays, Clock3, Feather, Save, Smile, Trash2 } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { ContentCard } from '@/components/ui/content-card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { JournalEntry, useCommandCenter } from '@/lib/command-center-store'
 
 const moods: JournalEntry['mood'][] = ['سعيد', 'هادئ', 'محايد', 'متعب', 'متوتر']
@@ -188,5 +189,5 @@ function JournalMetric({ icon: Icon, label, value }: { icon: typeof BookOpenText
 }
 
 function EmptyJournal() {
-  return <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-center"><span className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Check className="h-5 w-5" /></span><p className="mt-3 text-sm font-semibold">دفترك ما زال مفتوحًا</p><p className="mt-1 text-xs leading-6 text-muted-foreground">ابدأ بتدوينة قصيرة، وستظهر هنا لتعود إليها لاحقًا.</p></div>
+  return <EmptyState icon={BookOpenText} title="دفترك ما زال مفتوحًا" description="ابدأ بتدوينة قصيرة، وستظهر هنا لتعود إليها لاحقًا." />
 }
