@@ -303,6 +303,7 @@ type CommandCenterContextValue = {
   archiveNote: (id: string) => void
   toggleHabit: (id: string) => void
   togglePlanItem: (id: string) => void
+  updatePlanItem: (id: string, patch: Partial<Pick<PlanItem, 'title' | 'time'>>) => void
   snoozePlanItem: (id: string) => void
   skipPlanItem: (id: string) => void
   restorePlanItem: (id: string) => void
@@ -1114,6 +1115,10 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status } : item))
       void updateRemotePlanItem(id, { status })
       setTasks((items) => items.map((task) => currentItem.sourceId === task.id ? { ...task, status: task.status === 'done' ? 'todo' : 'done' } : task))
+    },
+    updatePlanItem: (id, patch) => {
+      setPlanItems((items) => items.map((item) => item.id === id ? { ...item, ...patch } : item))
+      void updateRemotePlanItem(id, patch)
     },
     snoozePlanItem: (id) => {
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'snoozed' } : item))

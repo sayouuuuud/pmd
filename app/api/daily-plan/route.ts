@@ -14,7 +14,7 @@ function today() {
 }
 
 const kinds = new Set(['task', 'habit', 'prayer', 'quran', 'rest'])
-const statuses = new Set(['pending', 'done', 'snoozed'])
+const statuses = new Set(['pending', 'done', 'snoozed', 'skipped'])
 
 export async function GET(request: Request) {
   const user = await getCurrentUser(request)

@@ -1,15 +1,31 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Clock3, FolderKanban, Link2, Moon, Pause, Play, Repeat, SkipForward, Sparkles, Target } from 'lucide-react'
+import { useState } from 'react'
+import { Check, Clock3, FolderKanban, Link2, Moon, Pause, Pencil, Play, Repeat, SkipForward, Sparkles, Target, X } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter } from '@/lib/command-center-store'
 
 export function DailyPlanWorkspace() {
-  const { planItems, tasks, habits, projects, goals, togglePlanItem, snoozePlanItem, skipPlanItem, restorePlanItem } = useCommandCenter()
+  const { planItems, tasks, habits, projects, goals, togglePlanItem, updatePlanItem, snoozePlanItem, skipPlanItem, restorePlanItem } = useCommandCenter()
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
+  const [editingTime, setEditingTime] = useState('')
   const completed = planItems.filter((item) => item.status === 'done').length
   const activePlanItems = planItems.filter((item) => item.status !== 'skipped')
+
+  function beginEdit(item: { id: string; title: string; time: string }) {
+    setEditingId(item.id)
+    setEditingTitle(item.title)
+    setEditingTime(item.time === '—' ? '' : item.time)
+  }
+
+  function saveEdit() {
+    if (!editingId || !editingTitle.trim()) return
+    updatePlanItem(editingId, { title: editingTitle.trim(), time: editingTime || '—' })
+    setEditingId(null)
+  }
 
   return <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
     <ContentCard className="lg:col-span-8" title="Timeline اليوم" description="خطة مرنة، وليست جدولًا يعاقبك إذا تغيّر يومك. كل مهمة تقودك إلى سياقها عندما يكون متاحًا.">
@@ -22,8 +38,10 @@ export function DailyPlanWorkspace() {
             {item.status !== 'done' && item.status !== 'snoozed' && item.status !== 'skipped' && <button type="button" aria-label="تأجيل" onClick={() => snoozePlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><Pause className="h-4 w-4" /></button>}
             {item.status !== 'done' && item.status !== 'snoozed' && item.status !== 'skipped' && <button type="button" aria-label="تخطي" onClick={() => skipPlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><SkipForward className="h-4 w-4" /></button>}
             {(item.status === 'snoozed' || item.status === 'skipped') && <button type="button" aria-label="إرجاع إلى الخطة" onClick={() => restorePlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"><Play className="h-4 w-4" /></button>}
+            {item.status !== 'done' && item.status !== 'snoozed' && item.status !== 'skipped' && <button type="button" aria-label="تعديل العنصر" onClick={() => beginEdit(item)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><Pencil className="h-4 w-4" /></button>}
             <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${item.status === 'done' ? 'border-primary bg-primary text-primary-foreground' : item.status === 'skipped' ? 'border-border bg-muted text-muted-foreground' : 'border-border'}`}>{item.status === 'done' ? <Check className="h-3.5 w-3.5" /> : item.status === 'skipped' ? <SkipForward className="h-3.5 w-3.5" /> : null}</span>
           </div>
+          {editingId === item.id && <form onSubmit={(event) => { event.preventDefault(); saveEdit() }} className="mt-3 grid gap-2 rounded-2xl bg-muted/60 p-3 sm:grid-cols-[1fr_120px_auto_auto]"><label className="sr-only" htmlFor={`plan-title-${item.id}`}>عنوان العنصر</label><input id={`plan-title-${item.id}`} value={editingTitle} onChange={(event) => setEditingTitle(event.target.value)} className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" /><label className="sr-only" htmlFor={`plan-time-${item.id}`}>وقت العنصر</label><input id={`plan-time-${item.id}`} type="time" value={editingTime} onChange={(event) => setEditingTime(event.target.value)} className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" /><button type="submit" aria-label="حفظ التعديل" className="rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground"><Check className="mx-auto h-4 w-4" /></button><button type="button" aria-label="إلغاء التعديل" onClick={() => setEditingId(null)} className="rounded-xl border border-border px-3 py-2 text-xs text-muted-foreground hover:bg-background"><X className="mx-auto h-4 w-4" /></button></form>}
           <PlanContext item={item} tasks={tasks} habits={habits} projects={projects} goals={goals} />
         </div>)}
       </div>
