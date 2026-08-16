@@ -75,7 +75,7 @@ function safePrayerHistory(value: unknown) {
 
 function safeQuranProgress(value: unknown) {
   const progress = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
-  const targetMinutes = Math.max(1, Math.min(240, Number(progress.targetMinutes) || 20))
+  const targetMinutes = Math.max(5, Math.min(240, Number(progress.targetMinutes) || 20))
   const completedMinutes = Math.max(0, Math.min(targetMinutes, Number(progress.completedMinutes) || 0))
   const memorizationTarget = Math.max(1, Math.min(1000, Math.round(Number(progress.memorizationTarget) || 10)))
   const memorizationCompleted = Math.max(0, Math.min(memorizationTarget, Math.round(Number(progress.memorizationCompleted) || 0)))

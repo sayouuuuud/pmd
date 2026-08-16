@@ -270,6 +270,7 @@ type CommandCenterContextValue = {
   updateBudget: (monthlyLimit: number) => void
   togglePrayer: (id: string, status?: PrayerStatus) => void
   addWirdProgress: (minutes: number) => void
+  setWirdTarget: (minutes: number) => void
   toggleDhikr: (session: 'morning' | 'evening') => void
   incrementDhikr: (session: 'morning' | 'evening', itemId: string, target?: number) => void
   addTasbeeh: (count?: number) => void
@@ -479,7 +480,9 @@ function normalizeQuran(value: unknown, fallback: ReligiousState['quran']): Reli
   const normalizeSurahList = (value: unknown, fallbackList: number[]) => Array.isArray(value) ? value.filter((number): number is number => typeof number === 'number' && Number.isFinite(number)).map((number) => Math.max(1, Math.min(114, Math.round(number)))).filter((number, index, numbers) => numbers.indexOf(number) === index).slice(0, 114) : fallbackList
   const listenLater = normalizeSurahList(source.listenLater, fallback.listenLater ?? [])
   const listenedSurahNumbers = normalizeSurahList(source.listenedSurahNumbers, fallback.listenedSurahNumbers ?? [])
-  return { ...fallback, ...source, lastPosition: position, playlists, listenLater, listenedSurahNumbers }
+  const targetMinutes = Math.max(5, Math.min(240, Math.round(Number(source.targetMinutes) || fallback.targetMinutes || 20)))
+  const completedMinutes = Math.min(targetMinutes, Math.max(0, Number(source.completedMinutes) || fallback.completedMinutes || 0))
+  return { ...fallback, ...source, targetMinutes, completedMinutes, lastPosition: position, playlists, listenLater, listenedSurahNumbers }
 }
 
 function normalizeProgress(value: unknown, fallback: Record<string, number>): Record<string, number> {
@@ -799,6 +802,15 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         return next
       })
       setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: requestedStatus ? (isPrayerCompletedStatus(requestedStatus) ? 'done' : 'pending') : (item.status === 'done' ? 'pending' : 'done') } : item))
+    },
+    setWirdTarget: (minutes) => {
+      setReligious((current) => {
+        const targetMinutes = Math.max(5, Math.min(240, Math.round(Number(minutes) || 20)))
+        const completedMinutes = Math.min(targetMinutes, Math.max(0, current.quran.completedMinutes))
+        const next = { ...current, quran: { ...current.quran, targetMinutes, completedMinutes } }
+        void updateRemoteReligious(next)
+        return next
+      })
     },
     addMemorizationProgress: (ayahs) => {
       setReligious((current) => {
