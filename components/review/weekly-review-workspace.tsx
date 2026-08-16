@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, BookOpen, CheckCircle2, CircleAlert, ClipboardCheck, Clapperboard, Flame, HeartPulse, Landmark, Link2, ListMusic, Save, Target, WalletCards } from 'lucide-react'
+import { ArrowLeft, BookOpen, CheckCircle2, CircleAlert, ClipboardCheck, Clapperboard, Flame, HeartPulse, Landmark, Link2, ListMusic, ListPlus, Save, Target, WalletCards } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { isPrayerCompletedStatus, useCommandCenter } from '@/lib/command-center-store'
 
 export function WeeklyReviewWorkspace() {
-  const { tasks, habits, notes, goals, projects, financeEntries, religious, entertainment, weeklyReview, saveWeeklyReview } = useCommandCenter()
+  const { tasks, habits, notes, goals, projects, financeEntries, religious, entertainment, weeklyReview, saveWeeklyReview, addTask } = useCommandCenter()
   const [wentWell, setWentWell] = useState(weeklyReview.wentWell)
   const [blockers, setBlockers] = useState(weeklyReview.blockers)
   const [nextGoal, setNextGoal] = useState(weeklyReview.nextGoal)
@@ -60,9 +60,17 @@ export function WeeklyReviewWorkspace() {
   const currency = (amount: number) => `${amount.toLocaleString('ar-EG')} ${'جنيه'}`
   const hasReflection = Boolean(wentWell.trim() || blockers.trim() || nextGoal.trim())
   const isDirty = wentWell !== weeklyReview.wentWell || blockers !== weeklyReview.blockers || nextGoal !== weeklyReview.nextGoal
+  const cleanNextGoal = nextGoal.trim().slice(0, 160)
+  const goalTask = cleanNextGoal ? tasks.find((task) => task.category === 'مراجعة أسبوعية' && task.title.trim() === cleanNextGoal) : undefined
 
   function save(status: 'draft' | 'completed') {
     saveWeeklyReview({ wentWell, blockers, nextGoal, status })
+  }
+
+  function addNextGoalAsTask() {
+    if (!cleanNextGoal || goalTask) return
+    saveWeeklyReview({ wentWell, blockers, nextGoal, status: weeklyReview.status === 'completed' ? 'completed' : 'draft' })
+    addTask({ title: cleanNextGoal, priority: 'medium', dueLabel: 'الأسبوع ده', category: 'مراجعة أسبوعية', description: `قرار مستخرج من مراجعة الأسبوع ${weeklyReview.weekStart} إلى ${weeklyReview.weekEnd}.` })
   }
 
   return (
@@ -140,8 +148,11 @@ export function WeeklyReviewWorkspace() {
 
         <ContentCard className="lg:col-span-12 bg-surface-dark text-surface-dark-foreground" title="قرار الأسبوع القادم" description="اقتراح واضح وقابل للتعديل">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div><p className="text-xl font-semibold">{nextGoal.trim() || 'حافظ على البساطة: مهمة عميقة واحدة كل صباح.'}</p><p className="mt-2 max-w-2xl text-sm leading-7 text-surface-dark-foreground/60">القرار يظل في مساحة المراجعة حتى تختار نقله إلى خطة اليوم بنفسك.</p></div>
-            <Link href="/daily-plan" className="flex shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground">تعديل خطة اليوم <ArrowLeft className="h-4 w-4" /></Link>
+            <div><p className="text-xl font-semibold">{nextGoal.trim() || 'حافظ على البساطة: مهمة عميقة واحدة كل صباح.'}</p><p className="mt-2 max-w-2xl text-sm leading-7 text-surface-dark-foreground/60">حوّل القرار إلى خطوة واضحة في قائمة مهام الأسبوع، أو افتح خطة اليوم لتعديل السياق يدويًا.</p></div>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <button type="button" onClick={addNextGoalAsTask} disabled={!cleanNextGoal || Boolean(goalTask)} aria-label={goalTask ? 'تمت إضافة قرار الأسبوع إلى المهام' : 'إضافة قرار الأسبوع إلى المهام'} className="flex items-center justify-center gap-2 rounded-full border border-surface-dark-foreground/20 px-4 py-3 text-xs font-semibold transition hover:bg-surface-dark-foreground/10 disabled:cursor-not-allowed disabled:opacity-60"><ListPlus className="h-4 w-4" />{goalTask ? 'أضيفت إلى المهام' : 'أضف كهمة للأسبوع'}</button>
+              <Link href="/daily-plan" className="flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground">تعديل خطة اليوم <ArrowLeft className="h-4 w-4" /></Link>
+            </div>
           </div>
         </ContentCard>
       </div>
