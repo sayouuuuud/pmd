@@ -729,8 +729,13 @@
 
 
 ## دفعة اعتماد Button المشترك في مساحة الترفيه — 2026-08-16
-
 - **النطاق:** ترحيل الأزرار الخام المتبقية في `components/entertainment/entertainment-workspace.tsx` إلى `components/ui/button.tsx` مع الحفاظ على الـvariants والأحجام والكلاسات المحلية ومنطق الحالة.
 - **التحقق:** فحص بصري وتفاعلي على `/entertainment`؛ تفعيل وإلغاء فلتر «مرشّح لحد»؛ فتح وإلغاء نموذج «إضافة عمل» دون حفظ؛ مراجعة console دون أخطاء runtime أو hydration.
 - **التوثيق:** `verification/entertainment-shared-buttons-browser.md` و`verification/interaction-smoke-tests.md`.
 - **الحالة:** مكتمل وظيفيًا، بانتظار بوابات الجودة ثم commit وpush.
+
+## دفعة اعتماد Input وButton المشتركة في خطة اليوم — 2026-08-17
+- **النطاق:** ترحيل حقل التاريخ وأزرار Timeline للتأجيل والتخطي والتعديل والنقل وأزرار حفظ/إلغاء نماذج التعديل والنقل في `components/daily-plan/daily-plan-workspace.tsx` إلى `Input` و`Button` المشتركتين، دون تغيير منطق الحالة أو الـhandlers.
+- **التحقق:** فحص بصري وتفاعلي على `/daily-plan` لليوم `2026-08-16`؛ ظهرت سبعة عناصر، وفُتح نموذجا التعديل والنقل، واختُبرت القيم مؤقتًا ثم أُلغيت دون حفظ دائم. بقي RTL والبيانات المحلية سليمة.
+- **التوثيق:** `verification/daily-plan-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+- **الحالة:** مكتمل وظيفيًا وبصريًا؛ نجحت بوابات TypeScript وESLint و`git diff --check` و`next build`، والدفعة جاهزة للـcommit والـpush.
