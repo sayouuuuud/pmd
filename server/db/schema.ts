@@ -203,6 +203,7 @@ export const financeEntry = pgTable('finance_entry', {
   note: text('note'),
   projectId: text('project_id').references(() => project.id, { onDelete: 'set null' }),
   goalId: text('goal_id').references(() => goal.id, { onDelete: 'set null' }),
+  recurrence: text('recurrence').notNull().default('none'),
   archivedAt: timestamp('archived_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

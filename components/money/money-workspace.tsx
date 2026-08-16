@@ -1,9 +1,9 @@
 'use client'
 
-import { ArrowDownLeft, ArrowUpRight, Archive, Banknote, CalendarDays, ChartNoAxesColumn, Plus, Wallet } from 'lucide-react'
+import { AlertCircle, ArrowDownLeft, ArrowUpRight, Archive, Banknote, CalendarDays, ChartNoAxesColumn, Plus, RotateCcw, Wallet } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ContentCard } from '@/components/ui/content-card'
-import { useCommandCenter, type FinanceKind } from '@/lib/command-center-store'
+import { useCommandCenter, type FinanceKind, type FinanceRecurrence } from '@/lib/command-center-store'
 
 const categoryOptions = ['بيت', 'أكل', 'تنقل', 'شغل', 'صحة', 'ترفيه', 'دخل', 'عام']
 
@@ -20,6 +20,7 @@ export function MoneyWorkspace() {
   const [budgetDraft, setBudgetDraft] = useState(String(budget.monthlyLimit))
   const [selectedMonth, setSelectedMonth] = useState(currentLocalDate().slice(0, 7))
   const monthEntries = financeEntries.filter((entry) => entry.localDate.startsWith(selectedMonth))
+  const recurringEntries = financeEntries.filter((entry) => entry.kind === 'expense' && entry.recurrence !== 'none')
   const expenses = monthEntries.filter((entry) => entry.kind === 'expense')
   const income = monthEntries.filter((entry) => entry.kind === 'income')
   const totalExpenses = expenses.reduce((sum, entry) => sum + entry.amount, 0)
@@ -51,6 +52,32 @@ export function MoneyWorkspace() {
   const expenseDelta = totalExpenses - previousMonthExpenses
   const donutBackground = categoryTotals.length ? `conic-gradient(${categoryTotals.map((item, index) => { const start = categoryTotals.slice(0, index).reduce((sum, current) => sum + current.percentage, 0); return `${item.color} ${start}% ${start + item.percentage}%` }).join(', ')})` : 'conic-gradient(hsl(var(--muted)) 0 100%)'
 
+  function recurringDueLabel(entry: (typeof recurringEntries)[number]) {
+    if (entry.recurrence === 'weekly') return 'يتكرر أسبوعيًا'
+    const today = new Date(`${currentLocalDate()}T00:00:00`)
+    const templateDay = Math.min(28, Math.max(1, Number(entry.localDate.slice(-2)) || 1))
+    const dueThisMonth = new Date(today.getFullYear(), today.getMonth(), templateDay)
+    const dueDate = dueThisMonth < today ? new Date(today.getFullYear(), today.getMonth() + 1, templateDay) : dueThisMonth
+    const days = Math.round((dueDate.getTime() - today.getTime()) / 86400000)
+    if (days === 0) return 'مستحق اليوم'
+    if (days <= 3) return `مستحق خلال ${days} أيام`
+    return `موعده يوم ${templateDay} من كل شهر`
+  }
+
+  function recordRecurring(entry: (typeof recurringEntries)[number]) {
+    addFinanceEntry({
+      title: entry.title,
+      amount: entry.amount,
+      kind: 'expense',
+      category: entry.category,
+      localDate: currentLocalDate(),
+      note: entry.note ? `نسخة اليوم · ${entry.note}` : 'نسخة اليوم من مصروف متكرر',
+      projectId: entry.projectId,
+      goalId: entry.goalId,
+      recurrence: entry.recurrence,
+    })
+  }
+
   function createEntry(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
@@ -66,6 +93,7 @@ export function MoneyWorkspace() {
       category: String(form.get('category') ?? 'عام'),
       localDate: String(form.get('localDate') ?? currentLocalDate()),
       note: String(form.get('note') ?? '').trim() || undefined,
+      recurrence: String(form.get('recurrence') ?? 'none') as FinanceRecurrence,
       projectId: projectId || undefined,
       goalId: goalId || undefined,
     })
@@ -138,6 +166,21 @@ export function MoneyWorkspace() {
       <div className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground"><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-success" />الدخل</span><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-warning" />المصروف</span></div>
     </ContentCard>
 
+    <ContentCard title="المصاريف المتكررة" description="احتفظ بالإيجار والاشتراكات في مكان واضح، وسجّل نسخة اليوم بضغطة واحدة.">
+      <div className="space-y-2">
+        {recurringEntries.map((entry) => {
+          const dueSoon = entry.recurrence === 'monthly' && (recurringDueLabel(entry) === 'مستحق اليوم' || recurringDueLabel(entry).startsWith('مستحق خلال'))
+          return <article key={entry.id} className={`flex flex-col gap-3 rounded-2xl border px-4 py-3 sm:flex-row sm:items-center ${dueSoon ? 'border-warning/50 bg-warning/10' : 'border-border bg-muted/40'}`}>
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${dueSoon ? 'bg-warning/20 text-warning-foreground' : 'bg-primary/10 text-primary'}`}><RotateCcw className="h-4 w-4" /></div>
+            <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="truncate text-sm font-semibold">{entry.title}</p><span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{entry.recurrence === 'monthly' ? 'شهري' : 'أسبوعي'}</span></div><p className="mt-1 text-xs text-muted-foreground">{formatAmount(entry.amount, budget.currency)} · {entry.category} · {recurringDueLabel(entry)}</p></div>
+            {dueSoon && <span className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertCircle className="h-3.5 w-3.5" />اقترب الموعد</span>}
+            <button type="button" onClick={() => recordRecurring(entry)} className="rounded-2xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">سجّل اليوم</button>
+          </article>
+        })}
+        {recurringEntries.length === 0 && <div className="rounded-2xl bg-muted px-4 py-8 text-center text-sm text-muted-foreground">لا توجد مصروفات متكررة. فعّل التكرار أثناء تسجيل الإيجار أو الاشتراك.</div>}
+      </div>
+    </ContentCard>
+
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <ContentCard className="lg:col-span-5" title="عملية مالية جديدة" description="خلي التسجيل سريعًا، واربطه بمشروع أو هدف لو كان له سياق.">
         <form onSubmit={createEntry} className="space-y-3">
@@ -146,10 +189,16 @@ export function MoneyWorkspace() {
             <input name="amount" type="number" min="1" required className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="المبلغ" />
           </div>
           <input name="title" required className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="مثال: مشتريات البيت" />
-          <div className="grid grid-cols-2 gap-2">
-            <select name="category" defaultValue="عام" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">{categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}</select>
+                    <div className="grid grid-cols-2 gap-2">
+            <select name="category" defaultValue="عام" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+{categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}</select>
             <input name="localDate" type="date" defaultValue={currentLocalDate()} className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
           </div>
+          <select name="recurrence" defaultValue="none" className="w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+            <option value="none">بدون تكرار</option>
+            <option value="monthly">مصروف شهري</option>
+            <option value="weekly">مصروف أسبوعي</option>
+          </select>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <select name="projectId" defaultValue="" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"><option value="">بدون مشروع</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}</select>
             <select name="goalId" defaultValue="" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"><option value="">بدون هدف</option>{goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</select>

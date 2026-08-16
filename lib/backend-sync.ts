@@ -87,6 +87,7 @@ type RemoteFinanceEntry = {
   note: string | null
   projectId: string | null
   goalId: string | null
+  recurrence: string | null
 }
 
 type RemoteBudget = {
@@ -250,8 +251,12 @@ function asFinanceKind(value: string): FinanceEntry['kind'] {
   return value === 'income' ? 'income' : 'expense'
 }
 
+function asFinanceRecurrence(value: string | null | undefined): FinanceEntry['recurrence'] {
+  return value === 'weekly' || value === 'monthly' ? value : 'none'
+}
+
 export function mapRemoteFinanceEntry(item: RemoteFinanceEntry): FinanceEntry {
-  return { id: item.id, title: item.title, amount: Math.max(0, Number(item.amount) || 0), kind: asFinanceKind(item.kind), category: item.category || 'عام', localDate: item.localDate, note: item.note ?? undefined, projectId: item.projectId ?? undefined, goalId: item.goalId ?? undefined }
+  return { id: item.id, title: item.title, amount: Math.max(0, Number(item.amount) || 0), kind: asFinanceKind(item.kind), category: item.category || 'عام', localDate: item.localDate, note: item.note ?? undefined, projectId: item.projectId ?? undefined, goalId: item.goalId ?? undefined, recurrence: asFinanceRecurrence(item.recurrence) }
 }
 
 function asEntertainmentStatus(value: string): EntertainmentItem['status'] {
@@ -495,7 +500,7 @@ export function archiveRemoteProject(id: string) {
   return request<{ item: RemoteProject }>(`/api/projects/${id}`, { method: 'DELETE' })
 }
 
-export function createRemoteFinanceEntry(input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId'>>) {
+export function createRemoteFinanceEntry(input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId' | 'recurrence'>>) {
   return request<{ item: RemoteFinanceEntry }>('/api/finance', { method: 'POST', body: JSON.stringify(input) })
 }
 

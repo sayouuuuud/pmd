@@ -9,6 +9,7 @@ export type GoalStatus = 'active' | 'paused' | 'completed'
 export type GoalHorizon = 'quarter' | 'year' | 'someday'
 export type ProjectStatus = 'backlog' | 'in-progress' | 'done'
 export type FinanceKind = 'expense' | 'income'
+export type FinanceRecurrence = 'none' | 'weekly' | 'monthly'
 export type ReminderKind = 'task' | 'habit' | 'prayer' | 'quran' | 'finance'
 export type ReminderStatus = 'pending' | 'done' | 'snoozed'
 
@@ -65,6 +66,7 @@ export type FinanceEntry = {
   note?: string
   projectId?: string
   goalId?: string
+  recurrence: FinanceRecurrence
 }
 
 export type Budget = {
@@ -217,7 +219,7 @@ type CommandCenterContextValue = {
   addProject: (input: Pick<Project, 'title' | 'dueLabel'> & Partial<Pick<Project, 'description' | 'goalId' | 'status' | 'progress'>>) => void
   updateProject: (id: string, patch: Partial<Project>) => void
   archiveProject: (id: string) => void
-  addFinanceEntry: (input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId'>>) => void
+  addFinanceEntry: (input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId' | 'recurrence'>>) => void
   updateFinanceEntry: (id: string, patch: Partial<FinanceEntry>) => void
   archiveFinanceEntry: (id: string) => void
   updateBudget: (monthlyLimit: number) => void
@@ -279,10 +281,10 @@ const initialProjects: Project[] = [
 ]
 
 const initialFinanceEntries: FinanceEntry[] = [
-  { id: 'finance-1', title: 'اشتراك أدوات العمل', amount: 850, kind: 'expense', category: 'شغل', localDate: '2026-08-12', note: 'اشتراك شهري', projectId: 'project-1', goalId: 'goal-1' },
-  { id: 'finance-2', title: 'مشتريات البيت', amount: 1250, kind: 'expense', category: 'بيت', localDate: '2026-08-10', note: 'مستلزمات الأسبوع' },
-  { id: 'finance-3', title: 'دخل حر', amount: 5200, kind: 'income', category: 'دخل', localDate: '2026-08-05', note: 'دفعة مشروع' },
-  { id: 'finance-4', title: 'مواصلات', amount: 420, kind: 'expense', category: 'تنقل', localDate: '2026-08-03' },
+  { id: 'finance-1', title: 'اشتراك أدوات العمل', amount: 850, kind: 'expense', category: 'شغل', localDate: '2026-08-12', note: 'اشتراك شهري', projectId: 'project-1', goalId: 'goal-1', recurrence: 'monthly' },
+  { id: 'finance-2', title: 'مشتريات البيت', amount: 1250, kind: 'expense', category: 'بيت', localDate: '2026-08-10', note: 'مستلزمات الأسبوع', recurrence: 'none' },
+  { id: 'finance-3', title: 'دخل حر', amount: 5200, kind: 'income', category: 'دخل', localDate: '2026-08-05', note: 'دفعة مشروع', recurrence: 'none' },
+  { id: 'finance-4', title: 'مواصلات', amount: 420, kind: 'expense', category: 'تنقل', localDate: '2026-08-03', recurrence: 'none' },
 ]
 
 const initialBudget: Budget = { monthlyLimit: 12000, currency: 'جنيه' }
@@ -386,7 +388,7 @@ function normalizeState(value: unknown): PersistedState | null {
     planItems: arrayOr(source.planItems, defaults.planItems),
     goals: arrayOr(source.goals, defaults.goals),
     projects: arrayOr(source.projects, defaults.projects),
-    financeEntries: arrayOr(source.financeEntries, defaults.financeEntries),
+    financeEntries: arrayOr(source.financeEntries, defaults.financeEntries).map((entry) => ({ ...entry, recurrence: entry.recurrence === 'weekly' || entry.recurrence === 'monthly' ? entry.recurrence : 'none' })),
     budget: { ...defaults.budget, ...budget },
     religious: { ...defaults.religious, ...religious },
     reminders: arrayOr(source.reminders, defaults.reminders),
@@ -612,7 +614,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void archiveRemoteProject(id)
     },
     addFinanceEntry: (input) => {
-      const entry: FinanceEntry = { id: `finance-${Date.now()}`, ...input, amount: Math.max(0, input.amount) }
+      const entry: FinanceEntry = { id: `finance-${Date.now()}`, ...input, recurrence: input.recurrence ?? 'none', amount: Math.max(0, input.amount) }
       setFinanceEntries((items) => [entry, ...items])
       void createRemoteFinanceEntry(input)
     },

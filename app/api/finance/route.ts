@@ -10,6 +10,7 @@ function json(data: unknown, init?: ResponseInit) {
 }
 
 const kinds = new Set(['expense', 'income'])
+const recurrences = new Set(['none', 'weekly', 'monthly'])
 
 export async function GET(request: Request) {
   const user = await getCurrentUser(request)
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     const title = typeof body.title === 'string' ? body.title.trim() : ''
     const amount = typeof body.amount === 'number' ? Math.round(body.amount) : Number(body.amount)
     const kind = typeof body.kind === 'string' && kinds.has(body.kind) ? body.kind : 'expense'
+    const recurrence = typeof body.recurrence === 'string' && recurrences.has(body.recurrence) ? body.recurrence : 'none'
     const category = typeof body.category === 'string' && body.category.trim() ? body.category.trim() : 'عام'
     const localDate = typeof body.localDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.localDate) ? body.localDate : ''
     if (!title) return json({ error: 'وصف العملية مطلوب.' }, { status: 400 })
@@ -62,6 +64,7 @@ export async function POST(request: Request) {
       kind,
       category,
       localDate,
+      recurrence,
       note: typeof body.note === 'string' ? body.note.trim() || null : null,
       projectId,
       goalId,

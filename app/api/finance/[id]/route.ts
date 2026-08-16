@@ -12,6 +12,7 @@ function json(data: unknown, init?: ResponseInit) {
 }
 
 const kinds = new Set(['expense', 'income'])
+const recurrences = new Set(['none', 'weekly', 'monthly'])
 
 async function ownedEntry(id: string, userId: string) {
   const db = getDb()
@@ -45,6 +46,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       patch.kind = body.kind
     }
     if (body.category !== undefined) patch.category = typeof body.category === 'string' && body.category.trim() ? body.category.trim() : 'عام'
+    if (body.recurrence !== undefined) {
+      if (typeof body.recurrence !== 'string' || !recurrences.has(body.recurrence)) return json({ error: 'تكرار العملية غير صالح.' }, { status: 400 })
+      patch.recurrence = body.recurrence
+    }
     if (body.localDate !== undefined) {
       if (typeof body.localDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(body.localDate)) return json({ error: 'تاريخ العملية غير صالح.' }, { status: 400 })
       patch.localDate = body.localDate
