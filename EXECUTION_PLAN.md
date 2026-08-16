@@ -448,3 +448,10 @@
 أضيف محرر مباشر داخل بطاقة المهمة في `/tasks` لتحرير العنوان والأولوية والموعد والتصنيف عبر `updateTask` من الحالة الموحدة. يحافظ النموذج على RTL والـsemantic tokens، ويظهر عند hover/focus دون تغيير تخطيط مساحة المهام، مع استمرار المزامنة البعيدة وlocalStorage fallback.
 اختُبرت دورة كاملة على `task-1`: فُتح النموذج، عُدّلت الحقول الأربع، حُفظت التغييرات وانعكست مباشرة في البطاقة، ثم أُعيدت القيم الأصلية وحُفظت الاستعادة. لم تظهر أخطاء JavaScript أو مزامنة في console؛ ظهرت رسائل React DevTools وHMR فقط. نجحت TypeScript وESLint و`git diff --check` و`next build`، والتفاصيل محفوظة في `verification/tasks-edit-browser.md` و`verification/interaction-smoke-tests.md`.
 يبقى الاختبار الفعلي مع Neon وcredentials مفتوحًا ضمن البنود البيئية، ولا توجد بيانات اختبارية متبقية في الحالة المحلية.
+
+### سجل دفعة 2026-08-16 — خطة حفظ القرآن
+أضيفت خريطة `memorizationSurahStatus` إلى `ReligiousState.quran` بثلاث حالات عربية تنظيمية: `learning` («بحفظها»)، `reviewing` («تحتاج مراجعة»)، و`memorized` («حفظتها»). أضيف `setMemorizationSurahStatus` إلى الحالة الموحدة مع تطبيع رقم السورة، وحُفظت الخريطة ضمن JSONB الحالي `quranProgress` في API القسم الديني، مع تطبيعها في `backend-sync` وlocalStorage hydration. لا توجد migration جديدة ولا تُخزّن نصوص الآيات.
+
+أضيفت قائمة حالات داخل بطاقة «خطة الحفظ» في `/religious` باستخدام الكروت والـsemantic tokens القائمة، مع عداد للسور المحفوظة. اختُبرت دورة تغيير حالة سورة البقرة إلى «حفظتها»، فارتفع العداد من 2/7 إلى 3/7، ثم بقيت القيمة بعد إعادة التحميل عبر localStorage fallback. فحص وحدة التحكم أظهر React DevTools وHMR فقط دون أخطاء تطبيقية. نجحت TypeScript وESLint و`git diff --check` و`next build`، والتفاصيل في `verification/quran-memorization-browser.md` و`verification/interaction-smoke-tests.md`.
+
+يبقى الاختبار الفعلي مع Neon وcredentials مفتوحًا ضمن البنود البيئية، كما تبقى قائمة السور الحالية منتقاة من السور الأكثر استخدامًا وليست فهرس المصحف الكامل.

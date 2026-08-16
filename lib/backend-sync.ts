@@ -1,4 +1,4 @@
-import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, Note, PlanItem, PrayerHistoryDay, PrayerLog, Profile, Project, QuranPlaylist, QuranPosition, Reminder, ReligiousState, SunnahKey, Task, WeeklyReview } from './command-center-store'
+import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, MemorizationSurahStatus, Note, PlanItem, PrayerHistoryDay, PrayerLog, Profile, Project, QuranPlaylist, QuranPosition, Reminder, ReligiousState, SunnahKey, Task, WeeklyReview } from './command-center-store'
 import { normalizeReminderRepeatLabel } from './reminder-utils'
 
 type RemoteProfile = {
@@ -372,6 +372,14 @@ function normalizeRemoteSurahList(value: unknown): number[] {
   return value.filter((number): number is number => typeof number === 'number' && Number.isFinite(number)).map((number) => Math.max(1, Math.min(114, Math.round(number)))).filter((number, index, numbers) => numbers.indexOf(number) === index).slice(0, 114)
 }
 
+function normalizeRemoteMemorizationStatus(value: unknown): Record<number, MemorizationSurahStatus> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>).flatMap(([key, status]) => {
+    const surahNumber = Number(key)
+    return Number.isInteger(surahNumber) && surahNumber >= 1 && surahNumber <= 114 && (status === 'memorized' || status === 'reviewing' || status === 'learning') ? [[surahNumber, status]] : []
+  }).slice(0, 114)) as Record<number, MemorizationSurahStatus>
+}
+
 function normalizeRemotePlaylists(value: unknown): QuranPlaylist[] {
   if (!Array.isArray(value)) return []
   return value.slice(0, 12).flatMap((item) => {
@@ -389,7 +397,7 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
     calculationMethod: item.calculationMethod || 'مخصص',
     prayerLogs: Array.isArray(item.prayerLogs) ? item.prayerLogs.map((prayer) => ({ ...prayer, status: asPrayerStatus(prayer.status) })) : [],
     prayerHistory: Array.isArray(item.prayerHistory) ? item.prayerHistory.slice(-30).map(normalizeRemotePrayerHistory) : [],
-    quran: (() => { const targetMinutes = Math.max(5, Math.min(240, Math.round(Number(item.quranProgress?.targetMinutes) || 20))); return { reference: item.quranProgress?.reference || 'ورد اليوم', targetMinutes, completedMinutes: Math.min(targetMinutes, Math.max(0, Number(item.quranProgress?.completedMinutes) || 0)), memorizationTarget: Math.max(1, Number(item.quranProgress?.memorizationTarget) || 10), memorizationCompleted: Math.max(0, Number(item.quranProgress?.memorizationCompleted) || 0), lastPosition: normalizeRemoteQuranPosition(item.quranProgress?.lastPosition), playlists: normalizeRemotePlaylists(item.quranProgress?.playlists), listenLater: normalizeRemoteSurahList(item.quranProgress?.listenLater), listenedSurahNumbers: normalizeRemoteSurahList(item.quranProgress?.listenedSurahNumbers) } })(),
+    quran: (() => { const targetMinutes = Math.max(5, Math.min(240, Math.round(Number(item.quranProgress?.targetMinutes) || 20))); return { reference: item.quranProgress?.reference || 'ورد اليوم', targetMinutes, completedMinutes: Math.min(targetMinutes, Math.max(0, Number(item.quranProgress?.completedMinutes) || 0)), memorizationTarget: Math.max(1, Number(item.quranProgress?.memorizationTarget) || 10), memorizationCompleted: Math.max(0, Number(item.quranProgress?.memorizationCompleted) || 0), memorizationSurahStatus: normalizeRemoteMemorizationStatus(item.quranProgress?.memorizationSurahStatus), lastPosition: normalizeRemoteQuranPosition(item.quranProgress?.lastPosition), playlists: normalizeRemotePlaylists(item.quranProgress?.playlists), listenLater: normalizeRemoteSurahList(item.quranProgress?.listenLater), listenedSurahNumbers: normalizeRemoteSurahList(item.quranProgress?.listenedSurahNumbers) } })(),
     dhikr: { morning: Boolean(item.dhikrSessions?.morning), evening: Boolean(item.dhikrSessions?.evening), morningCount: Math.max(0, Number(item.dhikrSessions?.morningCount) || 0), eveningCount: Math.max(0, Number(item.dhikrSessions?.eveningCount) || 0), morningProgress: normalizeRemoteProgress(item.dhikrSessions?.morningProgress, progressFromRemoteCount('morning', item.dhikrSessions?.morningCount)), eveningProgress: normalizeRemoteProgress(item.dhikrSessions?.eveningProgress, progressFromRemoteCount('evening', item.dhikrSessions?.eveningCount)), lastSession: item.dhikrSessions?.lastSession, tasbeehCount: Math.max(0, Number(item.dhikrSessions?.tasbeehCount) || 0), tasbeehTarget: Math.max(1, Number(item.dhikrSessions?.tasbeehTarget) || 100), savedDuas: Array.isArray(item.dhikrSessions?.savedDuas) ? item.dhikrSessions.savedDuas.filter((dua): dua is string => typeof dua === 'string').slice(-20) : [], sunnahChecks: normalizeRemoteSunnahChecks(item.dhikrSessions?.sunnahChecks) },
   }
 }

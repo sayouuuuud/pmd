@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, Forward, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Rewind, Sparkles, Sunrise, SunMedium, Trash2, Volume2 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
-import { isPrayerCompletedStatus, type PrayerStatus, useCommandCenter } from '@/lib/command-center-store'
+import { isPrayerCompletedStatus, type MemorizationSurahStatus, type PrayerStatus, useCommandCenter } from '@/lib/command-center-store'
 
 const prayerIcons: Record<string, typeof Sunrise> = {
   الفجر: Sunrise,
@@ -31,6 +31,22 @@ const prayerStatusLabels: Record<PrayerStatus, string> = {
   qada: 'قضاء',
   missed: 'فائتة',
 }
+
+const memorizationSurahOptions = [
+  { number: 1, name: 'الفاتحة' },
+  { number: 2, name: 'البقرة' },
+  { number: 18, name: 'الكهف' },
+  { number: 36, name: 'يس' },
+  { number: 55, name: 'الرحمن' },
+  { number: 67, name: 'الملك' },
+  { number: 112, name: 'الإخلاص' },
+] as const
+
+const memorizationStatusOptions: Array<{ value: MemorizationSurahStatus; label: string }> = [
+  { value: 'learning', label: 'بحفظها' },
+  { value: 'reviewing', label: 'تحتاج مراجعة' },
+  { value: 'memorized', label: 'حفظتها' },
+]
 
 const calculationMethods: Record<string, string> = {
   مخصص: '5',
@@ -80,7 +96,7 @@ type Reciter = { id: number; name: string; read?: string; server: string; surahT
 type RecitersResponse = { source: string; reciters?: Reciter[]; error?: string }
 
 export function ReligiousWorkspace() {
-  const { religious, togglePrayer, addWirdProgress, setWirdTarget, addMemorizationProgress, saveQuranPosition, createQuranPlaylist, toggleQuranPlaylistSurah, toggleQuranListenLater, toggleQuranListened, incrementDhikr, addTasbeeh, setTasbeehTarget, resetTasbeeh, addSavedDua, removeSavedDua, updateReligiousSettings, updatePrayerTimes, toggleSunnah } = useCommandCenter()
+  const { religious, togglePrayer, addWirdProgress, setWirdTarget, addMemorizationProgress, setMemorizationSurahStatus, saveQuranPosition, createQuranPlaylist, toggleQuranPlaylistSurah, toggleQuranListenLater, toggleQuranListened, incrementDhikr, addTasbeeh, setTasbeehTarget, resetTasbeeh, addSavedDua, removeSavedDua, updateReligiousSettings, updatePrayerTimes, toggleSunnah } = useCommandCenter()
   const [timingState, setTimingState] = useState<TimingState>('idle')
   const [timingMessage, setTimingMessage] = useState('')
   const [timingDate, setTimingDate] = useState<string | null>(null)
@@ -105,6 +121,8 @@ export function ReligiousWorkspace() {
   const memorizationTarget = religious.quran.memorizationTarget ?? 10
   const memorizationCompleted = religious.quran.memorizationCompleted ?? 0
   const memorizationPercent = Math.round((memorizationCompleted / Math.max(memorizationTarget, 1)) * 100)
+  const memorizationSurahStatus = religious.quran.memorizationSurahStatus ?? {}
+  const memorizedSurahCount = memorizationSurahOptions.filter(({ number }) => memorizationSurahStatus[number] === 'memorized').length
   const prayerHistory = religious.prayerHistory ?? []
   const orderedPrayerHistory = prayerHistory.slice().sort((left, right) => left.localDate.localeCompare(right.localDate))
   const prayerHistoryByDate = new Map(orderedPrayerHistory.map((day) => [day.localDate, day]))
@@ -313,7 +331,8 @@ export function ReligiousWorkspace() {
           <div className="mt-5 rounded-2xl border border-border bg-background/70 p-3"><div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground"><BarChart3 className="h-3.5 w-3.5 text-primary" />تحليل أنواع الحالات</span><span className="text-[11px] text-muted-foreground">من السجلات المحفوظة</span></div><div className="mt-3 space-y-2.5">{prayerStatusAnalysis.map(({ status, label, count }) => { const share = Math.round((count / Math.max(prayerHistory.length * 5, 1)) * 100); return <div key={status} className="flex items-center gap-2 text-xs"><span className="w-16 shrink-0 text-muted-foreground">{label}</span><div className="h-2 flex-1 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full ${status === 'missed' ? 'bg-destructive' : status === 'pending' ? 'bg-muted-foreground/40' : 'bg-primary'}`} style={{ width: `${Math.min(100, share)}%` }} /></div><strong className="w-6 text-left text-foreground">{count}</strong></div> })}</div><div className="mt-4 rounded-xl bg-muted/60 px-3 py-2 text-xs"><span className="text-muted-foreground">الأكثر فواتًا: </span><strong>{mostMissedPrayer ? `${mostMissedPrayer[0]} · ${mostMissedPrayer[1]} مرات` : 'لا توجد فائتة مسجلة'}</strong></div></div>
         </ContentCard>
         <ContentCard title="خطة الحفظ" description="تقدم تقريبي تحفظه أنت؛ لا يتم تخزين نص الآيات." action={<BookOpen className="h-5 w-5 text-primary" />}>
-          <div className="flex items-center justify-between text-sm"><span>الإنجاز الحالي</span><strong>{memorizationCompleted} من {memorizationTarget} آيات</strong></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, memorizationPercent)}%` }} /></div><div className="mt-2 flex items-center justify-between text-xs text-muted-foreground"><span>{memorizationPercent}% مكتمل</span><span>المتبقي {Math.max(0, memorizationTarget - memorizationCompleted)}</span></div><div className="mt-4 flex gap-2"><Button size="sm" variant="outline" onClick={() => addMemorizationProgress(1)}><Plus className="ms-1 h-3.5 w-3.5" /> آية</Button><Button size="sm" onClick={() => addMemorizationProgress(3)}>أنجزت 3 آيات</Button></div>
+          <div className="flex items-center justify-between text-sm"><span>الإنجاز الحالي</span><strong>{memorizationCompleted} من {memorizationTarget} آيات</strong></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, memorizationPercent)}%` }} /></div><div className="mt-2 flex items-center justify-between text-xs text-muted-foreground"><span>{memorizationPercent}% مكتمل</span><span>المتبقي {Math.max(0, memorizationTarget - memorizationCompleted)}</span></div>          <div className="mt-4 flex gap-2"><Button size="sm" variant="outline" onClick={() => addMemorizationProgress(1)}><Plus className="ms-1 h-3.5 w-3.5" /> آية</Button><Button size="sm" onClick={() => addMemorizationProgress(3)}>أنجزت 3 آيات</Button></div>
+          <div className="mt-5 rounded-2xl border border-border bg-background/70 p-3"><div className="flex items-center justify-between gap-3"><span className="text-xs font-semibold text-muted-foreground">حالة السور</span><span className="text-[11px] text-muted-foreground">{memorizedSurahCount} من {memorizationSurahOptions.length} محفوظة</span></div><div className="mt-3 grid gap-2 sm:grid-cols-2">{memorizationSurahOptions.map(({ number, name }) => { const status = memorizationSurahStatus[number] ?? 'learning'; return <label key={number} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs"><span className="min-w-0 font-medium">{number} — {name}</span><select aria-label={`حالة حفظ سورة ${name}`} value={status} onChange={(event) => setMemorizationSurahStatus(number, event.currentTarget.value as MemorizationSurahStatus)} className="min-w-0 rounded-lg border border-border bg-background px-2 py-1.5 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">{memorizationStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label> })}</div></div>
         </ContentCard>
         <ContentCard title="السنن والنوافل" description="قائمة تذكير يومية محلية قابلة للتعديل من هاتفك." action={<Sparkles className="h-5 w-5 text-primary" />}><div className="grid gap-2">{[['duha', 'صلاة الضحى'], ['witr', 'الوتر'], ['rawatib', 'السنن الرواتب'], ['sadaqah', 'صدقة أو إحسان']].map(([id, label]) => <button key={id} type="button" onClick={() => toggleSunnah(id as 'duha' | 'witr' | 'rawatib' | 'sadaqah')} className={`flex items-center gap-3 rounded-2xl border p-3 text-right text-sm transition-colors ${religious.dhikr.sunnahChecks?.[id as 'duha' | 'witr' | 'rawatib' | 'sadaqah'] ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}><span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${religious.dhikr.sunnahChecks?.[id as 'duha' | 'witr' | 'rawatib' | 'sadaqah'] ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{religious.dhikr.sunnahChecks?.[id as 'duha' | 'witr' | 'rawatib' | 'sadaqah'] && <Check className="h-3 w-3" />}</span><span className="flex-1">{label}</span></button>)}</div></ContentCard>
       </div>

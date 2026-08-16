@@ -86,13 +86,16 @@ function safeQuranProgress(value: unknown) {
   const safeSurahList = (value: unknown) => Array.isArray(value) ? value.filter((number): number is number => typeof number === 'number' && Number.isFinite(number)).map((number) => Math.max(1, Math.min(114, Math.round(number)))).filter((number, index, numbers) => numbers.indexOf(number) === index).slice(0, 114) : []
   const listenLater = safeSurahList(progress.listenLater)
   const listenedSurahNumbers = safeSurahList(progress.listenedSurahNumbers)
+  const memorizationSurahStatus = progress.memorizationSurahStatus && typeof progress.memorizationSurahStatus === 'object' && !Array.isArray(progress.memorizationSurahStatus)
+    ? Object.fromEntries(Object.entries(progress.memorizationSurahStatus as Record<string, unknown>).flatMap(([key, status]) => { const surahNumber = Number(key); return Number.isInteger(surahNumber) && surahNumber >= 1 && surahNumber <= 114 && (status === 'memorized' || status === 'reviewing' || status === 'learning') ? [[surahNumber, status]] : [] }).slice(0, 114))
+    : {}
   const playlists = Array.isArray(progress.playlists) ? progress.playlists.slice(0, 12).flatMap((item) => {
     const playlist = item && typeof item === 'object' ? item as Record<string, unknown> : null
     if (!playlist) return []
     const surahNumbers = Array.isArray(playlist.surahNumbers) ? playlist.surahNumbers.filter((number): number is number => typeof number === 'number' && Number.isFinite(number)).map((number) => Math.max(1, Math.min(114, Math.round(number)))).filter((number, index, numbers) => numbers.indexOf(number) === index).slice(0, 30) : []
     return [{ id: stringValue(playlist.id, `quran-playlist-${Date.now()}`, 80), name: stringValue(playlist.name, 'قائمة تلاوة', 80), surahNumbers, createdAt: stringValue(playlist.createdAt, new Date().toISOString(), 40) }]
   }) : []
-  return { reference: stringValue(progress.reference, 'ورد اليوم', 160), targetMinutes, completedMinutes, memorizationTarget, memorizationCompleted, playlists, listenLater, listenedSurahNumbers, ...(lastPosition ? { lastPosition } : {}) }
+  return { reference: stringValue(progress.reference, 'ورد اليوم', 160), targetMinutes, completedMinutes, memorizationTarget, memorizationCompleted, memorizationSurahStatus, playlists, listenLater, listenedSurahNumbers, ...(lastPosition ? { lastPosition } : {}) }
 }
 
 function safeDhikrProgress(value: unknown) {
