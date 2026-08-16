@@ -717,3 +717,12 @@
 اعتمد `HabitsWorkspace` على `Input` لاسم العادة وهدفها، وعلى `Select` للمهمة والمشروع والهدف المرتبطين، وعلى `Button` للحفظ، مع الحفاظ على القيم والـhandlers والقيود وسلوك الإضافة الحالي.
 اختُبرت `/habits` بصريًا وتفاعليًا؛ فُتح نموذج «عادة جديدة»، أُدخل اسم عربي مؤقت، واختير مشروع «روتين الحركة والنوم» ثم أُعيد إلى «بدون مشروع»، وأُفرغ الاسم وأُغلق النموذج دون حفظ. بقي RTL والتخطيط والبيانات الأصلية سليمة. التفاصيل في `verification/habits-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل إنشاء commit ودفع الدفعة.
+
+
+## دفعة اعتماد الحقول المشتركة في القسم الديني — 2026-08-17
+
+تم ترحيل القوائم والحقول الخام المتبقية في `components/religious/religious-workspace.tsx` إلى `Select` و`Input` المشتركين، مع الحفاظ على خيارات الصلاة والسبحة والمصحف والقارئ والدعاء، وعلى الـhandlers والكلاسات السلوكية ومنطق الحفظ المحلي. تحقق المتصفح من RTL، ومن تغيير هدف السبحة مؤقتًا ثم إعادته إلى `33`، ومن إدخال دعاء مؤقت ثم إفراغه دون حفظ. أكد فحص DOM وجود `data-slot` للمكونات المشتركة، كما لم يظهر خطأ Next ظاهرًا.
+
+مرجع التحقق: `verification/religious-shared-controls-adoption-browser.md`، وسجل التفاعل: `verification/interaction-smoke-tests.md`.
+
+الحالة: **منفذة وظيفيًا، بانتظار بوابات الجودة والـcommit والـpush**.
