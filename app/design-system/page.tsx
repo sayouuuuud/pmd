@@ -24,9 +24,9 @@ export default function DesignSystemPage() {
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <header className="rounded-3xl bg-surface-dark p-6 text-surface-dark-foreground shadow-sm sm:p-8">
-          <p className="text-xs font-semibold text-white/60">PERSONAL COMMAND CENTER</p>
+          <p className="text-xs font-semibold text-surface-dark-foreground/60">PERSONAL COMMAND CENTER</p>
           <h1 className="mt-3 text-2xl font-bold sm:text-3xl">مرجع نظام التصميم</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-white/70">
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-surface-dark-foreground/70">
             صفحة داخلية لمراجعة المكونات المشتركة والتوكنز الدلالية قبل إعادة استخدامها في أقسام المنصة.
           </p>
         </header>
