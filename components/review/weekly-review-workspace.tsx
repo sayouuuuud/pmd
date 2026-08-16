@@ -40,6 +40,7 @@ export function WeeklyReviewWorkspace() {
 
   const currency = (amount: number) => `${amount.toLocaleString('ar-EG')} ${'جنيه'}`
   const hasReflection = Boolean(wentWell.trim() || blockers.trim() || nextGoal.trim())
+  const isDirty = wentWell !== weeklyReview.wentWell || blockers !== weeklyReview.blockers || nextGoal !== weeklyReview.nextGoal
 
   function save(status: 'draft' | 'completed') {
     saveWeeklyReview({ wentWell, blockers, nextGoal, status })
@@ -95,7 +96,7 @@ export function WeeklyReviewWorkspace() {
             <ReflectionField label="ما هدف الأسبوع القادم؟" value={nextGoal} onChange={setNextGoal} placeholder="خطوة واحدة واضحة يمكن تنفيذها..." />
           </div>
           <div className="mt-4 flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-muted-foreground">{weeklyReview.status === 'completed' ? 'تم اعتماد مراجعة هذا الأسبوع.' : hasReflection ? 'هناك نص غير محفوظ.' : 'ابدأ بكتابة أول سطر.'} {weeklyReview.updatedAt !== 'لم تُحفظ بعد' ? `آخر حفظ: ${weeklyReview.updatedAt}` : ''}</p>
+            <p className="text-xs text-muted-foreground">{weeklyReview.status === 'completed' && !isDirty ? 'تم اعتماد مراجعة هذا الأسبوع.' : isDirty ? 'هناك نص غير محفوظ.' : hasReflection ? 'تم حفظ المسودة ويمكنك العودة إليها لاحقًا.' : 'ابدأ بكتابة أول سطر.'} {weeklyReview.updatedAt !== 'لم تُحفظ بعد' ? `آخر حفظ: ${weeklyReview.updatedAt}` : ''}</p>
             <div className="flex gap-2">
               <button type="button" onClick={() => save('draft')} className="flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-semibold hover:bg-muted"><Save className="h-4 w-4" /> حفظ كمسودة</button>
               <button type="button" onClick={() => save('completed')} className="flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground"><CheckCircle2 className="h-4 w-4" /> اعتماد المراجعة</button>
