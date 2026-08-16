@@ -316,6 +316,7 @@ type CommandCenterContextValue = {
   restoreArchivedItem: (id: string) => void
   saveWeeklyReview: (patch: Pick<WeeklyReview, 'wentWell' | 'blockers' | 'nextGoal'> & Partial<Pick<WeeklyReview, 'status'>>) => void
   addNote: (input: Pick<Note, 'title' | 'body' | 'tag'>) => void
+  updateNote: (id: string, patch: Partial<Pick<Note, 'title' | 'body' | 'tag'>>) => void
   toggleNotePin: (id: string) => void
   archiveNote: (id: string) => void
   toggleHabit: (id: string) => void
@@ -579,7 +580,7 @@ function loadInitialState(): PersistedState {
 const StoreContext = createContext<CommandCenterContextValue | null>(null)
 
 export function CommandCenterProvider({ children }: { children: React.ReactNode }) {
-  const initial = loadInitialState()
+  const initial = getDefaultState()
   const [profile, setProfile] = useState<Profile>(initial.profile)
   const [tasks, setTasks] = useState<Task[]>(initial.tasks)
   const [notes, setNotes] = useState<Note[]>(initial.notes)
@@ -595,11 +596,33 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [journal, setJournal] = useState<JournalEntry[]>(initial.journal)
   const [weeklyReview, setWeeklyReview] = useState<WeeklyReview>(initial.weeklyReview ?? initialWeeklyReview)
   const [archive, setArchive] = useState<ArchivedItem[]>(initial.archive ?? [])
+  const [hydrated, setHydrated] = useState(false)
   const remoteHydrated = useRef(false)
 
   useEffect(() => {
+    const saved = loadInitialState()
+    setProfile(saved.profile)
+    setTasks(saved.tasks)
+    setNotes(saved.notes)
+    setHabits(saved.habits)
+    setPlanItems(saved.planItems)
+    setGoals(saved.goals)
+    setProjects(saved.projects)
+    setFinanceEntries(saved.financeEntries)
+    setBudget(saved.budget)
+    setReligious(saved.religious)
+    setReminders(saved.reminders)
+    setEntertainment(saved.entertainment)
+    setJournal(saved.journal)
+    setWeeklyReview(saved.weeklyReview ?? initialWeeklyReview)
+    setArchive(saved.archive ?? [])
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive }))
-  }, [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
+  }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
 
   useEffect(() => {
     if (remoteHydrated.current) return
@@ -1118,6 +1141,10 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     addNote: (input) => {
       setNotes((items) => [{ id: `note-${Date.now()}`, pinned: false, createdAt: 'الآن', ...input }, ...items])
       void createRemoteNote(input)
+    },
+    updateNote: (id, patch) => {
+      setNotes((items) => items.map((note) => note.id === id ? { ...note, ...patch } : note))
+      void updateRemoteNote(id, patch)
     },
     toggleNotePin: (id) => {
       setNotes((items) => items.map((note) => {
