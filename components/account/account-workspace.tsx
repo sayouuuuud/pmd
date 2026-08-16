@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Check, CloudDownload, Download, ShieldCheck, Trash2, Upload, UserRound } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Check, CloudDownload, Download, FileSpreadsheet, ShieldCheck, Trash2, Upload, UserRound } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter } from '@/lib/command-center-store'
 import { authClient } from '@/lib/auth-client'
@@ -16,8 +17,21 @@ function downloadJson(filename: string, content: string) {
   URL.revokeObjectURL(url)
 }
 
+function downloadCsv(filename: string, rows: string[][]) {
+  const escapeCell = (value: string) => `"${value.replaceAll('"', '""')}"`
+  const content = `\ufeff${rows.map((row) => row.map((cell) => escapeCell(cell)).join(",")).join("\r\n")}`
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export function AccountWorkspace() {
-  const { profile, updateProfile, exportData, importData, resetLocalData } = useCommandCenter()
+  const router = useRouter()
+  const { profile, updateProfile, exportData, importData, resetLocalData, tasks, notes, habits, financeEntries, entertainment, journal } = useCommandCenter()
   const { data: session } = authClient.useSession()
   const [form, setForm] = useState(profile)
   const [saved, setSaved] = useState(false)
@@ -43,6 +57,18 @@ export function AccountWorkspace() {
   function exportLocalBackup() {
     downloadJson(`pmd-backup-${new Date().toISOString().slice(0, 10)}.json`, exportData())
     setDataMessage('تم تنزيل نسخة احتياطية من البيانات المحلية.')
+  }
+
+  function exportLocalCsv() {
+    const rows: string[][] = [['القسم', 'المعرف', 'العنوان', 'التاريخ', 'الحالة', 'المبلغ', 'التصنيف', 'التكرار', 'التفاصيل']]
+    rows.push(...tasks.map((item) => ['المهام', item.id, item.title, item.dueLabel, item.status, '', item.category, item.recurring ? 'متكرر' : 'مرة واحدة', item.description || '']))
+    rows.push(...notes.map((item) => ['الملاحظات', item.id, item.title, item.createdAt, item.pinned ? 'مثبتة' : 'عادية', '', item.tag, '', item.body]))
+    rows.push(...habits.map((item) => ['العادات', item.id, item.title, '', item.doneToday ? 'منجزة اليوم' : 'لم تنجز اليوم', '', item.target, '', `سلسلة ${item.streak}`]))
+    rows.push(...financeEntries.map((item) => ['الفلوس', item.id, item.title, item.localDate, item.kind === 'income' ? 'دخل' : 'مصروف', String(item.amount), item.category, item.recurrence === 'monthly' ? 'شهري' : item.recurrence === 'weekly' ? 'أسبوعي' : 'بدون تكرار', item.note || '']))
+    rows.push(...entertainment.map((item) => ['الترفيه', item.id, item.title, item.createdAt, item.status, item.rating ? String(item.rating) : '', item.genre, '', item.impression || item.note || '']))
+    rows.push(...journal.map((item) => ['اليوميات', item.id, item.title, item.localDate, item.mood, '', '', '', item.body]))
+    downloadCsv(`pmd-data-${new Date().toISOString().slice(0, 10)}.csv`, rows)
+    setDataMessage('تم تنزيل ملف CSV منظم للأقسام المحلية الرئيسية.')
   }
 
   async function exportRemoteBackup() {
@@ -99,7 +125,7 @@ export function AccountWorkspace() {
       const payload = await response.json() as { message?: string }
       if (!response.ok) throw new Error(payload.message || 'تعذر حذف الحساب.')
       resetLocalData()
-      window.location.assign('/login')
+      router.push('/login')
     } catch (error) {
       setDataMessage(error instanceof Error ? error.message : 'تعذر حذف الحساب.')
     } finally {
@@ -161,6 +187,10 @@ export function AccountWorkspace() {
           <button type="button" onClick={exportRemoteBackup} disabled={dataBusy || !session} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/30 disabled:cursor-not-allowed disabled:opacity-50">
             <CloudDownload className="h-5 w-5 shrink-0" />
             <span><strong className="block text-sm">تصدير بيانات الحساب</strong><small className="mt-1 block text-xs text-muted-foreground">نسخة من Neon عند تسجيل الدخول</small></span>
+          </button>
+          <button type="button" onClick={exportLocalCsv} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/30">
+            <FileSpreadsheet className="h-5 w-5 shrink-0" />
+            <span><strong className="block text-sm">تصدير CSV</strong><small className="mt-1 block text-xs text-muted-foreground">ملف قابل للفتح في Sheets وExcel</small></span>
           </button>
           <button type="button" onClick={() => fileInputRef.current?.click()} disabled={dataBusy} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/30 disabled:cursor-not-allowed disabled:opacity-50">
             <Upload className="h-5 w-5 shrink-0" />
