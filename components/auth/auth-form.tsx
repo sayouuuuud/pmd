@@ -4,6 +4,15 @@ import { useState } from 'react'
 import { ArrowLeft, Loader2, LockKeyhole, Mail, UserRound } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 
+function getArabicAuthError(message?: string) {
+  const normalized = message?.toLowerCase() ?? ''
+  if (normalized.includes('already exists') || normalized.includes('already registered') || normalized.includes('user exists')) return 'هذا البريد مرتبط بحساب بالفعل. جرّب تسجيل الدخول بدلًا من إنشاء حساب جديد.'
+  if (normalized.includes('invalid email') || normalized.includes('email')) return 'تأكد من كتابة بريد إلكتروني صحيح ثم حاول مرة أخرى.'
+  if (normalized.includes('invalid password') || normalized.includes('incorrect') || normalized.includes('credential')) return 'البريد الإلكتروني أو كلمة المرور غير صحيحة. راجع البيانات وحاول مرة أخرى.'
+  if (normalized.includes('network') || normalized.includes('fetch') || normalized.includes('connection')) return 'تعذر الاتصال بالخادم الآن. تحقق من اتصالك وحاول مرة أخرى.'
+  return 'تعذر إتمام العملية الآن. راجع البيانات وحاول مرة أخرى.'
+}
+
 export function AuthForm() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [name, setName] = useState('')
@@ -42,7 +51,7 @@ export function AuthForm() {
 
     setLoading(false)
     if (result.error) {
-      setError(result.error.message || 'حصل خطأ. راجع البيانات وحاول مرة أخرى.')
+      setError(getArabicAuthError(result.error.message))
       return
     }
     window.location.href = destination
