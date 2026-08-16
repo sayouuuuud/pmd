@@ -2,13 +2,17 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { ArrowLeft, BookHeart, CalendarCheck2, Check, CircleDot, Clock3, Flame, ListPlus, NotebookPen, Repeat, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, BookHeart, CalendarCheck2, Check, CircleDot, Clock3, Flame, ListPlus, NotebookPen, Repeat, Sparkles, WalletCards, X } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { TopNav } from '@/components/layout/top-nav'
 import { useCommandCenter } from '@/lib/command-center-store'
 
 function formatDate() {
   return new Intl.DateTimeFormat('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', calendar: 'gregory' }).format(new Date())
+}
+
+function formatHijriDate() {
+  return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())
 }
 
 export function DashboardHome() {
@@ -27,7 +31,11 @@ export function DashboardHome() {
   const wirdPercent = Math.min(100, Math.round((religious.quran.completedMinutes / Math.max(religious.quran.targetMinutes, 1)) * 100))
   const overdueTasks = tasks.filter((task) => task.status !== 'done' && /متأخر|أمس|أول أمس/.test(task.dueLabel))
   const currentMonth = new Intl.DateTimeFormat('en-CA').format(new Date()).slice(0, 7)
+  const previousMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().slice(0, 7)
   const monthlyExpenses = financeEntries.filter((entry) => entry.kind === 'expense' && entry.localDate.startsWith(currentMonth)).reduce((sum, entry) => sum + entry.amount, 0)
+  const previousMonthExpenses = financeEntries.filter((entry) => entry.kind === 'expense' && entry.localDate.startsWith(previousMonth)).reduce((sum, entry) => sum + entry.amount, 0)
+  const expenseDelta = monthlyExpenses - previousMonthExpenses
+  const financePercent = budget.monthlyLimit > 0 ? Math.min(100, Math.round((monthlyExpenses / budget.monthlyLimit) * 100)) : 0
   const strugglingHabit = habits.find((habit) => !habit.doneToday && habit.streak <= 3)
   const suggestions: PersonalSuggestion[] = [
     ...(overdueTasks.length > 0 ? [{ id: 'overdue-tasks', title: 'انقل المهام المتأخرة إلى خطة واقعية', body: `لديك ${overdueTasks.length} ${overdueTasks.length === 1 ? 'مهمة متأخرة' : 'مهام متأخرة'}؛ اختر موعدًا جديدًا بدل تركها معلّقة.`, href: '/tasks' }] : []),
@@ -38,16 +46,16 @@ export function DashboardHome() {
   return (
     <main className="mx-auto max-w-7xl p-4 md:p-6">
       <TopNav />
-      <div className="mt-8"><div className="flex items-center justify-between gap-3"><span className="text-xs text-muted-foreground">{formatDate()}</span><span className="rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground">نظامك الشخصي</span></div></div>
+      <div className="mt-8"><div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>{formatDate()}</span><span aria-hidden="true">·</span><span>{formatHijriDate()}</span></div><span className="rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground">نظامك الشخصي</span></div></div>
       <div className="mt-7 flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm text-muted-foreground">صباح الخير يا {profile.name}</p><h1 className="mt-1 text-4xl font-semibold tracking-tight">يومك واضح، خطوة خطوة.</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">خطة اليوم بتجمع أهم ما تحتاجه من غير ما تشتتك بين أقسام كثيرة.</p></div>
         <div className="flex flex-wrap gap-2"><Link href="/onboarding" className="flex items-center gap-2 rounded-full bg-card px-4 py-2.5 text-xs font-semibold">تعديل الإيقاع</Link><Link href="/review" className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground"><CalendarCheck2 className="h-4 w-4" /> مراجعة الأسبوع</Link><Link href="/daily-plan" className="flex items-center gap-2 rounded-full bg-card px-4 py-2.5 text-xs font-semibold"><ListPlus className="h-4 w-4" /> خطة اليوم</Link></div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <SummaryCard label="إنجاز المهام" value={`${doneTasks}/${tasks.length}`} detail={`${tasks.filter((task) => task.status !== 'done').length} متبقية`} tone="blue" />
-        <SummaryCard label="خطة اليوم" value={`${completedPlan}/${planItems.length}`} detail="عناصر مكتملة" tone="green" />
-        <SummaryCard label="العادات" value={`${doneHabits}/${habits.length}`} detail="اليوم" tone="purple" />
-        <SummaryCard label="أعلى Streak" value={habits.length > 0 ? `${maxStreak}` : '—'} detail={habits.length > 0 ? 'يوم متواصل' : 'أضف عادة'} tone="orange" />
+        <SummaryCard label="إنجاز المهام" value={`${doneTasks}/${tasks.length}`} detail={`${tasks.filter((task) => task.status !== 'done').length} متبقية`} tone="blue" href="/tasks" />
+        <SummaryCard label="خطة اليوم" value={`${completedPlan}/${planItems.length}`} detail="عناصر مكتملة" tone="green" href="/daily-plan" />
+        <SummaryCard label="العادات" value={`${doneHabits}/${habits.length}`} detail="اليوم" tone="purple" href="/habits" />
+        <SummaryCard label="أعلى Streak" value={habits.length > 0 ? `${maxStreak}` : '—'} detail={habits.length > 0 ? 'يوم متواصل' : 'أضف عادة'} tone="orange" href="/habits" />
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-12">
@@ -68,6 +76,7 @@ export function DashboardHome() {
 
         <ContentCard className="lg:col-span-4" title="العادات" description="استمرارية صغيرة كل يوم"><div className="space-y-3">{habits.length > 0 ? habits.slice(0, 4).map((habit) => <div key={habit.id} className="flex items-center gap-3"><span className={`flex h-8 w-8 items-center justify-center rounded-full ${habit.doneToday ? 'bg-positive text-positive-foreground' : 'bg-muted text-muted-foreground'}`}><Check className="h-4 w-4" /></span><span className="flex-1 text-sm">{habit.title}</span><span className="flex items-center gap-1 text-xs text-muted-foreground"><Flame className="h-3.5 w-3.5 text-warning-foreground" />{habit.streak}</span></div>) : <div className="rounded-2xl bg-muted/70 px-4 py-5 text-center"><p className="text-sm font-semibold">عادة واحدة تكفي للبداية</p><p className="mt-1 text-xs leading-5 text-muted-foreground">اختر سلوكًا صغيرًا تريده أن يصبح أسهل مع الوقت.</p><Link href="/habits" className="mt-3 inline-flex rounded-full bg-card px-3 py-2 text-xs font-semibold text-primary">إضافة عادة</Link></div>}</div><Link href="/habits" className="mt-5 flex items-center justify-between rounded-2xl bg-muted px-3 py-3 text-xs font-semibold">إدارة العادات <ArrowLeft className="h-4 w-4" /></Link></ContentCard>
         <ContentCard className="lg:col-span-4" title="آخر الملاحظات" description="أفكارك في مكان واحد"><div className="space-y-3">{dashboardNotes.length > 0 ? dashboardNotes.map((note) => <Link href="/notes" key={note.id} className="block rounded-2xl bg-muted/70 p-3 transition-colors hover:bg-accent"><div className="flex items-center gap-2"><NotebookPen className="h-4 w-4 text-primary" /><p className="text-sm font-semibold">{note.title}</p></div><p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{note.body}</p></Link>) : <div className="rounded-2xl bg-muted/70 px-4 py-5 text-center"><p className="text-sm font-semibold">مساحة لأفكارك القادمة</p><p className="mt-1 text-xs leading-5 text-muted-foreground">اكتب ملاحظة قصيرة الآن، وستظهر هنا لتبقى قريبة من يومك.</p><Link href="/notes" className="mt-3 inline-flex rounded-full bg-card px-3 py-2 text-xs font-semibold text-primary">التقاط ملاحظة</Link></div>}</div></ContentCard>
+        <ContentCard className="lg:col-span-4" title="الفلوس" description="مصروفات الشهر مقارنة بميزانيتك" action={<Link href="/money" className="text-xs font-semibold text-primary">فتح الفلوس</Link>}><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><WalletCards className="h-5 w-5" /></span><div><p className="text-xl font-semibold">{monthlyExpenses.toLocaleString('ar-EG')} {budget.currency}</p><p className="mt-1 text-xs text-muted-foreground">{financePercent}% من سقف الشهر</p></div></div><div className="mt-4 h-2 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${monthlyExpenses > budget.monthlyLimit ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${financePercent}%` }} /></div><div className="mt-3 flex items-center justify-between text-xs text-muted-foreground"><span>{expenseDelta > 0 ? 'أعلى من الشهر السابق' : 'أقل أو مساوي للشهر السابق'}</span><span>{Math.abs(expenseDelta).toLocaleString('ar-EG')} {budget.currency}</span></div></ContentCard>
         <ContentCard className="lg:col-span-4 bg-surface-dark text-surface-dark-foreground" title="اقتراح اليوم" description="اقتراح بسيط قابل للتعديل"><div className="flex items-start gap-3"><Sparkles className="mt-1 h-5 w-5 text-primary" /><p className="text-sm leading-7 text-surface-dark-foreground/80">ابدأ بالمهمة التي تحتاج تركيزًا قبل فتح الإشعارات. لديك مساحة جيدة بين الخطة الحالية والصلاة القادمة.</p></div><div className="mt-5 flex items-center gap-2 text-xs text-surface-dark-foreground/60"><Clock3 className="h-4 w-4" /> اقتراح مبني على خطة اليوم</div></ContentCard>
 
         <ContentCard className="lg:col-span-6" title="الصلوات" description={`${completedPrayers} من ${religious.prayerLogs.length} صلوات مكتملة`} action={<Link href="/religious#prayer-tracker" className="text-xs font-semibold text-primary">{prayerPercent}%</Link>}>
@@ -93,9 +102,9 @@ export function DashboardHome() {
 
 type PersonalSuggestion = { id: string; title: string; body: string; href: string }
 
-function SummaryCard({ label, value, detail, tone }: { label: string; value: string; detail: string; tone: 'blue' | 'green' | 'purple' | 'orange' }) {
-  const tones = { blue: 'bg-accent text-accent-foreground', green: 'bg-positive text-positive-foreground', purple: 'bg-[#ebe8ff] text-[#6f5fe6]', orange: 'bg-[#fff0dc] text-[#c77b18]' }
-  return <div className="rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">{label}</p><div className="mt-3 flex items-end justify-between gap-2"><span className="text-2xl font-semibold">{value}</span><span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${tones[tone]}`}>{detail}</span></div></div>
+function SummaryCard({ label, value, detail, tone, href }: { label: string; value: string; detail: string; tone: 'blue' | 'green' | 'purple' | 'orange'; href: string }) {
+  const tones = { blue: 'bg-accent text-accent-foreground', green: 'bg-positive text-positive-foreground', purple: 'bg-accent text-accent-foreground', orange: 'bg-warning/20 text-warning-foreground' }
+  return <Link href={href} className="block rounded-3xl bg-card p-4 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><p className="text-xs text-muted-foreground">{label}</p><div className="mt-3 flex items-end justify-between gap-2"><span className="text-2xl font-semibold">{value}</span><span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${tones[tone]}`}>{detail}</span></div></Link>
 }
 
 function PlanIcon({ kind }: { kind: string }) {
