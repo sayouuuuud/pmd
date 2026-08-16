@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
-import { budget, financeEntry, goal, project } from '@/server/db/schema'
+import { financeEntry, goal, project } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
 
 export const dynamic = 'force-dynamic'

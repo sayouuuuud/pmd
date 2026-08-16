@@ -44,7 +44,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className="bg-background">
-      <body className="font-sans antialiased">
+      <body className={`${_cairo.className} font-sans antialiased`}>
         <PwaRegister />
         <CommandCenterProvider>
           {children}
