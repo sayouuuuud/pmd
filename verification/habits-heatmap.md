@@ -22,3 +22,7 @@
 ## الملاحظات والتحقق العام
 
 تظهر صفحة الملاحظات بصورة سليمة، مع الحفاظ على بطاقات الشبكة ونموذج الالتقاط السريع. لا توجد بيانات مرتبطة في العينة الحالية، لذلك لا تظهر شارات العلاقات، لكن المكوّن جاهز لإظهارها عند توفر `sourceTaskId`. قياس المتصفح على العرض الحالي 1280px أكد عدم وجود overflow أفقي (`scrollWidth` يساوي `clientWidth`).
+
+## تحقق الإنتاج
+
+استعلام Vercel أكد أن deployment المرتبط بالـcommit `9cf9efed5d2f14f9ecea3548c1ec43e37ab6ffa6` حالته `READY` وهدفه `production`، ورابطه `pmd-oxegb2bjd-itz4kairo-5176s-projects.vercel.app`. فتح رابط deployment المباشر من جلسة المتصفح أعاد إلى تسجيل دخول Vercel، ما يدل على حماية رابط deployment. في المقابل، النطاق الرئيسي [pmd-jet.vercel.app](https://pmd-jet.vercel.app/habits) فتح صفحة العادات وعرض شبكة Heatmap الجديدة بنجاح.
