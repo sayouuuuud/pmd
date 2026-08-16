@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { BookOpenText, CalendarDays, Check, Clock3, Feather, Save, Smile, Trash2 } from 'lucide-react'
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { ContentCard } from '@/components/ui/content-card'
 import { JournalEntry, useCommandCenter } from '@/lib/command-center-store'
 
@@ -34,6 +35,17 @@ function formatShortDate(value: string) {
   return parseDate(value).toLocaleDateString('ar-EG', { weekday: 'short', day: 'numeric' })
 }
 
+type MoodChartPoint = { day: string; date: string; score: number | null; mood?: JournalEntry['mood'] }
+
+const moodScores: Record<JournalEntry['mood'], number> = { متوتر: 1, متعب: 2, محايد: 3, هادئ: 4, سعيد: 5 }
+const moodLabels: Record<number, string> = { 1: 'متوتر', 2: 'متعب', 3: 'محايد', 4: 'هادئ', 5: 'سعيد' }
+
+function MoodTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value?: number }>; label?: string }) {
+  if (!active || !payload?.length) return null
+  const score = payload[0]?.value
+  return <div className="rounded-2xl border border-border bg-card px-3 py-2 text-xs shadow-lg"><p className="font-semibold">{label ? `يوم ${label}` : 'التدوينة'}</p><p className="mt-1 text-muted-foreground">المزاج: {typeof score === 'number' ? moodLabels[score] : 'غير محدد'}</p></div>
+}
+
 export function JournalWorkspace() {
   const searchParams = useSearchParams()
   const { journal, saveJournalEntry, updateJournalEntry, archiveJournalEntry } = useCommandCenter()
@@ -63,12 +75,26 @@ export function JournalWorkspace() {
     })
   }, [selectedDate])
 
+  const moodChartData = useMemo<MoodChartPoint[]>(() => {
+    const [year, month] = selectedDate.slice(0, 7).split('-').map(Number)
+    const daysInMonth = new Date(year, month, 0).getDate()
+    const monthEntries = new Map(journal.filter((entry) => entry.localDate.startsWith(selectedDate.slice(0, 7))).map((entry) => [entry.localDate, entry]))
+    return Array.from({ length: daysInMonth }, (_, index) => {
+      const day = String(index + 1).padStart(2, '0')
+      const date = `${selectedDate.slice(0, 7)}-${day}`
+      const entry = monthEntries.get(date)
+      return { day: String(index + 1), date, score: entry ? moodScores[entry.mood] : null, mood: entry?.mood }
+    })
+  }, [journal, selectedDate])
+
+  const moodMonthLabel = parseDate(`${selectedDate.slice(0, 7)}-01`).toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' })
+
   useEffect(() => {
     setTitle(selectedEntry?.title ?? '')
     setBody(selectedEntry?.body ?? '')
     setMood(selectedEntry?.mood ?? 'محايد')
     setNotice('')
-  }, [selectedDate, selectedEntry?.id, selectedEntry?.updatedAt])
+  }, [selectedDate, selectedEntry?.body, selectedEntry?.id, selectedEntry?.mood, selectedEntry?.title, selectedEntry?.updatedAt])
 
   function selectDate(date: string) {
     setSelectedDate(date)
@@ -104,6 +130,24 @@ export function JournalWorkspace() {
         <JournalMetric icon={Feather} label="كلمات اليوم" value={body.trim() ? body.trim().split(/\s+/).length : 0} />
         <JournalMetric icon={Clock3} label="آخر تدوينة" value={entries[0] ? formatShortDate(entries[0].localDate) : 'لا توجد'} />
       </div>
+
+      <ContentCard title="تقلب المزاج" description={`قراءة سريعة لتدوينات ${moodMonthLabel}`}>
+        {moodChartData.some((point) => point.score !== null) ? <>
+          <div className="h-56 w-full" dir="ltr">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={moodChartData} margin={{ top: 12, right: 12, left: 4, bottom: 4 }}>
+                <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} dy={8} interval="preserveStartEnd" />
+                <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} tickFormatter={(value: number) => moodLabels[value] ?? ''} width={42} />
+                <ReferenceLine y={3} stroke="var(--border)" strokeDasharray="4 4" />
+                <Tooltip content={<MoodTooltip />} />
+                <Line type="monotone" dataKey="score" connectNulls={false} stroke="var(--primary)" strokeWidth={2.5} dot={{ r: 3, fill: 'var(--card)', stroke: 'var(--primary)', strokeWidth: 1.5 }} activeDot={{ r: 5, fill: 'var(--primary)' }} isAnimationActive={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span>١ متوتر · ٣ محايد · ٥ سعيد</span><span>{moodChartData.filter((point) => point.score !== null).length} تدوينة موثقة هذا الشهر</span></div>
+        </> : <div className="rounded-2xl border border-dashed border-border bg-muted/40 px-4 py-6 text-center text-xs leading-6 text-muted-foreground">لا توجد تدوينات مزاجية في {moodMonthLabel} بعد. اكتب تدوينة واحدة ليبدأ الرسم في بناء صورة عن الشهر.</div>}
+      </ContentCard>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <ContentCard className="lg:col-span-8" title="مساحة اليوم" description={formatLongDate(selectedDate)}>
