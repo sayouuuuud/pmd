@@ -101,7 +101,7 @@ function GoalCard({ goal, projects, tasks, progress, taskCount, completedTasks, 
     setTaskTitle('')
   }
 
-  return <article className={`rounded-2xl border bg-muted/40 p-4 ${isPaused ? 'border-warning/60' : 'border-border'}`}>
+  return <article id={goal.id} className={`rounded-2xl border bg-muted/40 p-4 ${isPaused ? 'border-warning/60' : 'border-border'}`}>
     <div className="flex items-start gap-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Target className="h-5 w-5" /></div>
       <div className="min-w-0 flex-1"><h3 className="font-semibold">{goal.title}</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">{goal.description || 'بدون وصف إضافي'}</p></div>
