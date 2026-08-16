@@ -660,3 +660,7 @@
 رُحّلت `GlobalSearchDialog` إلى `components/ui/dialog.tsx`، وأضيف خيار `hideHeader` لدعم رأس البحث الداخلي مع بقاء العنوان متاحًا لشجرة الوصول. احتُفظ بمنطق البحث العربي، نتائج الأقسام، الروابط، زر الإغلاق ومسح الاستعلام.
 اختُبرت الصفحة الرئيسية بصريًا وتفاعليًا: فُتح البحث، أُدخلت «مهمة» وظهرت نتائج من المهام وخطة اليوم، ثم أُغلق عبر `Escape` دون تنقل أو تعديل بيانات. التفاصيل في `verification/global-search-dialog-browser.md` و`verification/interaction-smoke-tests.md`.
 نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
+## سجل دفعة — مكونات الحقول والشارات المشتركة — 2026-08-16
+أضيفت مكونات `Input` و`Textarea` و`Select` و`Badge` إلى `components/ui` بمتغيرات التصميم الدلالية وحالات تركيز وإبطال موحدة، ثم استُخدمت فعليًا في صفحة `/design-system` بدل عناصر الحقول والشارات المكررة.
+اختُبرت الصفحة بصريًا وتفاعليًا: أُدخل «نص تجريبي» في Input، وتغيّر Select إلى «هذا الأسبوع»، وظهرت الشارات الدلالية، ثم فُتح Dialog المرجعي وأُغلق عبر `Escape` دون أخطاء أو تغيير بيانات. التفاصيل في `verification/shared-fields-badge-browser.md` و`verification/interaction-smoke-tests.md`.
+نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.

@@ -2,18 +2,22 @@
 
 import { useState } from 'react'
 import { Archive, CheckCircle2, ClipboardList, FileText, Layers3, Sparkles } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Dialog } from '@/components/ui/dialog'
 import { EmptyState } from '@/components/ui/empty-state'
 import { LoadingState } from '@/components/ui/loading-state'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { StatCard } from '@/components/ui/stat-card'
 
 const badges = [
-  { label: 'مكتملة', className: 'bg-positive text-positive-foreground' },
-  { label: 'جارية', className: 'bg-accent text-accent-foreground' },
-  { label: 'مهمة', className: 'bg-warning/20 text-warning-foreground' },
-  { label: 'متأخرة', className: 'bg-destructive/10 text-destructive' },
+  { label: 'مكتملة', variant: 'positive' as const },
+  { label: 'جارية', variant: 'default' as const },
+  { label: 'مهمة', variant: 'warning' as const },
+  { label: 'متأخرة', variant: 'destructive' as const },
 ]
 
 export default function DesignSystemPage() {
@@ -57,9 +61,9 @@ export default function DesignSystemPage() {
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               {badges.map((badge) => (
-                <span key={badge.label} className={`rounded-full px-3 py-1 text-xs font-semibold ${badge.className}`}>
+                <Badge key={badge.label} variant={badge.variant}>
                   {badge.label}
-                </span>
+                </Badge>
               ))}
             </div>
           </ContentCard>
@@ -71,19 +75,19 @@ export default function DesignSystemPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm font-medium">
                 نص قصير
-                <input className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="اكتب هنا..." />
+                <Input className="mt-2" placeholder="اكتب هنا..." />
               </label>
               <label className="text-sm font-medium">
                 اختيار
-                <select className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" defaultValue="today">
+                <Select className="mt-2" defaultValue="today">
                   <option value="today">اليوم</option>
                   <option value="week">هذا الأسبوع</option>
-                </select>
+                </Select>
               </label>
             </div>
             <label className="mt-3 block text-sm font-medium">
               ملاحظات
-              <textarea className="mt-2 min-h-24 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="اكتب التفاصيل..." />
+              <Textarea className="mt-2" placeholder="اكتب التفاصيل..." />
             </label>
             <label className="mt-4 flex items-center gap-2 text-sm">
               <input type="checkbox" checked={checked} onChange={(event) => setChecked(event.target.checked)} className="h-4 w-4 accent-primary" />
