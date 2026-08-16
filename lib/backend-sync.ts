@@ -212,7 +212,7 @@ function asPlanKind(value: string): PlanItem['kind'] {
 }
 
 function asPlanStatus(value: string): PlanItem['status'] {
-  return value === 'done' || value === 'snoozed' ? value : 'pending'
+  return value === 'done' || value === 'snoozed' || value === 'skipped' ? value : 'pending'
 }
 
 export function mapRemotePlanItem(item: RemotePlanItem): PlanItem {

@@ -11,7 +11,7 @@ function json(data: unknown, init?: ResponseInit) {
   return Response.json(data, { ...init, headers: { 'cache-control': 'no-store', ...(init?.headers ?? {}) } })
 }
 
-const statuses = new Set(['pending', 'done', 'snoozed'])
+const statuses = new Set(['pending', 'done', 'snoozed', 'skipped'])
 
 export async function PATCH(request: Request, context: RouteContext) {
   const user = await getCurrentUser(request)

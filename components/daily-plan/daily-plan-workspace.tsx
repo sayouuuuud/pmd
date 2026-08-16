@@ -1,26 +1,28 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Clock3, FolderKanban, Link2, Moon, Pause, Play, Repeat, Sparkles, Target } from 'lucide-react'
+import { Check, Clock3, FolderKanban, Link2, Moon, Pause, Play, Repeat, SkipForward, Sparkles, Target } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter } from '@/lib/command-center-store'
 
 export function DailyPlanWorkspace() {
-  const { planItems, tasks, habits, projects, goals, togglePlanItem, snoozePlanItem, restorePlanItem } = useCommandCenter()
+  const { planItems, tasks, habits, projects, goals, togglePlanItem, snoozePlanItem, skipPlanItem, restorePlanItem } = useCommandCenter()
   const completed = planItems.filter((item) => item.status === 'done').length
+  const activePlanItems = planItems.filter((item) => item.status !== 'skipped')
 
   return <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
     <ContentCard className="lg:col-span-8" title="Timeline اليوم" description="خطة مرنة، وليست جدولًا يعاقبك إذا تغيّر يومك. كل مهمة تقودك إلى سياقها عندما يكون متاحًا.">
       <div className="space-y-2">
-        {planItems.length === 0 ? <EmptyState icon={Sparkles} title="خطة اليوم جاهزة للإضافة" description="لا توجد عناصر مجدولة الآن. ابدأ بمهمة واحدة أو عادة صغيرة، وستظهر هنا كسطر قابل للتعديل." action={<Link href="/tasks" className="inline-flex rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">أضف أول مهمة</Link>} /> : planItems.map((item) => <div key={item.id} id={`plan-item-${item.id}`} className={`scroll-mt-24 rounded-2xl border px-3 py-3 transition-colors ${item.status === 'done' ? 'border-positive bg-positive/40' : item.status === 'snoozed' ? 'border-border bg-muted/50 opacity-60' : 'border-border/70 bg-card'}`}>
+        {planItems.length === 0 ? <EmptyState icon={Sparkles} title="خطة اليوم جاهزة للإضافة" description="لا توجد عناصر مجدولة الآن. ابدأ بمهمة واحدة أو عادة صغيرة، وستظهر هنا كسطر قابل للتعديل." action={<Link href="/tasks" className="inline-flex rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">أضف أول مهمة</Link>} /> : planItems.map((item) => <div key={item.id} id={`plan-item-${item.id}`} className={`scroll-mt-24 rounded-2xl border px-3 py-3 transition-colors ${item.status === 'done' ? 'border-positive bg-positive/40' : item.status === 'snoozed' || item.status === 'skipped' ? 'border-border bg-muted/50 opacity-60' : 'border-border/70 bg-card'}`}>
           <div className="flex items-center gap-3">
             <span className="w-12 shrink-0 text-xs font-semibold text-muted-foreground">{item.time}</span>
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${item.status === 'done' ? 'bg-positive text-positive-foreground' : 'bg-accent text-accent-foreground'}`}><PlanKindIcon kind={item.kind} /></span>
-            <button type="button" onClick={() => togglePlanItem(item.id)} className={`flex-1 text-right text-sm font-medium ${item.status === 'done' ? 'text-muted-foreground line-through' : ''}`}>{item.title}</button>
-            {item.status !== 'done' && item.status !== 'snoozed' && <button type="button" aria-label="تأجيل" onClick={() => snoozePlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><Pause className="h-4 w-4" /></button>}
-            {item.status === 'snoozed' && <button type="button" aria-label="إرجاع إلى الخطة" onClick={() => restorePlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"><Play className="h-4 w-4" /></button>}
-            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${item.status === 'done' ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{item.status === 'done' && <Check className="h-3.5 w-3.5" />}</span>
+            <button type="button" onClick={() => item.status === 'snoozed' || item.status === 'skipped' ? restorePlanItem(item.id) : togglePlanItem(item.id)} className={`flex-1 text-right text-sm font-medium ${item.status === 'done' || item.status === 'skipped' ? 'text-muted-foreground line-through' : ''}`}>{item.title}</button>
+            {item.status !== 'done' && item.status !== 'snoozed' && item.status !== 'skipped' && <button type="button" aria-label="تأجيل" onClick={() => snoozePlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><Pause className="h-4 w-4" /></button>}
+            {item.status !== 'done' && item.status !== 'snoozed' && item.status !== 'skipped' && <button type="button" aria-label="تخطي" onClick={() => skipPlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><SkipForward className="h-4 w-4" /></button>}
+            {(item.status === 'snoozed' || item.status === 'skipped') && <button type="button" aria-label="إرجاع إلى الخطة" onClick={() => restorePlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"><Play className="h-4 w-4" /></button>}
+            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${item.status === 'done' ? 'border-primary bg-primary text-primary-foreground' : item.status === 'skipped' ? 'border-border bg-muted text-muted-foreground' : 'border-border'}`}>{item.status === 'done' ? <Check className="h-3.5 w-3.5" /> : item.status === 'skipped' ? <SkipForward className="h-3.5 w-3.5" /> : null}</span>
           </div>
           <PlanContext item={item} tasks={tasks} habits={habits} projects={projects} goals={goals} />
         </div>)}
@@ -28,9 +30,9 @@ export function DailyPlanWorkspace() {
     </ContentCard>
     <div className="space-y-4 lg:col-span-4">
       <ContentCard title="تقدم اليوم" description="المهم هو الرجوع للخطة">
-        <div className="flex items-end gap-3"><span className="text-5xl font-semibold">{Math.round((completed / Math.max(planItems.length, 1)) * 100)}%</span><span className="mb-2 text-xs text-muted-foreground">من الخطة</span></div>
-        <div className="mt-4 h-3 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completed / Math.max(planItems.length, 1)) * 100}%` }} /></div>
-        <p className="mt-3 text-xs text-muted-foreground">{completed} عناصر مكتملة من {planItems.length}</p>
+        <div className="flex items-end gap-3"><span className="text-5xl font-semibold">{Math.round((completed / Math.max(activePlanItems.length, 1)) * 100)}%</span><span className="mb-2 text-xs text-muted-foreground">من الخطة</span></div>
+        <div className="mt-4 h-3 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completed / Math.max(activePlanItems.length, 1)) * 100}%` }} /></div>
+        <p className="mt-3 text-xs text-muted-foreground">{completed} عناصر مكتملة من {activePlanItems.length} بعد استبعاد المتخطى</p>
       </ContentCard>
       <ContentCard className="bg-surface-dark text-surface-dark-foreground" title="تركيز الفترة الحالية" description="اقتراح قابل للتعديل">
         <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary"><Play className="h-4 w-4 fill-current text-primary-foreground" /></span><div><p className="text-sm font-semibold">{planItems.find((item) => item.status === 'pending')?.title ?? 'وقت مفتوح'}</p><p className="mt-1 text-xs text-surface-dark-foreground/60">ابدأ بـ 25 دقيقة فقط</p></div></div>

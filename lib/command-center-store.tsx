@@ -179,7 +179,7 @@ export type PlanItem = {
   title: string
   kind: 'task' | 'habit' | 'prayer' | 'quran' | 'rest'
   sourceId?: string
-  status: 'pending' | 'done' | 'snoozed'
+  status: 'pending' | 'done' | 'snoozed' | 'skipped'
 }
 
 export type WeeklyReview = {
@@ -304,6 +304,7 @@ type CommandCenterContextValue = {
   toggleHabit: (id: string) => void
   togglePlanItem: (id: string) => void
   snoozePlanItem: (id: string) => void
+  skipPlanItem: (id: string) => void
   restorePlanItem: (id: string) => void
 }
 
@@ -1117,6 +1118,10 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     snoozePlanItem: (id) => {
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'snoozed' } : item))
       void updateRemotePlanItem(id, { status: 'snoozed' })
+    },
+    skipPlanItem: (id) => {
+      setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'skipped' } : item))
+      void updateRemotePlanItem(id, { status: 'skipped' })
     },
     restorePlanItem: (id) => {
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'pending' } : item))
