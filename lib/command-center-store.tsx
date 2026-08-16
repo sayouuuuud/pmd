@@ -122,7 +122,7 @@ export type ReligiousState = {
   prayerLogs: PrayerLog[]
   prayerHistory?: PrayerHistoryDay[]
   quran: { reference: string; targetMinutes: number; completedMinutes: number; memorizationTarget?: number; memorizationCompleted?: number }
-  dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; lastSession?: string; tasbeehCount?: number; tasbeehTarget?: number; savedDuas?: string[] }
+  dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; morningProgress?: Record<string, number>; eveningProgress?: Record<string, number>; lastSession?: string; tasbeehCount?: number; tasbeehTarget?: number; savedDuas?: string[] }
 }
 
 export type Note = {
@@ -241,6 +241,7 @@ type CommandCenterContextValue = {
   togglePrayer: (id: string) => void
   addWirdProgress: (minutes: number) => void
   toggleDhikr: (session: 'morning' | 'evening') => void
+  incrementDhikr: (session: 'morning' | 'evening', itemId: string, target?: number) => void
   addTasbeeh: (count?: number) => void
   addSavedDua: (text: string) => void
   removeSavedDua: (index: number) => void
@@ -328,7 +329,7 @@ const initialReligious: ReligiousState = {
     { localDate: '2026-08-15', completed: 1, total: 5 },
   ],
   quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4 },
-  dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'] },
+  dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, morningProgress: { 'morning-1': 2, 'morning-2': 2, 'morning-3': 2, 'morning-4': 2 }, eveningProgress: { 'evening-1': 2, 'evening-2': 2, 'evening-3': 1, 'evening-4': 1 }, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'] },
 }
 
 const initialNotes: Note[] = [
@@ -388,6 +389,21 @@ function arrayOr<T>(value: unknown, fallback: T[]): T[] {
   return Array.isArray(value) ? value as T[] : fallback
 }
 
+function progressFromCount(prefix: 'morning' | 'evening', value: unknown): Record<string, number> {
+  let remaining = Math.max(0, Math.min(12, Math.round(Number(value) || 0)))
+  return Object.fromEntries(Array.from({ length: 4 }, (_, index) => {
+    const count = Math.min(3, remaining)
+    remaining -= count
+    return [`${prefix}-${index + 1}`, count]
+  }))
+}
+
+function normalizeProgress(value: unknown, fallback: Record<string, number>): Record<string, number> {
+  if (!isRecord(value)) return fallback
+  const entries = Object.entries(value).filter(([id, count]) => /^[a-z]+-[1-9]$/.test(id) && typeof count === 'number' && Number.isFinite(count)).slice(0, 20)
+  return entries.length ? Object.fromEntries(entries.map(([id, count]) => [id, Math.max(0, Math.min(100, Math.round(count as number)))])) : fallback
+}
+
 function normalizeState(value: unknown): PersistedState | null {
   if (!isRecord(value)) return null
   const source = value.app === 'personal-command-center' && isRecord(value.data)
@@ -422,6 +438,8 @@ function normalizeState(value: unknown): PersistedState | null {
       dhikr: {
         ...defaults.religious.dhikr,
         ...(religious.dhikr ?? {}),
+        morningProgress: normalizeProgress(religious.dhikr?.morningProgress, progressFromCount('morning', religious.dhikr?.morningCount)),
+        eveningProgress: normalizeProgress(religious.dhikr?.eveningProgress, progressFromCount('evening', religious.dhikr?.eveningCount)),
         tasbeehCount: Math.max(0, Math.min(100000, Math.round(Number(religious.dhikr?.tasbeehCount) || defaults.religious.dhikr.tasbeehCount || 0))),
         tasbeehTarget: Math.max(1, Math.min(100000, Math.round(Number(religious.dhikr?.tasbeehTarget) || defaults.religious.dhikr.tasbeehTarget || 100))),
         savedDuas: Array.isArray(religious.dhikr?.savedDuas) ? religious.dhikr.savedDuas.filter((dua): dua is string => typeof dua === 'string' && dua.trim().length > 0).map((dua) => dua.trim().slice(0, 240)).slice(0, 20) : defaults.religious.dhikr.savedDuas,
@@ -704,6 +722,18 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setReligious((current) => {
         const nextValue = !current.dhikr[session]
         const next = { ...current, dhikr: { ...current.dhikr, [session]: nextValue, [`${session}Count`]: (current.dhikr[`${session}Count` as 'morningCount' | 'eveningCount'] ?? 0) + (nextValue ? 1 : 0), lastSession: new Date().toISOString() } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    incrementDhikr: (session, itemId, target = 3) => {
+      setReligious((current) => {
+        const progressKey = session === 'morning' ? 'morningProgress' : 'eveningProgress'
+        const progress = current.dhikr[progressKey] ?? {}
+        const cappedTarget = Math.max(1, Math.round(target))
+        const nextProgress = { ...progress, [itemId]: Math.min(cappedTarget, (progress[itemId] ?? 0) + 1) }
+        const count = Object.values(nextProgress).reduce((sum, value) => sum + value, 0)
+        const next = { ...current, dhikr: { ...current.dhikr, [progressKey]: nextProgress, [`${session}Count`]: count, [session]: Object.values(nextProgress).every((value) => value >= cappedTarget), lastSession: new Date().toISOString() } }
         void updateRemoteReligious(next)
         return next
       })

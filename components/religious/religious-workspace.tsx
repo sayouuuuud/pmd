@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Sparkles, Sunrise, SunMedium, Trash2, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
@@ -19,6 +19,12 @@ const calculationMethods: Record<string, string> = {
   'الهيئة المصرية العامة للمساحة': '5',
   'رابطة العالم الإسلامي': '3',
 }
+
+const dhikrTarget = 3
+const dhikrGroups = {
+  morning: { label: 'أذكار الصباح', items: [{ id: 'morning-1', label: 'تسبيح' }, { id: 'morning-2', label: 'تحميد' }, { id: 'morning-3', label: 'تكبير' }, { id: 'morning-4', label: 'استغفار' }] },
+  evening: { label: 'أذكار المساء', items: [{ id: 'evening-1', label: 'تسبيح' }, { id: 'evening-2', label: 'تحميد' }, { id: 'evening-3', label: 'تكبير' }, { id: 'evening-4', label: 'استغفار' }] },
+} as const
 
 type TimingState = 'idle' | 'loading' | 'success' | 'error'
 
@@ -42,7 +48,7 @@ type Reciter = { id: number; name: string; read?: string; server: string; surahT
 type RecitersResponse = { source: string; reciters?: Reciter[]; error?: string }
 
 export function ReligiousWorkspace() {
-  const { religious, togglePrayer, addWirdProgress, addMemorizationProgress, toggleDhikr, addTasbeeh, addSavedDua, removeSavedDua, updateReligiousSettings, updatePrayerTimes } = useCommandCenter()
+  const { religious, togglePrayer, addWirdProgress, addMemorizationProgress, incrementDhikr, addTasbeeh, addSavedDua, removeSavedDua, updateReligiousSettings, updatePrayerTimes } = useCommandCenter()
   const [timingState, setTimingState] = useState<TimingState>('idle')
   const [timingMessage, setTimingMessage] = useState('')
   const [timingDate, setTimingDate] = useState<string | null>(null)
@@ -71,8 +77,11 @@ export function ReligiousWorkspace() {
   const tasbeehCount = religious.dhikr.tasbeehCount ?? 0
   const tasbeehTarget = religious.dhikr.tasbeehTarget ?? 100
   const tasbeehPercent = Math.round((tasbeehCount / Math.max(tasbeehTarget, 1)) * 100)
+  const dhikrCompleted = (['morning', 'evening'] as const).reduce((total, session) => total + dhikrGroups[session].items.reduce((sessionTotal, item) => sessionTotal + Math.min(dhikrTarget, religious.dhikr[`${session}Progress`]?.[item.id] ?? 0), 0), 0)
+  const dhikrTotal = dhikrTarget * dhikrGroups.morning.items.length * 2
+  const dhikrPercent = Math.round((dhikrCompleted / Math.max(dhikrTotal, 1)) * 100)
 
-  async function refreshPrayerTimes() {
+  const refreshPrayerTimes = useCallback(async () => {
     setTimingState('loading')
     setTimingMessage('جاري تحديث المواقيت من المصدر الموثوق…')
     try {
@@ -89,12 +98,12 @@ export function ReligiousWorkspace() {
       setTimingState('error')
       setTimingMessage(error instanceof Error ? error.message : 'تعذر تحديث المواقيت حاليًا؛ ما زالت آخر بيانات محفوظة ظاهرة.')
     }
-  }
+  }, [religious.city, religious.calculationMethod, updatePrayerTimes])
 
   useEffect(() => {
     const timer = window.setTimeout(() => { void refreshPrayerTimes() }, 450)
     return () => window.clearTimeout(timer)
-  }, [religious.city, religious.calculationMethod])
+  }, [refreshPrayerTimes])
 
   useEffect(() => {
     let active = true
@@ -224,9 +233,26 @@ export function ReligiousWorkspace() {
       </ContentCard>
 
       <div className="grid gap-5 lg:grid-cols-3">
-        <ContentCard title="الأذكار" description="سجل الجلسة فقط، ويمكنك الرجوع لمصدرك الموثوق.">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1"><DhikrButton label="أذكار الصباح" count={religious.dhikr.morningCount ?? 0} done={religious.dhikr.morning} onClick={() => toggleDhikr('morning')} /><DhikrButton label="أذكار المساء" count={religious.dhikr.eveningCount ?? 0} done={religious.dhikr.evening} onClick={() => toggleDhikr('evening')} /></div>
-          <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><BarChart3 className="h-3.5 w-3.5 text-primary" /> جلسات مسجلة: {(religious.dhikr.morningCount ?? 0) + (religious.dhikr.eveningCount ?? 0)}</p>
+        <ContentCard title="الأذكار" description="عداد مستقل لكل ذكر مع حفظ تقدمك محليًا أو عبر الحساب عند توفره." action={<span className="text-sm font-semibold text-primary">{dhikrPercent}%</span>}>
+          <div className="mb-4 h-2 overflow-hidden rounded-full bg-muted" aria-label={`التقدم الإجمالي في الأذكار ${dhikrPercent}%`}><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, dhikrPercent)}%` }} /></div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {(['morning', 'evening'] as const).map((session) => {
+              const group = dhikrGroups[session]
+              const progress = religious.dhikr[`${session}Progress`] ?? {}
+              const sessionCompleted = group.items.reduce((total, item) => total + Math.min(dhikrTarget, progress[item.id] ?? 0), 0)
+              const sessionPercent = Math.round((sessionCompleted / (group.items.length * dhikrTarget)) * 100)
+              return <div key={session} className="rounded-2xl border border-border bg-background p-3">
+                <div className="mb-3 flex items-center justify-between gap-2"><div><p className="text-sm font-semibold">{group.label}</p><p className="mt-1 text-xs text-muted-foreground">{sessionCompleted} من {group.items.length * dhikrTarget} تكرارات</p></div><span className="text-xs font-semibold text-primary">{sessionPercent}%</span></div>
+                <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${sessionPercent}%` }} /></div>
+                <div className="space-y-2">{group.items.map((item) => {
+                  const count = Math.min(dhikrTarget, progress[item.id] ?? 0)
+                  const done = count >= dhikrTarget
+                  return <div key={item.id} className={`flex items-center gap-2 rounded-xl border p-2.5 ${done ? 'border-primary/30 bg-primary/8' : 'border-border'}`}><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-accent-foreground"><Moon className="h-3.5 w-3.5" /></span><span className="flex-1 text-sm">{item.label}<span className="mt-0.5 block text-xs text-muted-foreground">{count} من {dhikrTarget}</span></span><Button type="button" size="sm" variant={done ? 'ghost' : 'outline'} disabled={done} onClick={() => incrementDhikr(session, item.id, dhikrTarget)} aria-label={`${item.label} — ${group.label}`}>{done ? <Check className="h-4 w-4 text-primary" /> : '+1'}</Button></div>
+                })}</div>
+              </div>
+            })}
+          </div>
+          <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><BarChart3 className="h-3.5 w-3.5 text-primary" /> التقدم الإجمالي: {dhikrCompleted} من {dhikrTotal} تكرارًا. ارجع إلى مصدرك الموثوق للنص الكامل.</p>
         </ContentCard>
         <ContentCard className="lg:col-span-2" title="إعدادات المواقيت" description="الإعدادات الحالية محلية وتُزامن عند توفر الحساب وقاعدة البيانات.">
           <div className="grid gap-4 sm:grid-cols-2"><label className="space-y-2 text-sm font-medium"><span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> المدينة</span><input value={religious.city} onChange={(event) => updateReligiousSettings({ city: event.target.value, calculationMethod: religious.calculationMethod })} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary" placeholder="Cairo" /></label><label className="space-y-2 text-sm font-medium"><span>طريقة الحساب</span><select value={religious.calculationMethod} onChange={(event) => updateReligiousSettings({ city: religious.city, calculationMethod: event.target.value })} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary"><option>مخصص</option><option>الهيئة المصرية العامة للمساحة</option><option>رابطة العالم الإسلامي</option></select></label></div>
@@ -235,8 +261,4 @@ export function ReligiousWorkspace() {
       </div>
     </div>
   )
-}
-
-function DhikrButton({ label, count, done, onClick }: { label: string; count: number; done: boolean; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className={`flex items-center gap-3 rounded-2xl border p-3 text-right transition-colors ${done ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${done ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'}`}><Moon className="h-4 w-4" /></span><span className="flex-1 text-sm font-semibold">{label}<span className="mt-1 block text-xs font-normal text-muted-foreground">{count} جلسة مسجلة</span></span><span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${done ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{done && <Check className="h-3 w-3" />}</span></button>
 }

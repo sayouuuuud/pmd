@@ -66,6 +66,11 @@ function safeQuranProgress(value: unknown) {
   }
 }
 
+function safeDhikrProgress(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>).filter(([id, count]) => /^[a-z]+-[1-9]$/.test(id) && typeof count === 'number' && Number.isFinite(count)).slice(0, 20).map(([id, count]) => [id, Math.max(0, Math.min(100, Math.round(count as number)))]))
+}
+
 function safeDhikrSessions(value: unknown) {
   const sessions = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
   return {
@@ -73,6 +78,8 @@ function safeDhikrSessions(value: unknown) {
     evening: sessions.evening === true,
     morningCount: Math.max(0, Math.min(10000, Math.round(Number(sessions.morningCount) || 0))),
     eveningCount: Math.max(0, Math.min(10000, Math.round(Number(sessions.eveningCount) || 0))),
+    morningProgress: safeDhikrProgress(sessions.morningProgress),
+    eveningProgress: safeDhikrProgress(sessions.eveningProgress),
     tasbeehCount: Math.max(0, Math.min(100000, Math.round(Number(sessions.tasbeehCount) || 0))),
     tasbeehTarget: Math.max(1, Math.min(100000, Math.round(Number(sessions.tasbeehTarget) || 100))),
     savedDuas: Array.isArray(sessions.savedDuas) ? sessions.savedDuas.filter((dua): dua is string => typeof dua === 'string' && dua.trim().length > 0).map((dua) => dua.trim().slice(0, 240)).slice(-20) : [],

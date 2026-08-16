@@ -325,6 +325,21 @@ export function mapRemoteWeeklyReview(item: RemoteWeeklyReview): WeeklyReview {
   }
 }
 
+function progressFromRemoteCount(prefix: 'morning' | 'evening', value: unknown): Record<string, number> {
+  let remaining = Math.max(0, Math.min(12, Math.round(Number(value) || 0)))
+  return Object.fromEntries(Array.from({ length: 4 }, (_, index) => {
+    const count = Math.min(3, remaining)
+    remaining -= count
+    return [`${prefix}-${index + 1}`, count]
+  }))
+}
+
+function normalizeRemoteProgress(value: unknown, fallback: Record<string, number> = {}): Record<string, number> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return fallback
+  const entries = Object.entries(value as Record<string, unknown>).filter(([id, count]) => /^[a-z]+-[1-9]$/.test(id) && typeof count === 'number' && Number.isFinite(count)).slice(0, 20)
+  return entries.length ? Object.fromEntries(entries.map(([id, count]) => [id, Math.max(0, Math.min(100, Math.round(count as number)))])) : fallback
+}
+
 export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
   return {
     city: item.city || 'القاهرة',
@@ -332,7 +347,7 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
     prayerLogs: Array.isArray(item.prayerLogs) ? item.prayerLogs.map((prayer) => ({ ...prayer, status: asPrayerStatus(prayer.status) })) : [],
     prayerHistory: Array.isArray(item.prayerHistory) ? item.prayerHistory.slice(-30) : [],
     quran: { reference: item.quranProgress?.reference || 'ورد اليوم', targetMinutes: Math.max(1, Number(item.quranProgress?.targetMinutes) || 20), completedMinutes: Math.max(0, Number(item.quranProgress?.completedMinutes) || 0), memorizationTarget: Math.max(1, Number(item.quranProgress?.memorizationTarget) || 10), memorizationCompleted: Math.max(0, Number(item.quranProgress?.memorizationCompleted) || 0) },
-    dhikr: { morning: Boolean(item.dhikrSessions?.morning), evening: Boolean(item.dhikrSessions?.evening), morningCount: Math.max(0, Number(item.dhikrSessions?.morningCount) || 0), eveningCount: Math.max(0, Number(item.dhikrSessions?.eveningCount) || 0), lastSession: item.dhikrSessions?.lastSession, tasbeehCount: Math.max(0, Number(item.dhikrSessions?.tasbeehCount) || 0), tasbeehTarget: Math.max(1, Number(item.dhikrSessions?.tasbeehTarget) || 100), savedDuas: Array.isArray(item.dhikrSessions?.savedDuas) ? item.dhikrSessions.savedDuas.filter((dua): dua is string => typeof dua === 'string').slice(-20) : [] },
+    dhikr: { morning: Boolean(item.dhikrSessions?.morning), evening: Boolean(item.dhikrSessions?.evening), morningCount: Math.max(0, Number(item.dhikrSessions?.morningCount) || 0), eveningCount: Math.max(0, Number(item.dhikrSessions?.eveningCount) || 0), morningProgress: normalizeRemoteProgress(item.dhikrSessions?.morningProgress, progressFromRemoteCount('morning', item.dhikrSessions?.morningCount)), eveningProgress: normalizeRemoteProgress(item.dhikrSessions?.eveningProgress, progressFromRemoteCount('evening', item.dhikrSessions?.eveningCount)), lastSession: item.dhikrSessions?.lastSession, tasbeehCount: Math.max(0, Number(item.dhikrSessions?.tasbeehCount) || 0), tasbeehTarget: Math.max(1, Number(item.dhikrSessions?.tasbeehTarget) || 100), savedDuas: Array.isArray(item.dhikrSessions?.savedDuas) ? item.dhikrSessions.savedDuas.filter((dua): dua is string => typeof dua === 'string').slice(-20) : [] },
   }
 }
 
