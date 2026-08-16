@@ -192,6 +192,7 @@ export function TopNav() {
             <button
               type="button"
               onClick={openQuickAdd}
+              aria-haspopup="dialog"
               className="flex items-center gap-2 rounded-full bg-card py-1.5 pr-2 pl-4 text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               إضافة سريعة
@@ -207,7 +208,7 @@ export function TopNav() {
               {reminders.some((reminder) => reminder.status === 'pending') && <span className="absolute top-2.5 left-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">{Math.min(9, reminders.filter((reminder) => reminder.status === 'pending').length)}</span>}
             </button>
             {session && <button type="button" onClick={() => void authClient.signOut({ fetchOptions: { onSuccess: () => { router.push('/login') } } })} className="hidden rounded-full bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted sm:block">خروج</button>}
-            <button aria-label="القائمة" className="flex h-11 w-11 items-center justify-center rounded-full bg-card">
+            <button type="button" aria-label="القائمة" className="flex h-11 w-11 items-center justify-center rounded-full bg-card">
               <AlignJustify className="h-4 w-4" />
             </button>
           </div>
@@ -221,6 +222,7 @@ export function TopNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={isActive ? 'page' : undefined}
                 className={isActive
                   ? 'flex shrink-0 items-center gap-1.5 rounded-full bg-foreground px-3.5 py-2 text-xs font-medium text-card'
                   : 'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-muted'}
@@ -236,11 +238,11 @@ export function TopNav() {
       <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {quickAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/30 p-4 pt-16 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="إضافة سريعة">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/30 p-4 pt-16 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="quick-add-dialog-title">
           <form onSubmit={submitQuickAdd} className="w-full max-w-lg rounded-3xl bg-card p-5 shadow-2xl">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold">إضافة سريعة</h2>
+                <h2 id="quick-add-dialog-title" className="text-lg font-semibold">إضافة سريعة</h2>
                 <p className="mt-1 text-xs text-muted-foreground">اكتبها بطريقتك، راجع التفاصيل، وبعدها احفظها.</p>
               </div>
               <button type="button" aria-label="إغلاق" onClick={closeQuickAdd} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
@@ -250,7 +252,7 @@ export function TopNav() {
 
             <div className="mt-5 grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
               {quickAddTypes.map((item) => (
-                <button key={item.value} type="button" onClick={() => changeType(item.value)} className={`rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
+                <button key={item.value} type="button" onClick={() => changeType(item.value)} aria-pressed={type === item.value} className={`rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
                   {item.label}
                 </button>
               ))}
@@ -269,7 +271,7 @@ export function TopNav() {
                   className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                   placeholder={type === 'task' ? 'مثال: ضيف مهمة بكرة الساعة ٨ الاتصال بالعميل' : type === 'note' ? 'مثال: فكرة إطلاق المنتج' : type === 'finance' ? 'مثال: سجل مصروف ١٢٠ مواصلات' : 'مثال: فيلم إنترستيلر'}
                 />
-                {type === 'note' && <textarea value={body} onChange={(event) => setBody(event.target.value)} className="mt-3 min-h-24 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="اكتب التفاصيل هنا..." />}
+                {type === 'note' && <textarea aria-label="تفاصيل الملاحظة" value={body} onChange={(event) => setBody(event.target.value)} className="mt-3 min-h-24 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="اكتب التفاصيل هنا..." />}
                 {type === 'task' && (
                   <label className="mt-3 block text-sm font-medium" htmlFor="quick-add-project">
                     المشروع المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>

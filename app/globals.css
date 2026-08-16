@@ -77,4 +77,13 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--ring) 45%, transparent);
+    outline-offset: 2px;
+  }
 }
