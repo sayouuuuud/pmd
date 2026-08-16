@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Archive, ArchiveRestore, Check, Clock3, Search } from 'lucide-react'
+import { Archive, ArchiveRestore, Check, Clock3, ListChecks, Search } from 'lucide-react'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type ArchiveKind, type ArchivedItem } from '@/lib/command-center-store'
 
@@ -37,6 +37,7 @@ export function ArchiveWorkspace() {
   const [query, setQuery] = useState('')
   const [ready, setReady] = useState(false)
   const [message, setMessage] = useState('')
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([])
 
   useEffect(() => {
     const timer = window.setTimeout(() => setReady(true), 120)
@@ -51,9 +52,39 @@ export function ArchiveWorkspace() {
       .sort((a, b) => b.archivedAt.localeCompare(a.archivedAt))
   }, [activeKind, archive, query])
 
+  useEffect(() => {
+    const availableKeys = new Set(archive.map(itemKey))
+    setSelectedKeys((keys) => keys.filter((key) => availableKeys.has(key)))
+  }, [archive])
+
+  const visibleKeys = filteredItems.map(itemKey)
+  const allVisibleSelected = visibleKeys.length > 0 && visibleKeys.every((key) => selectedKeys.includes(key))
+  const selectedItems = filteredItems.filter((item) => selectedKeys.includes(itemKey(item)))
+
+  function toggleSelected(item: ArchivedItem) {
+    const key = itemKey(item)
+    setSelectedKeys((keys) => keys.includes(key) ? keys.filter((entry) => entry !== key) : [...keys, key])
+  }
+
+  function toggleAllVisible() {
+    setSelectedKeys((keys) => {
+      if (allVisibleSelected) return keys.filter((key) => !visibleKeys.includes(key))
+      return Array.from(new Set([...keys, ...visibleKeys]))
+    })
+  }
+
   function restore(item: ArchivedItem) {
     restoreArchivedItem(item.id)
+    setSelectedKeys((keys) => keys.filter((key) => key !== itemKey(item)))
     setMessage(`تمت استعادة «${item.title}» إلى ${kindLabels[item.kind]}.`)
+    window.setTimeout(() => setMessage(''), 3200)
+  }
+
+  function restoreSelected() {
+    if (selectedItems.length === 0) return
+    selectedItems.forEach((item) => restoreArchivedItem(item.id))
+    setSelectedKeys([])
+    setMessage(`تمت استعادة ${selectedItems.length} عناصر من الأرشيف.`)
     window.setTimeout(() => setMessage(''), 3200)
   }
 
@@ -96,6 +127,17 @@ export function ArchiveWorkspace() {
             </button>
           ))}
         </div>
+        <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/60 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <label className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
+            <input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} disabled={filteredItems.length === 0} className="size-4 accent-primary" aria-label="تحديد كل النتائج الظاهرة" />
+            تحديد كل النتائج الظاهرة
+            {selectedKeys.length > 0 && <span className="text-xs font-medium text-muted-foreground">({selectedKeys.length} محدد)</span>}
+          </label>
+          <button type="button" onClick={restoreSelected} disabled={selectedItems.length === 0} className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-bold text-primary transition hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">
+            <ListChecks className="size-4" aria-hidden="true" />
+            استعادة المحدد ({selectedItems.length})
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -113,10 +155,15 @@ export function ArchiveWorkspace() {
         <EmptyState icon={Archive} title="لا توجد عناصر هنا" description={archive.length === 0 ? 'عندما تؤرشف مهمة أو ملاحظة أو أي عنصر آخر، ستجده هنا مع إمكانية استعادته.' : 'جرّب تغيير القسم أو كلمة البحث لرؤية عناصر أخرى.'} />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {filteredItems.map((item) => (
+                      {filteredItems.map((item) => (
             <article key={itemKey(item)} className="group rounded-[1.5rem] border border-border/70 bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
               <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
+                <label className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                  <input type="checkbox" checked={selectedKeys.includes(itemKey(item))} onChange={() => toggleSelected(item)} className="size-4 accent-primary" aria-label={`تحديد ${item.title}`} />
+                  <span className="sr-only">تحديد</span>
+                </label>
+                <div className="min-w-0 flex-1">
+
                   <span className="text-xs font-semibold text-primary">{kindLabels[item.kind]}</span>
                   <h3 className="mt-2 truncate text-base font-bold text-foreground">{item.title}</h3>
                   <p className="mt-1 text-xs text-muted-foreground">{item.subtitle}</p>
