@@ -57,9 +57,17 @@ export function MoneyWorkspace() {
   }), [financeEntries, monthOptions])
   const maxMonthlyValue = Math.max(1, ...monthlyComparison.flatMap((month) => [month.expense, month.income]))
   const selectedMonthLabel = monthOptions.find((month) => month.key === selectedMonth)?.label ?? selectedMonth
-  const previousMonthKey = monthOptions[1]?.key
+  const selectedMonthIndex = monthOptions.findIndex((month) => month.key === selectedMonth)
+  const previousMonthKey = selectedMonthIndex >= 0 ? monthOptions[selectedMonthIndex + 1]?.key : monthOptions[1]?.key
   const previousMonthExpenses = monthlyComparison.find((month) => month.key === previousMonthKey)?.expense ?? 0
   const expenseDelta = totalExpenses - previousMonthExpenses
+  const budgetAlert = budgetProgress >= 100
+    ? { label: 'تجاوزت سقف الميزانية', description: 'خفّف المصروفات القادمة أو راجع العمليات الأعلى تصنيفًا قبل نهاية الشهر.', className: 'border-destructive/40 bg-destructive/10 text-destructive' }
+    : budgetProgress >= 80
+      ? { label: 'اقتربت من سقف الميزانية', description: 'وصل استخدام الميزانية إلى 80% أو أكثر؛ راجع ما يمكن تأجيله هذا الشهر.', className: 'border-warning/40 bg-warning/10 text-warning-foreground' }
+      : budgetProgress >= 50
+        ? { label: 'نصف الميزانية مستخدم', description: 'أنت في منتصف السقف الشهري تقريبًا؛ استمر في تسجيل العمليات قبل اتخاذ قرار جديد.', className: 'border-primary/30 bg-primary/5 text-primary' }
+        : null
   const donutBackground = categoryTotals.length ? `conic-gradient(${categoryTotals.map((item, index) => { const start = categoryTotals.slice(0, index).reduce((sum, current) => sum + current.percentage, 0); return `${item.color} ${start}% ${start + item.percentage}%` }).join(', ')})` : 'conic-gradient(hsl(var(--muted)) 0 100%)'
 
   function recurringDueLabel(entry: (typeof recurringEntries)[number]) {
@@ -138,6 +146,7 @@ export function MoneyWorkspace() {
           </form>
         </div>
         <div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${remaining < 0 ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${budgetProgress}%` }} /></div>
+        {budgetAlert && <div className={`mt-4 rounded-2xl border px-4 py-3 ${budgetAlert.className}`} role="status"><p className="text-sm font-semibold">{budgetAlert.label}</p><p className="mt-1 text-xs leading-6 opacity-90">{budgetAlert.description}</p></div>}
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <MiniStat label="دخل - مصروف" value={formatAmount(totalIncome - totalExpenses, budget.currency)} />
           <MiniStat label="أعلى تصنيف" value={categoryTotals[0]?.category ?? 'لا يوجد'} />
@@ -182,7 +191,7 @@ export function MoneyWorkspace() {
           const dueSoon = entry.recurrence === 'monthly' && (recurringDueLabel(entry) === 'مستحق اليوم' || recurringDueLabel(entry).startsWith('مستحق خلال'))
           return <article key={entry.id} className={`flex flex-col gap-3 rounded-2xl border px-4 py-3 sm:flex-row sm:items-center ${dueSoon ? 'border-warning/50 bg-warning/10' : 'border-border bg-muted/40'}`}>
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${dueSoon ? 'bg-warning/20 text-warning-foreground' : 'bg-primary/10 text-primary'}`}><RotateCcw className="h-4 w-4" /></div>
-            <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="truncate text-sm font-semibold">{entry.title}</p><span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{entry.recurrence === 'monthly' ? 'شهري' : 'أسبوعي'}</span></div><p className="mt-1 text-xs text-muted-foreground">{formatAmount(entry.amount, budget.currency)} · {entry.category} · {recurringDueLabel(entry)}</p></div>
+            <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="truncate text-sm font-semibold">{entry.title}</p><span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{entry.recurrence === 'monthly' ? 'شهري' : 'أسبوعي'}</span></div><p className="mt-1 text-xs text-muted-foreground">{formatAmount(entry.amount, budget.currency)} · {entry.category} · {recurringDueLabel(entry)}</p>{(entry.projectId || entry.goalId) && <div className="mt-2 flex flex-wrap gap-2 text-[11px]"><span className="text-muted-foreground">السياق:</span>{entry.projectId && <a href={`/projects#${entry.projectId}`} className="rounded-full bg-primary/10 px-2 py-1 font-medium text-primary hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">مشروع: {projects.find((project) => project.id === entry.projectId)?.title ?? 'فتح المشروع'}</a>}{entry.goalId && <a href={`/goals#${entry.goalId}`} className="rounded-full bg-accent px-2 py-1 font-medium text-accent-foreground hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">هدف: {goals.find((goal) => goal.id === entry.goalId)?.title ?? 'فتح الهدف'}</a>}</div>}</div>
             {dueSoon && <span className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertCircle className="h-3.5 w-3.5" />اقترب الموعد</span>}
             <button type="button" onClick={() => recordRecurring(entry)} className="rounded-2xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">سجّل اليوم</button>
           </article>
@@ -222,7 +231,7 @@ export function MoneyWorkspace() {
         <div className="space-y-2">
           {monthEntries.slice(0, 8).map((entry) => <article key={entry.id} id={`finance-${entry.id}`} className="scroll-mt-24 flex items-center gap-3 rounded-2xl bg-muted/60 px-3 py-3">
             <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${entry.kind === 'income' ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning-foreground'}`}>{entry.kind === 'income' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4" />}</div>
-            <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{entry.title}</p><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{entry.localDate} · {entry.category}</p></div>
+            <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{entry.title}</p><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{entry.localDate} · {entry.category}</p>{(entry.projectId || entry.goalId) && <div className="mt-2 flex flex-wrap gap-2 text-[11px]"><span className="text-muted-foreground">السياق:</span>{entry.projectId && <a href={`/projects#${entry.projectId}`} className="rounded-full bg-primary/10 px-2 py-1 font-medium text-primary hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">مشروع: {projects.find((project) => project.id === entry.projectId)?.title ?? 'فتح المشروع'}</a>}{entry.goalId && <a href={`/goals#${entry.goalId}`} className="rounded-full bg-accent px-2 py-1 font-medium text-accent-foreground hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">هدف: {goals.find((goal) => goal.id === entry.goalId)?.title ?? 'فتح الهدف'}</a>}</div>}</div>
             <span className={`text-sm font-semibold ${entry.kind === 'income' ? 'text-success' : 'text-foreground'}`}>{entry.kind === 'income' ? '+' : '-'}{formatAmount(entry.amount, budget.currency)}</span>
             <button type="button" onClick={() => archiveFinanceEntry(entry.id)} aria-label="أرشفة العملية" className="rounded-full p-2 text-muted-foreground hover:bg-warning"><Archive className="h-4 w-4" /></button>
           </article>)}
