@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, CircleAlert, ClipboardCheck, Clapperboard, Flame, HeartPulse, Landmark, Link2, Save, Target, WalletCards } from 'lucide-react'
+import { ArrowLeft, BookOpen, CheckCircle2, CircleAlert, ClipboardCheck, Clapperboard, Flame, HeartPulse, Landmark, Link2, ListMusic, Save, Target, WalletCards } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter } from '@/lib/command-center-store'
 
@@ -35,8 +35,10 @@ export function WeeklyReviewWorkspace() {
     const activeGoals = goals.filter((goal) => goal.status === 'active')
     const goalProgress = activeGoals.length ? Math.round(activeGoals.reduce((sum, goal) => sum + goal.progress, 0) / activeGoals.length) : 0
     const activeProjects = projects.filter((project) => project.status !== 'done')
-    return { doneTasks, openTasks, doneHabits, prayerCount, prayerRate, fullPrayerDays, completedEntertainment, income, expenses, goalProgress, activeProjects }
-  }, [tasks, habits, religious.prayerLogs, religious.prayerHistory, entertainment, financeEntries, goals, projects, weeklyReview.weekStart, weeklyReview.weekEnd])
+    const listenedSurahs = religious.quran.listenedSurahNumbers?.length ?? 0
+    const listenLaterSurahs = religious.quran.listenLater?.length ?? 0
+    return { doneTasks, openTasks, doneHabits, prayerCount, prayerRate, fullPrayerDays, completedEntertainment, income, expenses, goalProgress, activeProjects, listenedSurahs, listenLaterSurahs }
+  }, [tasks, habits, religious.prayerLogs, religious.prayerHistory, religious.quran.listenedSurahNumbers, religious.quran.listenLater, entertainment, financeEntries, goals, projects, weeklyReview.weekStart, weeklyReview.weekEnd])
 
   const context = useMemo(() => ({
     openTask: tasks.find((task) => task.status !== 'done'),
@@ -85,13 +87,15 @@ export function WeeklyReviewWorkspace() {
         </ContentCard>
 
         <ContentCard className="lg:col-span-12" title="لقطة الأسبوع" description="مؤشرات من الأقسام الجديدة تساعدك على رؤية الصورة كاملة.">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-8">
             <DomainMetric icon={WalletCards} label="دخل الأسبوع" value={currency(metrics.income)} />
             <DomainMetric icon={Landmark} label="مصروفات الأسبوع" value={currency(metrics.expenses)} />
             <DomainMetric icon={ClipboardCheck} label="صلوات الأسبوع" value={`${metrics.prayerRate}%`} />
             <DomainMetric icon={HeartPulse} label="الورد" value={`${religious.quran.completedMinutes}/${religious.quran.targetMinutes} د`} />
             <DomainMetric icon={Target} label="الحفظ" value={`${religious.quran.memorizationCompleted ?? 0}/${religious.quran.memorizationTarget ?? 0}`} />
             <DomainMetric icon={Clapperboard} label="الترفيه المكتمل" value={metrics.completedEntertainment} />
+            <DomainMetric icon={BookOpen} label="سور استمعت لها" value={`${metrics.listenedSurahs} سورة`} />
+            <DomainMetric icon={ListMusic} label="للسماع لاحقًا" value={`${metrics.listenLaterSurahs} سورة`} />
           </div>
         </ContentCard>
 
@@ -101,8 +105,10 @@ export function WeeklyReviewWorkspace() {
             {context.focusHabit && <ContextShortcut href={`/habits#${context.focusHabit.id}`} label="العادة التالية" value={context.focusHabit.title} />}
             {context.activeProject && <ContextShortcut href={`/projects#${context.activeProject.id}`} label="المشروع النشط" value={context.activeProject.title} />}
             {context.activeGoal && <ContextShortcut href={`/goals#${context.activeGoal.id}`} label="الهدف النشط" value={context.activeGoal.title} />}
+            <ContextShortcut href="/religious" label="المساحة الدينية" value={`${metrics.prayerRate}% من الصلوات المسجلة`} />
+            <ContextShortcut href="/money" label="المراجعة المالية" value={`${currency(metrics.expenses)} مصروفات الأسبوع`} />
           </div>
-          {!context.openTask && !context.focusHabit && !context.activeProject && !context.activeGoal && <p className="rounded-2xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">لا توجد عناصر مرتبطة تحتاج قرارًا الآن. يمكنك البدء من خطة اليوم.</p>}
+          {!context.openTask && !context.focusHabit && !context.activeProject && !context.activeGoal && <p className="rounded-2xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">لا توجد عناصر مرتبطة تحتاج قرارًا الآن. يمكنك البدء من خطة اليوم أو مراجعة المساحتين الدينية والمالية.</p>}
         </ContentCard>
 
         <ContentCard className="lg:col-span-12" title="مراجعتك المكتوبة" description={`الأسبوع من ${weeklyReview.weekStart} إلى ${weeklyReview.weekEnd}. اكتب بصدق وباختصار؛ المراجعة لك أنت.`}>
