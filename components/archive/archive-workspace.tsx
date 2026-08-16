@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Archive, ArchiveRestore, Check, Clock3, Search } from 'lucide-react'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type ArchiveKind, type ArchivedItem } from '@/lib/command-center-store'
 
 const kindLabels: Record<ArchiveKind | 'all', string> = {
@@ -109,11 +110,7 @@ export function ArchiveWorkspace() {
           {[1, 2, 3, 4].map((item) => <div key={item} className="h-36 animate-pulse rounded-2xl border border-border/60 bg-muted/50" />)}
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="rounded-[2rem] border border-dashed border-border bg-card/60 px-6 py-16 text-center">
-          <Archive className="mx-auto size-9 text-muted-foreground/60" aria-hidden="true" />
-          <h3 className="mt-4 text-lg font-bold text-foreground">لا توجد عناصر هنا</h3>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-muted-foreground">{archive.length === 0 ? 'عندما تؤرشف مهمة أو ملاحظة أو أي عنصر آخر، ستجده هنا مع إمكانية استعادته.' : 'جرّب تغيير القسم أو كلمة البحث لرؤية عناصر أخرى.'}</p>
-        </div>
+        <EmptyState icon={Archive} title="لا توجد عناصر هنا" description={archive.length === 0 ? 'عندما تؤرشف مهمة أو ملاحظة أو أي عنصر آخر، ستجده هنا مع إمكانية استعادته.' : 'جرّب تغيير القسم أو كلمة البحث لرؤية عناصر أخرى.'} />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {filteredItems.map((item) => (
