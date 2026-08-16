@@ -712,3 +712,8 @@
 اعتمد `GoalsWorkspace` و`GoalCard` على `Input` و`Select` و`Textarea` و`Button` المشتركة في نموذج إنشاء الهدف، وتعديل الوصف والموعد، وإضافة مهمة مرتبطة بالهدف، مع إبقاء أزرار البطاقات المتخصصة وسلوك `FormData` والحالة كما هي.
 اختُبرت `/goals` بصريًا وتفاعليًا؛ فُتحت تفاصيل الهدف ووضع التعديل، وأُدخل وصف عربي مؤقت ثم أُعيدت القيمة الأصلية دون حفظ. ظهر نموذج الهدف الجديد وحقل المهمة دون أخطاء، ولم تُنشأ بيانات اختبارية. التفاصيل في `verification/goals-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل إنشاء commit ودفع الدفعة.
+
+## سجل دفعة — اعتماد الحقول المشتركة في مساحة العادات — 2026-08-17
+اعتمد `HabitsWorkspace` على `Input` لاسم العادة وهدفها، وعلى `Select` للمهمة والمشروع والهدف المرتبطين، وعلى `Button` للحفظ، مع الحفاظ على القيم والـhandlers والقيود وسلوك الإضافة الحالي.
+اختُبرت `/habits` بصريًا وتفاعليًا؛ فُتح نموذج «عادة جديدة»، أُدخل اسم عربي مؤقت، واختير مشروع «روتين الحركة والنوم» ثم أُعيد إلى «بدون مشروع»، وأُفرغ الاسم وأُغلق النموذج دون حفظ. بقي RTL والتخطيط والبيانات الأصلية سليمة. التفاصيل في `verification/habits-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل إنشاء commit ودفع الدفعة.

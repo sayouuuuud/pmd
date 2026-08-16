@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { Archive, Check, Flame, Link2, Plus, Repeat, Sparkles, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { useCommandCenter } from '@/lib/command-center-store'
 
 function cairoToday() {
@@ -67,15 +70,15 @@ export function HabitsWorkspace() {
       {showForm && <form onSubmit={submitHabit} className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-4" aria-label="إضافة عادة جديدة">
         <div className="mb-3 flex items-center justify-between"><p className="text-sm font-semibold">أضف عادة تناسب يومك</p><button type="button" onClick={() => setShowForm(false)} aria-label="إغلاق نموذج العادة" className="rounded-lg p-1 text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button></div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="space-y-1 text-xs font-medium"><span>اسم العادة</span><input value={title} onChange={(event) => setTitle(event.target.value)} autoFocus required maxLength={100} placeholder="مثل: المشي" className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" /></label>
-          <label className="space-y-1 text-xs font-medium"><span>هدفها</span><input value={target} onChange={(event) => setTarget(event.target.value)} maxLength={80} placeholder="مثل: 20 دقيقة" className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" /></label>
+          <label className="space-y-1 text-xs font-medium"><span>اسم العادة</span><Input value={title} onChange={(event) => setTitle(event.target.value)} autoFocus required maxLength={100} placeholder="مثل: المشي" /></label>
+          <label className="space-y-1 text-xs font-medium"><span>هدفها</span><Input value={target} onChange={(event) => setTarget(event.target.value)} maxLength={80} placeholder="مثل: 20 دقيقة" /></label>
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <label className="space-y-1 text-xs font-medium"><span>مهمة مرتبطة</span><select value={taskId} onChange={(event) => setTaskId(event.target.value)} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"><option value="">بدون مهمة</option>{tasks.map((task) => <option key={task.id} value={task.id}>{task.title}</option>)}</select></label>
-          <label className="space-y-1 text-xs font-medium"><span>مشروع مرتبط</span><select value={projectId} onChange={(event) => setProjectId(event.target.value)} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"><option value="">بدون مشروع</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}</select></label>
-          <label className="space-y-1 text-xs font-medium"><span>هدف مرتبط</span><select value={goalId} onChange={(event) => setGoalId(event.target.value)} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"><option value="">بدون هدف</option>{goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</select></label>
+          <label className="space-y-1 text-xs font-medium"><span>مهمة مرتبطة</span><Select value={taskId} onChange={(event) => setTaskId(event.target.value)}><option value="">بدون مهمة</option>{tasks.map((task) => <option key={task.id} value={task.id}>{task.title}</option>)}</Select></label>
+          <label className="space-y-1 text-xs font-medium"><span>مشروع مرتبط</span><Select value={projectId} onChange={(event) => setProjectId(event.target.value)}><option value="">بدون مشروع</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}</Select></label>
+          <label className="space-y-1 text-xs font-medium"><span>هدف مرتبط</span><Select value={goalId} onChange={(event) => setGoalId(event.target.value)}><option value="">بدون هدف</option>{goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</Select></label>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2"><span className="text-xs font-medium">التكرار:</span><button type="button" onClick={() => setFrequency('daily')} aria-pressed={frequency === 'daily'} className={`rounded-full px-3 py-1.5 text-xs ${frequency === 'daily' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>يوميًا</button><button type="button" onClick={() => setFrequency('weekly')} aria-pressed={frequency === 'weekly'} className={`rounded-full px-3 py-1.5 text-xs ${frequency === 'weekly' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>أسبوعيًا</button><button type="submit" className="ms-auto rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">حفظ العادة</button></div>
+        <div className="mt-3 flex flex-wrap items-center gap-2"><span className="text-xs font-medium">التكرار:</span><button type="button" onClick={() => setFrequency('daily')} aria-pressed={frequency === 'daily'} className={`rounded-full px-3 py-1.5 text-xs ${frequency === 'daily' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>يوميًا</button><button type="button" onClick={() => setFrequency('weekly')} aria-pressed={frequency === 'weekly'} className={`rounded-full px-3 py-1.5 text-xs ${frequency === 'weekly' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>أسبوعيًا</button><Button type="submit" size="sm" className="ms-auto rounded-xl px-4 py-2 text-xs font-semibold">حفظ العادة</Button></div>
       </form>}
       {habits.length === 0 ? <EmptyState icon={Repeat} title="لا توجد عادات بعد" description="ابدأ بعادة صغيرة مرتبطة بهدف أو مشروع حتى يظهر أثرها في خطة اليوم." action={<button type="button" onClick={() => setShowForm(true)} className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">أضف أول عادة</button>} /> : <div className="grid gap-3 sm:grid-cols-2">{habits.map((habit) => {
         const task = habit.taskId ? tasks.find((item) => item.id === habit.taskId) : undefined
