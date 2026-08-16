@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
+import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 
 type Priority = 'high' | 'medium' | 'low'
 type TaskStatus = 'todo' | 'in-progress' | 'done'
@@ -142,6 +142,8 @@ export type Habit = {
   streak: number
   doneToday: boolean
   target: string
+  frequency?: 'daily' | 'weekly'
+  history?: Record<string, boolean>
 }
 
 export type PlanItem = {
@@ -244,6 +246,7 @@ type CommandCenterContextValue = {
   updateJournalEntry: (id: string, patch: Partial<Pick<JournalEntry, 'localDate' | 'title' | 'body' | 'mood'>>) => void
   archiveJournalEntry: (id: string) => void
   archiveHabit: (id: string) => void
+  addHabit: (input: Pick<Habit, 'title' | 'target'> & Partial<Pick<Habit, 'icon' | 'frequency'>>) => void
   restoreArchivedItem: (id: string) => void
   saveWeeklyReview: (patch: Pick<WeeklyReview, 'wentWell' | 'blockers' | 'nextGoal'> & Partial<Pick<WeeklyReview, 'status'>>) => void
   addNote: (input: Pick<Note, 'title' | 'body' | 'tag'>) => void
@@ -388,7 +391,11 @@ function normalizeState(value: unknown): PersistedState | null {
     profile: { ...defaults.profile, ...profile },
     tasks: arrayOr(source.tasks, defaults.tasks),
     notes: arrayOr(source.notes, defaults.notes),
-    habits: arrayOr(source.habits, defaults.habits),
+    habits: arrayOr(source.habits, defaults.habits).map((habit) => ({
+      ...habit,
+      frequency: habit.frequency === 'weekly' ? 'weekly' : 'daily',
+      history: isRecord(habit.history) ? Object.fromEntries(Object.entries(habit.history).filter(([date, done]) => /^\\d{4}-\\d{2}-\\d{2}$/.test(date) && typeof done === 'boolean').slice(-60)) : {},
+    })),
     planItems: arrayOr(source.planItems, defaults.planItems),
     goals: arrayOr(source.goals, defaults.goals),
     projects: arrayOr(source.projects, defaults.projects),
@@ -848,6 +855,22 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setHabits((items) => items.filter((habit) => habit.id !== id))
       void fetch(`/api/habits/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => null)
     },
+    addHabit: (input) => {
+      const title = input.title.trim().slice(0, 100)
+      if (!title) return
+      const habit: Habit = {
+        id: `habit-${Date.now()}`,
+        title,
+        icon: input.icon?.trim().slice(0, 24) || 'عادة',
+        target: input.target.trim().slice(0, 80) || 'يوميًا',
+        frequency: input.frequency === 'weekly' ? 'weekly' : 'daily',
+        streak: 0,
+        doneToday: false,
+        history: {},
+      }
+      setHabits((items) => [habit, ...items])
+      void createRemoteHabit({ title: habit.title, icon: habit.icon, target: habit.target, frequency: habit.frequency })
+    },
     restoreArchivedItem: (id) => {
       const item = archive.find((entry) => entry.id === id)
       if (!item) return
@@ -866,11 +889,12 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void restoreRemoteArchive(item.kind, id)
     },
     toggleHabit: (id) => {
+      const localDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
       setHabits((items) => items.map((habit) => {
         if (habit.id !== id) return habit
         const doneToday = !habit.doneToday
         void toggleRemoteHabit(id, doneToday)
-        return { ...habit, doneToday, streak: doneToday ? habit.streak + 1 : Math.max(0, habit.streak - 1) }
+        return { ...habit, doneToday, history: { ...(habit.history ?? {}), [localDate]: doneToday }, streak: doneToday ? habit.streak + 1 : Math.max(0, habit.streak - 1) }
       }))
       setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: item.status === 'done' ? 'pending' : 'done' } : item))
     },

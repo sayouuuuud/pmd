@@ -34,8 +34,10 @@ type RemoteHabit = {
   title: string
   icon: string
   target: string
+  frequency?: string
   streak?: number
   doneToday?: boolean
+  history?: Record<string, boolean>
 }
 
 type RemotePlanItem = {
@@ -191,8 +193,10 @@ export function mapRemoteHabit(item: RemoteHabit): Habit {
     title: item.title,
     icon: item.icon,
     target: item.target,
+    frequency: item.frequency === 'weekly' ? 'weekly' : 'daily',
     streak: item.streak ?? 0,
     doneToday: item.doneToday ?? false,
+    history: item.history ?? {},
   }
 }
 
@@ -516,7 +520,7 @@ export function updateRemoteBudget(monthlyLimit: number) {
   return request<{ budget: RemoteBudget }>('/api/finance/budget', { method: 'PATCH', body: JSON.stringify({ monthlyLimit }) })
 }
 
-export function createRemoteHabit(input: Pick<Habit, 'title' | 'icon' | 'target'>) {
+export function createRemoteHabit(input: Pick<Habit, 'title' | 'icon' | 'target'> & Partial<Pick<Habit, 'frequency'>>) {
   return request<{ item: RemoteHabit }>('/api/habits', { method: 'POST', body: JSON.stringify(input) })
 }
 

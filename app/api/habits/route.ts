@@ -52,10 +52,12 @@ export async function GET(request: Request) {
 
     return json({ items: habits.map((item) => {
       const dates = datesByHabit.get(item.id) ?? new Set<string>()
+      const history = Object.fromEntries(Array.from(dates).sort().slice(-60).map((date) => [date, true]))
       return {
         ...item,
         streak: calculateStreak(item.id, dates, localDate),
         doneToday: dates.has(localDate),
+        history,
       }
     }) })
   } catch {
