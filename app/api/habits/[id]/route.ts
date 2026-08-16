@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { habit, habitLog } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
@@ -50,8 +50,19 @@ export async function DELETE(request: Request, context: RouteContext) {
 
   try {
     const { id } = await context.params
-    const localDate = new URL(request.url).searchParams.get('date') || today()
+    const searchParams = new URL(request.url).searchParams
     const db = getDb()
+
+    if (searchParams.get('action') === 'archive') {
+      const [item] = await db.update(habit)
+        .set({ archivedAt: new Date(), updatedAt: new Date() })
+        .where(and(eq(habit.id, id), eq(habit.userId, user.id), isNull(habit.archivedAt)))
+        .returning()
+      if (!item) return json({ error: 'العادة غير موجودة أو مؤرشفة بالفعل.' }, { status: 404 })
+      return json({ item })
+    }
+
+    const localDate = searchParams.get('date') || today()
     await db.delete(habitLog).where(and(eq(habitLog.habitId, id), eq(habitLog.userId, user.id), eq(habitLog.localDate, localDate)))
     return json({ ok: true })
   } catch {

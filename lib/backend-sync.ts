@@ -318,6 +318,13 @@ function asPrayerStatus(value: string): PrayerLog['status'] {
   return value === 'done' || value === 'on-time' || value === 'congregation' || value === 'qada' || value === 'missed' ? value : 'pending'
 }
 
+function normalizeRemotePrayerHistory(item: PrayerHistoryDay): PrayerHistoryDay {
+  const allowedStatuses: PrayerLog['status'][] = ['pending', 'done', 'on-time', 'congregation', 'qada', 'missed']
+  const statusCounts = item.statusCounts && Object.fromEntries(Object.entries(item.statusCounts).filter(([status, count]) => allowedStatuses.includes(status as PrayerLog['status']) && typeof count === 'number' && Number.isFinite(count)).map(([status, count]) => [status, Math.max(0, Math.min(10, Math.round(count as number)))]))
+  const missedByPrayer = item.missedByPrayer && Object.fromEntries(Object.entries(item.missedByPrayer).filter(([name, count]) => typeof name === 'string' && name.trim() && typeof count === 'number' && Number.isFinite(count)).slice(0, 5).map(([name, count]) => [name.slice(0, 40), Math.max(0, Math.min(10, Math.round(count as number)))]))
+  return { localDate: item.localDate, completed: Math.max(0, Math.min(10, Math.round(item.completed))), total: Math.max(1, Math.min(10, Math.round(item.total))), ...(statusCounts && Object.keys(statusCounts).length ? { statusCounts } : {}), ...(missedByPrayer && Object.keys(missedByPrayer).length ? { missedByPrayer } : {}) }
+}
+
 export function mapRemoteWeeklyReview(item: RemoteWeeklyReview): WeeklyReview {
   return {
     id: item.id,
@@ -374,7 +381,7 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
     city: item.city || 'القاهرة',
     calculationMethod: item.calculationMethod || 'مخصص',
     prayerLogs: Array.isArray(item.prayerLogs) ? item.prayerLogs.map((prayer) => ({ ...prayer, status: asPrayerStatus(prayer.status) })) : [],
-    prayerHistory: Array.isArray(item.prayerHistory) ? item.prayerHistory.slice(-30) : [],
+    prayerHistory: Array.isArray(item.prayerHistory) ? item.prayerHistory.slice(-30).map(normalizeRemotePrayerHistory) : [],
     quran: { reference: item.quranProgress?.reference || 'ورد اليوم', targetMinutes: Math.max(1, Number(item.quranProgress?.targetMinutes) || 20), completedMinutes: Math.max(0, Number(item.quranProgress?.completedMinutes) || 0), memorizationTarget: Math.max(1, Number(item.quranProgress?.memorizationTarget) || 10), memorizationCompleted: Math.max(0, Number(item.quranProgress?.memorizationCompleted) || 0), lastPosition: normalizeRemoteQuranPosition(item.quranProgress?.lastPosition), playlists: normalizeRemotePlaylists(item.quranProgress?.playlists), listenLater: normalizeRemoteSurahList(item.quranProgress?.listenLater), listenedSurahNumbers: normalizeRemoteSurahList(item.quranProgress?.listenedSurahNumbers) },
     dhikr: { morning: Boolean(item.dhikrSessions?.morning), evening: Boolean(item.dhikrSessions?.evening), morningCount: Math.max(0, Number(item.dhikrSessions?.morningCount) || 0), eveningCount: Math.max(0, Number(item.dhikrSessions?.eveningCount) || 0), morningProgress: normalizeRemoteProgress(item.dhikrSessions?.morningProgress, progressFromRemoteCount('morning', item.dhikrSessions?.morningCount)), eveningProgress: normalizeRemoteProgress(item.dhikrSessions?.eveningProgress, progressFromRemoteCount('evening', item.dhikrSessions?.eveningCount)), lastSession: item.dhikrSessions?.lastSession, tasbeehCount: Math.max(0, Number(item.dhikrSessions?.tasbeehCount) || 0), tasbeehTarget: Math.max(1, Number(item.dhikrSessions?.tasbeehTarget) || 100), savedDuas: Array.isArray(item.dhikrSessions?.savedDuas) ? item.dhikrSessions.savedDuas.filter((dua): dua is string => typeof dua === 'string').slice(-20) : [] },
   }
@@ -566,6 +573,10 @@ export function updateRemoteBudget(monthlyLimit: number) {
 
 export function createRemoteHabit(input: Pick<Habit, 'title' | 'icon' | 'target'> & Partial<Pick<Habit, 'frequency' | 'taskId' | 'projectId' | 'goalId'>>) {
   return request<{ item: RemoteHabit }>('/api/habits', { method: 'POST', body: JSON.stringify(input) })
+}
+
+export function archiveRemoteHabit(id: string) {
+  return request<{ item: RemoteHabit }>(`/api/habits/${id}?action=archive`, { method: 'DELETE' })
 }
 
 export function toggleRemoteHabit(id: string, doneToday: boolean) {

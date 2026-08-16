@@ -41,12 +41,34 @@ function safePrayerLogs(value: unknown) {
 
 function safePrayerHistory(value: unknown) {
   if (!Array.isArray(value)) return defaults.prayerHistory
+  const statuses = ['pending', 'done', 'on-time', 'congregation', 'qada', 'missed'] as const
+  const safeCounts = (value: unknown) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+    const counts = Object.fromEntries(statuses.flatMap((status) => {
+      const count = Math.max(0, Math.min(10, Math.round(Number((value as Record<string, unknown>)[status]) || 0)))
+      return count > 0 ? [[status, count] as const] : []
+    }))
+    return Object.keys(counts).length ? counts : undefined
+  }
+  const safeMissedByPrayer = (value: unknown) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+    const entries = Object.entries(value as Record<string, unknown>).flatMap(([name, count]) => {
+      const normalizedName = stringValue(name, '', 40)
+      const normalizedCount = Math.max(0, Math.min(10, Math.round(Number(count) || 0)))
+      return normalizedName && normalizedCount > 0 ? [[normalizedName, normalizedCount] as const] : []
+    }).slice(0, 5)
+    return entries.length ? Object.fromEntries(entries) : undefined
+  }
   return value.slice(-30).map((item) => {
     const day = item as Record<string, unknown>
+    const statusCounts = safeCounts(day.statusCounts)
+    const missedByPrayer = safeMissedByPrayer(day.missedByPrayer)
     return {
       localDate: stringValue(day.localDate, new Date().toISOString().slice(0, 10), 12),
       completed: Math.max(0, Math.min(10, Math.round(Number(day.completed) || 0))),
       total: Math.max(1, Math.min(10, Math.round(Number(day.total) || 5))),
+      ...(statusCounts ? { statusCounts } : {}),
+      ...(missedByPrayer ? { missedByPrayer } : {}),
     }
   })
 }

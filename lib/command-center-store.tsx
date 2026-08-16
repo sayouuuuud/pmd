@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
+import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 
 type Priority = 'high' | 'medium' | 'low'
 type TaskStatus = 'todo' | 'in-progress' | 'done'
@@ -120,6 +120,8 @@ export type PrayerHistoryDay = {
   localDate: string
   completed: number
   total: number
+  statusCounts?: Partial<Record<PrayerStatus, number>>
+  missedByPrayer?: Record<string, number>
 }
 
 export type QuranPosition = {
@@ -352,12 +354,12 @@ const initialReligious: ReligiousState = {
     { id: 'isha', name: 'العشاء', time: '20:05', status: 'pending', localDate: '2026-08-15' },
   ],
   prayerHistory: [
-    { localDate: '2026-08-10', completed: 4, total: 5 },
-    { localDate: '2026-08-11', completed: 5, total: 5 },
-    { localDate: '2026-08-12', completed: 3, total: 5 },
-    { localDate: '2026-08-13', completed: 5, total: 5 },
-    { localDate: '2026-08-14', completed: 4, total: 5 },
-    { localDate: '2026-08-15', completed: 1, total: 5 },
+    { localDate: '2026-08-10', completed: 4, total: 5, statusCounts: { 'on-time': 3, qada: 1, pending: 1 }, missedByPrayer: {} },
+    { localDate: '2026-08-11', completed: 5, total: 5, statusCounts: { 'on-time': 4, congregation: 1 }, missedByPrayer: {} },
+    { localDate: '2026-08-12', completed: 3, total: 5, statusCounts: { 'on-time': 2, congregation: 1, missed: 2 }, missedByPrayer: { الفجر: 1, العصر: 1 } },
+    { localDate: '2026-08-13', completed: 5, total: 5, statusCounts: { 'on-time': 3, congregation: 2 }, missedByPrayer: {} },
+    { localDate: '2026-08-14', completed: 4, total: 5, statusCounts: { 'on-time': 2, qada: 2, missed: 1 }, missedByPrayer: { الظهر: 1 } },
+    { localDate: '2026-08-15', completed: 1, total: 5, statusCounts: { 'on-time': 1, pending: 3, missed: 1 }, missedByPrayer: { العشاء: 1 } },
   ],
   quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4, playlists: [], listenLater: [], listenedSurahNumbers: [] },
   dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, morningProgress: { 'morning-1': 2, 'morning-2': 2, 'morning-3': 2, 'morning-4': 2 }, eveningProgress: { 'evening-1': 2, 'evening-2': 2, 'evening-3': 1, 'evening-4': 1 }, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'] },
@@ -756,8 +758,16 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         })
         const localDate = prayerLogs[0]?.localDate ?? new Date().toISOString().slice(0, 10)
         const completed = prayerLogs.filter((prayer) => isPrayerCompletedStatus(prayer.status)).length
+        const statusCounts = prayerLogs.reduce<Partial<Record<PrayerStatus, number>>>((counts, prayer) => {
+          counts[prayer.status] = (counts[prayer.status] ?? 0) + 1
+          return counts
+        }, {})
+        const missedByPrayer = prayerLogs.reduce<Record<string, number>>((counts, prayer) => {
+          if (prayer.status === 'missed') counts[prayer.name] = (counts[prayer.name] ?? 0) + 1
+          return counts
+        }, {})
         const historyByDate = new Map((current.prayerHistory ?? []).map((day) => [day.localDate, day]))
-        historyByDate.set(localDate, { localDate, completed, total: prayerLogs.length })
+        historyByDate.set(localDate, { localDate, completed, total: prayerLogs.length, statusCounts, missedByPrayer })
         const prayerHistory = Array.from(historyByDate.values()).sort((left, right) => left.localDate.localeCompare(right.localDate)).slice(-30)
         const next = { ...current, prayerLogs, prayerHistory }
         void updateRemoteReligious(next)
@@ -1030,7 +1040,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       if (!item) return
       addArchivedItem('habit', item, `العادات · ${item.target}`)
       setHabits((items) => items.filter((habit) => habit.id !== id))
-      void fetch(`/api/habits/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => null)
+      void archiveRemoteHabit(id)
     },
     archiveBoardNote: (payload) => {
       addArchivedItem('board', payload, `السبورة · ${payload.boardTitle}`)
