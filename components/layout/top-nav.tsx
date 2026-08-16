@@ -200,7 +200,7 @@ export function TopNav() {
                 <Plus className="h-4 w-4 text-card" />
               </span>
             </button>
-            <button type="button" aria-label="البحث الشامل" onClick={() => setSearchOpen(true)} className="hidden h-11 w-11 items-center justify-center rounded-full bg-card sm:flex">
+            <button type="button" aria-label="البحث الشامل" onClick={() => setSearchOpen(true)} className="flex h-10 w-10 items-center justify-center rounded-full bg-card sm:h-11 sm:w-11">
               <Search className="h-4 w-4" />
             </button>
             <button type="button" aria-label="التنبيهات" onClick={() => router.push('/reminders')} className="relative flex h-11 w-11 items-center justify-center rounded-full bg-card">
