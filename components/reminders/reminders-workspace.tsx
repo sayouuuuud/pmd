@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Bell, CalendarClock, Check, Clock3, Plus, Sparkles, X } from 'lucide-react'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ReminderKind, useCommandCenter } from '@/lib/command-center-store'
@@ -12,6 +12,8 @@ const kindLabels: Record<ReminderKind, string> = {
   quran: 'ورد',
   finance: 'مالية',
 }
+
+const REMINDER_PREFERENCES_KEY = 'personal-command-center-reminder-preferences-v1'
 
 const kindStyles: Record<ReminderKind, string> = {
   task: 'bg-accent text-accent-foreground',
@@ -48,6 +50,25 @@ export function RemindersWorkspace() {
   const [kind, setKind] = useState<ReminderKind>('task')
   const [repeatLabel, setRepeatLabel] = useState('')
   const [quietMode, setQuietMode] = useState(true)
+  const [preferencesHydrated, setPreferencesHydrated] = useState(false)
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(REMINDER_PREFERENCES_KEY)
+    if (stored) {
+      try {
+        const preferences = JSON.parse(stored) as { quietMode?: unknown }
+        if (typeof preferences.quietMode === 'boolean') setQuietMode(preferences.quietMode)
+      } catch {
+        window.localStorage.removeItem(REMINDER_PREFERENCES_KEY)
+      }
+    }
+    setPreferencesHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!preferencesHydrated) return
+    window.localStorage.setItem(REMINDER_PREFERENCES_KEY, JSON.stringify({ quietMode }))
+  }, [preferencesHydrated, quietMode])
 
   const visibleReminders = useMemo(() => {
     const items = filter === 'active' ? reminders.filter((reminder) => reminder.status !== 'done') : reminders
