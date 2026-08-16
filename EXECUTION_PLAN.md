@@ -700,3 +700,9 @@
 وُثّق Checkbox في `/design-system` واختُبرت حالته التفاعلية. فُتحت `/archive` بصريًا، وأكد فحص DOM وجود المكوّن المشترك وتعطيل التحديد الجماعي عند خلو النتائج، دون تنفيذ استعادة أو تعديل بيانات. التفاصيل في `verification/shared-checkbox-archive-browser.md` و`verification/interaction-smoke-tests.md`.
 
 تبقى بوابات TypeScript وESLint و`git diff --check` و`next build` قبل إنشاء commit ودفع الدفعة.
+
+
+## سجل دفعة — اعتماد الحقول المشتركة في مساحة الترفيه — 2026-08-17
+اعتمد `EntertainmentWorkspace` على `Input` في البحث وحقول الاسم والتصنيف والسنة والانطباع، وعلى `Select` في فلاتر النوع والتصنيف وحالة المشاهدة، وعلى `Textarea` للملاحظة، وعلى `Checkbox` لخيارَي الترشيح والتحميل. حُفظت الكلاسات الخاصة بالتخطيط والمظهر الحالي، وبقي منطق `FormData` والفلاتر وتحديث الحالة كما هو.
+اختُبرت `/entertainment` بصريًا وتفاعليًا؛ أُدخلت كلمة «دراما» في البحث، واختير التصنيف نفسه، ثم فُتح نموذج الإضافة وفُعّل Checkbox الترشيح وأُلغي النموذج دون حفظ. لم تظهر أخطاء runtime أو hydration في console. التفاصيل في `verification/entertainment-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل إنشاء commit ودفع الدفعة.

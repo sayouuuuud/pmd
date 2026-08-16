@@ -2,7 +2,11 @@
 
 import { Archive, Check, Clapperboard, Download, Film, ListPlus, Play, Search, Sparkles, Star, Tv } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { Checkbox } from '@/components/ui/checkbox'
 import { ContentCard } from '@/components/ui/content-card'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type EntertainmentItem, type EntertainmentStatus, type EntertainmentType } from '@/lib/command-center-store'
 
@@ -113,17 +117,17 @@ export function EntertainmentWorkspace() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحث في الأفلام والمسلسلات..." aria-label="البحث في الترفيه" className="w-full rounded-2xl border border-input bg-background py-3 pr-10 pl-4 text-sm outline-none focus:ring-2 focus:ring-ring" />
+          <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحث في الأفلام والمسلسلات..." aria-label="البحث في الترفيه" className="w-full rounded-2xl py-3 pr-10 pl-4" />
         </div>
         <div className="flex flex-wrap gap-2">
-          <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as 'all' | EntertainmentType)} aria-label="نوع العمل" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+          <Select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as 'all' | EntertainmentType)} aria-label="نوع العمل" className="rounded-2xl px-3 py-3">
             <option value="all">كل الأنواع</option>
             <option value="movie">أفلام</option>
             <option value="series">مسلسلات</option>
-          </select>
-          <select value={genreFilter} onChange={(event) => setGenreFilter(event.target.value)} aria-label="تصنيف الترفيه" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+          </Select>
+          <Select value={genreFilter} onChange={(event) => setGenreFilter(event.target.value)} aria-label="تصنيف الترفيه" className="rounded-2xl px-3 py-3">
             {genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}
-          </select>
+          </Select>
           <button type="button" onClick={() => setOnlyRecommended((value) => !value)} className={`rounded-2xl px-3 py-2 text-sm font-medium transition-colors ${onlyRecommended ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground hover:bg-accent'}`}>مرشّح لحد</button>
           <button type="button" onClick={() => setOnlyDownloads((value) => !value)} className={`rounded-2xl px-3 py-2 text-sm font-medium transition-colors ${onlyDownloads ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground hover:bg-accent'}`}>عايز أنزله</button>
           <button type="button" onClick={() => setShowForm((value) => !value)} className="flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"><ListPlus className="h-4 w-4" />إضافة عمل</button>
@@ -133,13 +137,13 @@ export function EntertainmentWorkspace() {
 
     {showForm && <ContentCard title="إضافة فيلم أو مسلسل" description="أضف التفاصيل الأساسية، وبعد المشاهدة يمكنك تسجيل التقييم والانطباع.">
       <form onSubmit={createItem} className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <input name="title" required placeholder="اسم الفيلم أو المسلسل" className="rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-        <select name="type" defaultValue="movie" className="rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"><option value="movie">فيلم</option><option value="series">مسلسل</option></select>
-        <input name="genre" required placeholder="التصنيف، مثال: دراما" className="rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-        <input name="year" type="number" min="1888" max="2100" placeholder="سنة الإصدار (اختياري)" className="rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-        <textarea name="note" placeholder="ملاحظة شخصية أو سبب الإضافة" className="min-h-24 rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring md:col-span-2" />
-        <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><input name="recommend" type="checkbox" className="h-4 w-4 accent-primary" />أريد ترشيحه لشخص</label>
-        <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><input name="downloadWanted" type="checkbox" className="h-4 w-4 accent-primary" />أضيفه لقائمة التحميل</label>
+        <Input name="title" required placeholder="اسم الفيلم أو المسلسل" className="rounded-2xl px-4 py-3" />
+        <Select name="type" defaultValue="movie" className="rounded-2xl px-4 py-3"><option value="movie">فيلم</option><option value="series">مسلسل</option></Select>
+        <Input name="genre" required placeholder="التصنيف، مثال: دراما" className="rounded-2xl px-4 py-3" />
+        <Input name="year" type="number" min="1888" max="2100" placeholder="سنة الإصدار (اختياري)" className="rounded-2xl px-4 py-3" />
+        <Textarea name="note" placeholder="ملاحظة شخصية أو سبب الإضافة" className="min-h-24 rounded-2xl px-4 py-3 md:col-span-2" />
+        <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><Checkbox name="recommend" />أريد ترشيحه لشخص</label>
+        <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><Checkbox name="downloadWanted" />أضيفه لقائمة التحميل</label>
         <div className="flex gap-2 md:col-span-2"><button type="submit" className="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">حفظ في عايز أتفرج</button><button type="button" onClick={() => setShowForm(false)} className="rounded-2xl bg-muted px-5 py-3 text-sm font-medium">إلغاء</button></div>
       </form>
     </ContentCard>}
@@ -173,8 +177,8 @@ function EntertainmentCard({ item, onMove, onUpdate, onArchive }: { item: Entert
       <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="truncate text-sm font-semibold">{item.title}</h3><button type="button" onClick={onArchive} aria-label={`أرشفة ${item.title}`} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"><Archive className="h-4 w-4" /></button></div><p className="mt-1 text-xs text-muted-foreground">{item.type === 'movie' ? 'فيلم' : 'مسلسل'} · {item.genre}{item.year ? ` · ${item.year}` : ''}</p></div>
     </div>
     {item.note && <p className="mt-3 rounded-xl bg-muted/70 px-3 py-2 text-xs leading-6 text-muted-foreground">{item.note}</p>}
-    {item.status === 'completed' && <div className="mt-3 space-y-2 rounded-xl bg-muted/70 p-3"><div className="flex items-center justify-between gap-2"><span className="text-xs font-medium">تقييمك</span><div className="flex gap-1" dir="ltr">{[1, 2, 3, 4, 5].map((rating) => <button type="button" key={rating} onClick={() => onUpdate({ rating })} aria-label={`تقييم ${rating} من 5`} className={`rounded p-0.5 ${rating <= (item.rating ?? 0) ? 'text-warning-foreground' : 'text-muted-foreground'}`}><Star className="h-4 w-4 fill-current" /></button>)}</div></div><input value={item.impression ?? ''} onChange={(event) => onUpdate({ impression: event.target.value })} placeholder="سطر انطباع شخصي" className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-ring" /></div>}
-    <div className="mt-3 flex flex-wrap items-center gap-2"><select value={item.status} onChange={(event) => onMove(event.target.value as EntertainmentStatus)} aria-label={`حالة ${item.title}`} className="min-w-0 flex-1 rounded-xl border border-input bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-ring"><option value="want">عايز أتفرج</option><option value="watching">بتفرج</option><option value="completed">خلصت</option></select><button type="button" onClick={() => onUpdate({ recommend: !item.recommend })} className={`rounded-xl px-2.5 py-2 text-xs ${item.recommend ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}><Star className="inline h-3.5 w-3.5" /> ترشيح</button><button type="button" onClick={() => onUpdate({ downloadWanted: !item.downloadWanted })} className={`rounded-xl px-2.5 py-2 text-xs ${item.downloadWanted ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}><Download className="inline h-3.5 w-3.5" /> تحميل</button></div>
+    {item.status === 'completed' && <div className="mt-3 space-y-2 rounded-xl bg-muted/70 p-3"><div className="flex items-center justify-between gap-2"><span className="text-xs font-medium">تقييمك</span><div className="flex gap-1" dir="ltr">{[1, 2, 3, 4, 5].map((rating) => <button type="button" key={rating} onClick={() => onUpdate({ rating })} aria-label={`تقييم ${rating} من 5`} className={`rounded p-0.5 ${rating <= (item.rating ?? 0) ? 'text-warning-foreground' : 'text-muted-foreground'}`}><Star className="h-4 w-4 fill-current" /></button>)}</div></div><Input value={item.impression ?? ''} onChange={(event) => onUpdate({ impression: event.target.value })} placeholder="سطر انطباع شخصي" className="w-full rounded-xl px-3 py-2 text-xs" /></div>}
+    <div className="mt-3 flex flex-wrap items-center gap-2"><Select value={item.status} onChange={(event) => onMove(event.target.value as EntertainmentStatus)} aria-label={`حالة ${item.title}`} className="min-w-0 flex-1 rounded-xl px-3 py-2 text-xs"><option value="want">عايز أتفرج</option><option value="watching">بتفرج</option><option value="completed">خلصت</option></Select><button type="button" onClick={() => onUpdate({ recommend: !item.recommend })} className={`rounded-xl px-2.5 py-2 text-xs ${item.recommend ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}><Star className="inline h-3.5 w-3.5" /> ترشيح</button><button type="button" onClick={() => onUpdate({ downloadWanted: !item.downloadWanted })} className={`rounded-xl px-2.5 py-2 text-xs ${item.downloadWanted ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}><Download className="inline h-3.5 w-3.5" /> تحميل</button></div>
   </article>
 }
 

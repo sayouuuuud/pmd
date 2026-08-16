@@ -455,3 +455,6 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 ## Checkbox المشترك في الأرشيف ومرجع النظام — 2026-08-17
 فُتحت `/archive` وتحقق ظهور Checkbox التحديد الجماعي مع تعطيله عند خلو النتائج، ثم فُتحت `/design-system` وتحقق ظهور Checkbox «تفعيل التذكير» وتبديل حالته دون تعديل بيانات. أكد فحص DOM وجود `data-slot="checkbox"` والكلاسات الدلالية وحالة `disabled` الصحيحة في الأرشيف. التفاصيل في `verification/shared-checkbox-archive-browser.md`.
 **الحالة: PASS.**
+
+
+- **مساحة الترفيه ومكونات الحقول المشتركة:** فُتحت `/entertainment` بصريًا، وأُدخلت `دراما` في البحث ثم اختير تصنيف `دراما` من Select المشترك، فتحدثت النتائج والعدادات دون تعديل بيانات. فُتح نموذج إضافة فيلم أو مسلسل، فظهرت Input وSelect وTextarea وCheckbox المشتركة، وفُعّل Checkbox الترشيح ثم أُلغي النموذج دون حفظ. console خالٍ من أخطاء runtime أو hydration؛ ظهرت فقط رسائل Fast Refresh وHMR الاعتيادية. التوثيق التفصيلي في `verification/entertainment-shared-controls-browser.md`.
