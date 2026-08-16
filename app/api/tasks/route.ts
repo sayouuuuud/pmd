@@ -1,6 +1,6 @@
-import { and, desc, eq, isNull } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
-import { project, task } from '@/server/db/schema'
+import { project, subtask, task } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
 
 export const dynamic = 'force-dynamic'
@@ -24,7 +24,10 @@ export async function GET(request: Request) {
         ? eq(task.userId, user.id)
         : and(eq(task.userId, user.id), isNull(task.archivedAt)),
     ).orderBy(desc(task.updatedAt)).limit(200)
-    return json({ items: rows })
+    const taskIds = rows.map((row) => row.id)
+    const subtasks = taskIds.length ? await db.select().from(subtask).where(and(eq(subtask.userId, user.id), inArray(subtask.taskId, taskIds))).orderBy(asc(subtask.createdAt)).limit(500) : []
+    const items = rows.map((row) => ({ ...row, subtasks: subtasks.filter((item) => item.taskId === row.id).map(({ id, title, done }) => ({ id, title, done })) }))
+    return json({ items })
   } catch {
     return backendUnavailable()
   }

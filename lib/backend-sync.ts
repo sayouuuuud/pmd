@@ -8,6 +8,13 @@ type RemoteProfile = {
   onboardingComplete: boolean
 }
 
+type RemoteSubtask = {
+  id: string
+  taskId: string
+  title: string
+  done: boolean
+}
+
 type RemoteTask = {
   id: string
   title: string
@@ -19,6 +26,7 @@ type RemoteTask = {
   recurring: boolean
   sourceNoteId: string | null
   projectId: string | null
+  subtasks?: RemoteSubtask[]
 }
 
 type RemoteHabit = {
@@ -171,6 +179,7 @@ export function mapRemoteTask(item: RemoteTask): Task {
     recurring: item.recurring,
     sourceNoteId: item.sourceNoteId ?? undefined,
     projectId: item.projectId ?? undefined,
+    subtasks: item.subtasks?.map((subtask) => ({ id: subtask.id, title: subtask.title, done: subtask.done })) ?? [],
   }
 }
 
@@ -438,6 +447,18 @@ export function updateRemoteTask(id: string, patch: Partial<Task>) {
 
 export function archiveRemoteTask(id: string) {
   return request<{ item: RemoteTask }>(`/api/tasks/${id}`, { method: 'DELETE' })
+}
+
+export function createRemoteSubtask(taskId: string, input: { id: string; title: string; done?: boolean }) {
+  return request<{ item: RemoteSubtask }>(`/api/tasks/${taskId}/subtasks`, { method: 'POST', body: JSON.stringify(input) })
+}
+
+export function updateRemoteSubtask(taskId: string, subtaskId: string, patch: Partial<Pick<RemoteSubtask, 'title' | 'done'>>) {
+  return request<{ item: RemoteSubtask }>(`/api/tasks/${taskId}/subtasks/${subtaskId}`, { method: 'PATCH', body: JSON.stringify(patch) })
+}
+
+export function archiveRemoteSubtask(taskId: string, subtaskId: string) {
+  return request<{ item: RemoteSubtask }>(`/api/tasks/${taskId}/subtasks/${subtaskId}`, { method: 'DELETE' })
 }
 
 export function updateRemoteNote(id: string, patch: Partial<Note>) {

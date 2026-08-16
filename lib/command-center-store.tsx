@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
+import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 
 type Priority = 'high' | 'medium' | 'low'
 type TaskStatus = 'todo' | 'in-progress' | 'done'
@@ -198,6 +198,9 @@ type CommandCenterContextValue = {
   updateProfile: (patch: Partial<Profile>) => void
   completeOnboarding: (profile: Omit<Profile, 'onboardingComplete'>) => void
   toggleTask: (id: string) => void
+  addSubtask: (taskId: string, title: string) => void
+  toggleSubtask: (taskId: string, subtaskId: string) => void
+  removeSubtask: (taskId: string, subtaskId: string) => void
   addTask: (input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'recurring' | 'projectId'>>) => void
   updateTask: (id: string, patch: Partial<Task>) => void
   archiveTask: (id: string) => void
@@ -527,6 +530,26 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date())
         setPlanItems((items) => [{ id: `plan-${Date.now()}`, time, title: input.title, kind: 'task', sourceId: id, status: 'pending' }, ...items])
       }
+    },
+    addSubtask: (taskId, title) => {
+      const cleanTitle = title.trim()
+      if (!cleanTitle) return
+      const subtask = { id: `subtask-${Date.now()}`, title: cleanTitle, done: false }
+      setTasks((items) => items.map((task) => task.id === taskId ? { ...task, subtasks: [...(task.subtasks ?? []), subtask] } : task))
+      void createRemoteSubtask(taskId, subtask)
+    },
+    toggleSubtask: (taskId, subtaskId) => {
+      setTasks((items) => items.map((task) => {
+        if (task.id !== taskId) return task
+        const subtasks = (task.subtasks ?? []).map((subtask) => subtask.id === subtaskId ? { ...subtask, done: !subtask.done } : subtask)
+        const changed = subtasks.find((subtask) => subtask.id === subtaskId)
+        if (changed) void updateRemoteSubtask(taskId, subtaskId, { done: changed.done })
+        return { ...task, subtasks }
+      }))
+    },
+    removeSubtask: (taskId, subtaskId) => {
+      setTasks((items) => items.map((task) => task.id === taskId ? { ...task, subtasks: (task.subtasks ?? []).filter((subtask) => subtask.id !== subtaskId) } : task))
+      void archiveRemoteSubtask(taskId, subtaskId)
     },
     updateTask: (id, patch) => {
       setTasks((items) => items.map((task) => task.id === id ? { ...task, ...patch } : task))
