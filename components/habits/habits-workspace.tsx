@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { Check, Flame, Link2, Plus, Repeat, Sparkles, X } from 'lucide-react'
+import { Archive, Check, Flame, Link2, Plus, Repeat, Sparkles, X } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter } from '@/lib/command-center-store'
@@ -26,7 +26,7 @@ function formatShortDate(date: string) {
 }
 
 export function HabitsWorkspace() {
-  const { habits, tasks, projects, goals, toggleHabit, addHabit } = useCommandCenter()
+  const { habits, tasks, projects, goals, toggleHabit, archiveHabit, addHabit } = useCommandCenter()
   const [showForm, setShowForm] = useState(false)
   const [title, setTitle] = useState('')
   const [target, setTarget] = useState('20 دقيقة')
@@ -71,7 +71,10 @@ export function HabitsWorkspace() {
         const project = habit.projectId ? projects.find((item) => item.id === habit.projectId) : task?.projectId ? projects.find((item) => item.id === task.projectId) : undefined
         const goal = habit.goalId ? goals.find((item) => item.id === habit.goalId) : project?.goalId ? goals.find((item) => item.id === project.goalId) : undefined
         return <div key={habit.id} id={habit.id} className="scroll-mt-24 rounded-2xl border border-border/70 bg-muted/60 p-4 transition-all hover:-translate-y-0.5 hover:bg-card">
-          <button type="button" onClick={() => toggleHabit(habit.id)} aria-pressed={habit.doneToday} className="flex w-full items-center gap-3 text-right"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${habit.doneToday ? 'bg-positive text-positive-foreground' : 'bg-card text-muted-foreground'}`}>{habit.doneToday ? <Check className="h-5 w-5" /> : <Repeat className="h-5 w-5" />}</span><span className="min-w-0 flex-1"><span className={`block text-sm font-semibold ${habit.doneToday ? 'text-muted-foreground line-through' : ''}`}>{habit.title}</span><span className="mt-1 block text-xs text-muted-foreground">هدف {habit.frequency === 'weekly' ? 'الأسبوع' : 'اليوم'}: {habit.target}</span></span><span className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><Flame className="h-4 w-4" />{habit.streak}</span></button>
+          <div className="flex items-start gap-2">
+            <button type="button" onClick={() => toggleHabit(habit.id)} aria-pressed={habit.doneToday} className="flex min-w-0 flex-1 items-center gap-3 text-right"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${habit.doneToday ? 'bg-positive text-positive-foreground' : 'bg-card text-muted-foreground'}`}>{habit.doneToday ? <Check className="h-5 w-5" /> : <Repeat className="h-5 w-5" />}</span><span className="min-w-0 flex-1"><span className={`block text-sm font-semibold ${habit.doneToday ? 'text-muted-foreground line-through' : ''}`}>{habit.title}</span><span className="mt-1 block text-xs text-muted-foreground">هدف {habit.frequency === 'weekly' ? 'الأسبوع' : 'اليوم'}: {habit.target}</span></span><span className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><Flame className="h-4 w-4" />{habit.streak}</span></button>
+            <button type="button" onClick={() => archiveHabit(habit.id)} aria-label={`أرشفة ${habit.title}`} className="rounded-full p-2 text-muted-foreground transition hover:bg-warning/20 hover:text-warning-foreground focus-visible:opacity-100"><Archive className="h-4 w-4" /></button>
+          </div>
           {(task || project || goal) && <div className="mt-3 flex flex-wrap gap-1.5 text-[10px]"><span className="inline-flex items-center gap-1 text-muted-foreground"><Link2 className="h-3 w-3 text-primary" />مرتبط بـ</span>{task && <Link href={`/tasks#task-${task.id}`} className="rounded-full bg-accent px-2 py-1 text-accent-foreground hover:underline">مهمة: {task.title}</Link>}{project && <Link href={`/projects#${project.id}`} className="rounded-full bg-card px-2 py-1 hover:underline">مشروع: {project.title}</Link>}{goal && <Link href={`/goals#${goal.id}`} className="rounded-full bg-primary/10 px-2 py-1 text-primary hover:underline">هدف: {goal.title}</Link>}</div>}
           <HabitHeatmap dates={recentDates} history={habit.history ?? {}} title={habit.title} />
         </div>
