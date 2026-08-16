@@ -156,6 +156,9 @@ export type WeeklyReview = {
 }
 
 type CommandCenterContextValue = {
+  exportData: () => string
+  importData: (raw: string) => { ok: boolean; message: string }
+  resetLocalData: () => void
   profile: Profile
   tasks: Task[]
   notes: Note[]
@@ -298,20 +301,59 @@ const initialEntertainment: EntertainmentItem[] = [
 
 const STORAGE_KEY = 'personal-command-center-state-v2'
 const initialWeeklyReview: WeeklyReview = { id: 'weekly-review-current', weekStart: '2026-08-10', weekEnd: '2026-08-16', wentWell: '', blockers: '', nextGoal: '', status: 'draft', updatedAt: 'لم تُحفظ بعد' }
-type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; weeklyReview?: WeeklyReview }
+type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; weeklyReview: WeeklyReview }
+
+function getDefaultState(): PersistedState {
+  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, weeklyReview: initialWeeklyReview }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function arrayOr<T>(value: unknown, fallback: T[]): T[] {
+  return Array.isArray(value) ? value as T[] : fallback
+}
+
+function normalizeState(value: unknown): PersistedState | null {
+  if (!isRecord(value)) return null
+  if (value.app !== 'personal-command-center' || !isRecord(value.data)) return null
+  const source = value.data
+  const requiredArrays = ['tasks', 'notes', 'habits', 'planItems', 'goals', 'projects', 'financeEntries', 'reminders', 'entertainment']
+  if (!isRecord(source.profile) || !isRecord(source.budget) || !isRecord(source.religious) || !isRecord(source.weeklyReview)) return null
+  if (requiredArrays.some((key) => !Array.isArray(source[key]))) return null
+  const profile = source.profile as Partial<Profile>
+  const budget = source.budget as Partial<Budget>
+  const religious = source.religious as Partial<ReligiousState>
+  const weeklyReview = source.weeklyReview as Partial<WeeklyReview>
+  const defaults = getDefaultState()
+  return {
+    profile: { ...defaults.profile, ...profile },
+    tasks: source.tasks as Task[],
+    notes: source.notes as Note[],
+    habits: source.habits as Habit[],
+    planItems: source.planItems as PlanItem[],
+    goals: source.goals as Goal[],
+    projects: source.projects as Project[],
+    financeEntries: source.financeEntries as FinanceEntry[],
+    budget: { ...defaults.budget, ...budget },
+    religious: { ...defaults.religious, ...religious },
+    reminders: source.reminders as Reminder[],
+    entertainment: source.entertainment as EntertainmentItem[],
+    weeklyReview: { ...defaults.weeklyReview, ...weeklyReview },
+  }
+}
 
 function loadInitialState(): PersistedState {
-  if (typeof window === 'undefined') return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, weeklyReview: initialWeeklyReview }
+  const defaults = getDefaultState()
+  if (typeof window === 'undefined') return defaults
   try {
     const saved = window.localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      const parsed = JSON.parse(saved) as Partial<PersistedState>
-      return { profile: { ...initialProfile, ...parsed.profile }, tasks: parsed.tasks ?? initialTasks, notes: parsed.notes ?? initialNotes, habits: parsed.habits ?? initialHabits, planItems: parsed.planItems ?? initialPlanItems, goals: parsed.goals ?? initialGoals, projects: parsed.projects ?? initialProjects, financeEntries: parsed.financeEntries ?? initialFinanceEntries, budget: parsed.budget ?? initialBudget, religious: parsed.religious ?? initialReligious, reminders: parsed.reminders ?? initialReminders, entertainment: parsed.entertainment ?? initialEntertainment, weeklyReview: parsed.weeklyReview ?? initialWeeklyReview }
-    }
+    if (saved) return normalizeState(JSON.parse(saved)) ?? defaults
   } catch {
     // Keep the product usable if storage is unavailable or malformed.
   }
-  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, weeklyReview: initialWeeklyReview }
+  return defaults
 }
 
 const StoreContext = createContext<CommandCenterContextValue | null>(null)
@@ -359,6 +401,46 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const value = useMemo<CommandCenterContextValue>(() => ({
     profile,
     tasks,
+    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 1, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, weeklyReview } }, null, 2),
+    importData: (raw) => {
+      try {
+        const next = normalizeState(JSON.parse(raw))
+        if (!next) return { ok: false, message: 'ملف النسخة الاحتياطية غير صالح.' }
+        setProfile(next.profile)
+        setTasks(next.tasks)
+        setNotes(next.notes)
+        setHabits(next.habits)
+        setPlanItems(next.planItems)
+        setGoals(next.goals)
+        setProjects(next.projects)
+        setFinanceEntries(next.financeEntries)
+        setBudget(next.budget)
+        setReligious(next.religious)
+        setReminders(next.reminders)
+        setEntertainment(next.entertainment)
+        setWeeklyReview(next.weeklyReview)
+        return { ok: true, message: 'تمت استعادة النسخة الاحتياطية محليًا.' }
+      } catch {
+        return { ok: false, message: 'تعذر قراءة ملف النسخة الاحتياطية.' }
+      }
+    },
+    resetLocalData: () => {
+      const defaults = getDefaultState()
+      window.localStorage.removeItem(STORAGE_KEY)
+      setProfile(defaults.profile)
+      setTasks(defaults.tasks)
+      setNotes(defaults.notes)
+      setHabits(defaults.habits)
+      setPlanItems(defaults.planItems)
+      setGoals(defaults.goals)
+      setProjects(defaults.projects)
+      setFinanceEntries(defaults.financeEntries)
+      setBudget(defaults.budget)
+      setReligious(defaults.religious)
+      setReminders(defaults.reminders)
+      setEntertainment(defaults.entertainment)
+      setWeeklyReview(defaults.weeklyReview)
+    },
     notes,
     habits,
     planItems,
