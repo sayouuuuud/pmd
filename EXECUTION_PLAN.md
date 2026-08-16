@@ -684,3 +684,7 @@
 اعتمد `GlobalSearchDialog` على `Input` المشترك لحقل البحث، مع إبقاء شريط البحث بلا حدود أو خلفية إضافية حتى لا يتغير التصميم الحالي داخل `Dialog`.
 اختُبرت الصفحة الرئيسية بصريًا، وفُتح البحث وأُدخلت كلمة «مهمة» فظهرت النتائج في «المهام» و«خطة اليوم»، ثم أُغلق عبر Escape وعادت الصفحة دون تنقل أو استعلام عالق. التفاصيل في `verification/global-search-input-adoption-browser.md` و`verification/interaction-smoke-tests.md`.
 لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة.
+## سجل دفعة — اعتماد الحقول المشتركة في الحساب — 2026-08-16
+اعتمد `AccountWorkspace` على `Input` المشترك في حقول الاسم والمدينة وبداية اليوم وفترة العمل، وعلى `Textarea` للهدف الرئيسي و`Button` لحفظ التفضيلات، مع إبقاء حقل رفع ملف النسخة الاحتياطية الخام مخفيًا لأنه يحتاج `input type="file"` للوصول إلى File API.
+اختُبرت `/account` بصريًا وتفاعليًا؛ أُدخل نص مؤقت في حقل الاسم ثم أُعيدت القيمة الأصلية دون الضغط على الحفظ، وبقي RTL والهوية وسلوك النموذج سليمين. التفاصيل في `verification/account-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+لم تُنفذ عمليات تصدير أو استعادة أو حذف، ولم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة.

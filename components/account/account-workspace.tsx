@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, CloudDownload, Download, FileSpreadsheet, ShieldCheck, Trash2, Upload, UserRound } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { useCommandCenter } from '@/lib/command-center-store'
 import { authClient } from '@/lib/auth-client'
 
@@ -154,26 +157,26 @@ export function AccountWorkspace() {
       <ContentCard title="تفضيلات المساحة" description="عدّل الإعدادات التي تؤثر على خطة اليوم والاقتراحات الشخصية.">
         <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-medium">الاسم
-            <input value={form.name} onChange={(event) => updateField('name', event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            <Input value={form.name} onChange={(event) => updateField('name', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" />
           </label>
           <label className="block text-sm font-medium">المدينة
-            <input value={form.city} onChange={(event) => updateField('city', event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            <Input value={form.city} onChange={(event) => updateField('city', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" />
           </label>
           <label className="block text-sm font-medium">بداية اليوم
-            <input type="time" value={form.dayStart} onChange={(event) => updateField('dayStart', event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            <Input type="time" value={form.dayStart} onChange={(event) => updateField('dayStart', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" />
           </label>
           <label className="block text-sm font-medium">فترة العمل
-            <input value={form.workWindow} onChange={(event) => updateField('workWindow', event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="09:00 - 17:00" />
+            <Input value={form.workWindow} onChange={(event) => updateField('workWindow', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" placeholder="09:00 - 17:00" />
           </label>
           <label className="block text-sm font-medium sm:col-span-2">الهدف الرئيسي الحالي
-            <textarea value={form.focusGoal} onChange={(event) => updateField('focusGoal', event.target.value)} className="mt-2 min-h-24 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            <Textarea value={form.focusGoal} onChange={(event) => updateField('focusGoal', event.target.value)} className="mt-2 min-h-24 rounded-2xl px-4 py-3" />
           </label>
           <div className="flex items-center justify-between gap-3 sm:col-span-2">
             <p className="text-xs text-muted-foreground">تُحفظ محليًا فورًا، وتُرفع للـBackend عند وجود جلسة وقاعدة بيانات.</p>
-            <button type="submit" className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
+            <Button type="submit" className="rounded-full px-5 py-2.5 text-sm font-semibold">
               {saved && <Check className="h-4 w-4" />}
               {saved ? 'تم الحفظ' : 'حفظ التفضيلات'}
-            </button>
+            </Button>
           </div>
         </form>
       </ContentCard>
