@@ -414,6 +414,18 @@ function arrayOr<T>(value: unknown, fallback: T[]): T[] {
   return Array.isArray(value) ? value as T[] : fallback
 }
 
+function calculateHabitStreak(history: Record<string, boolean>, localDate: string) {
+  let streak = 0
+  const base = new Date(`${localDate}T12:00:00Z`)
+  while (true) {
+    const date = new Date(base)
+    date.setUTCDate(base.getUTCDate() - streak)
+    if (!history[date.toISOString().slice(0, 10)]) break
+    streak += 1
+  }
+  return streak
+}
+
 function progressFromCount(prefix: 'morning' | 'evening', value: unknown): Record<string, number> {
   let remaining = Math.max(0, Math.min(12, Math.round(Number(value) || 0)))
   return Object.fromEntries(Array.from({ length: 4 }, (_, index) => {
@@ -1064,8 +1076,10 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setHabits((items) => items.map((habit) => {
         if (habit.id !== id) return habit
         const doneToday = !habit.doneToday
+        const history = { ...(habit.history ?? {}), [localDate]: doneToday }
+        const streak = calculateHabitStreak(history, localDate)
         void toggleRemoteHabit(id, doneToday)
-        return { ...habit, doneToday, history: { ...(habit.history ?? {}), [localDate]: doneToday }, streak: doneToday ? habit.streak + 1 : Math.max(0, habit.streak - 1) }
+        return { ...habit, doneToday, history, streak }
       }))
       setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: item.status === 'done' ? 'pending' : 'done' } : item))
     },

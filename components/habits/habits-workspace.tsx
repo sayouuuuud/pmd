@@ -25,6 +25,10 @@ function formatShortDate(date: string) {
   return new Intl.DateTimeFormat('ar-EG', { day: 'numeric', month: 'short', timeZone: 'Africa/Cairo' }).format(new Date(`${date}T12:00:00Z`))
 }
 
+function formatWeekday(date: string) {
+  return new Intl.DateTimeFormat('ar-EG', { weekday: 'short', timeZone: 'Africa/Cairo' }).format(new Date(`${date}T12:00:00Z`))
+}
+
 export function HabitsWorkspace() {
   const { habits, tasks, projects, goals, toggleHabit, archiveHabit, addHabit } = useCommandCenter()
   const [showForm, setShowForm] = useState(false)
@@ -35,8 +39,15 @@ export function HabitsWorkspace() {
   const [projectId, setProjectId] = useState('')
   const [goalId, setGoalId] = useState('')
   const recentDates = useMemo(() => getRecentDates(35), [])
+  const today = recentDates[recentDates.length - 1]
+  const weekDates = recentDates.slice(-7)
   const completed = habits.filter((habit) => habit.doneToday).length
   const completionPercent = Math.round((completed / Math.max(habits.length, 1)) * 100)
+  const isDoneOn = (habit: (typeof habits)[number], date: string) => date === today ? habit.doneToday : Boolean(habit.history?.[date])
+  const weeklyCompleted = habits.reduce((total, habit) => total + (habit.frequency === 'weekly' ? (weekDates.some((date) => isDoneOn(habit, date)) ? 1 : 0) : weekDates.filter((date) => isDoneOn(habit, date)).length), 0)
+  const weeklyTarget = habits.reduce((total, habit) => total + (habit.frequency === 'weekly' ? 1 : 7), 0)
+  const weeklyPercent = Math.round((weeklyCompleted / Math.max(weeklyTarget, 1)) * 100)
+  const weeklyDayScores = weekDates.map((date) => ({ date, completed: habits.filter((habit) => isDoneOn(habit, date)).length }))
 
   function submitHabit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -76,12 +87,13 @@ export function HabitsWorkspace() {
             <button type="button" onClick={() => archiveHabit(habit.id)} aria-label={`أرشفة ${habit.title}`} className="rounded-full p-2 text-muted-foreground transition hover:bg-warning/20 hover:text-warning-foreground focus-visible:opacity-100"><Archive className="h-4 w-4" /></button>
           </div>
           {(task || project || goal) && <div className="mt-3 flex flex-wrap gap-1.5 text-[10px]"><span className="inline-flex items-center gap-1 text-muted-foreground"><Link2 className="h-3 w-3 text-primary" />مرتبط بـ</span>{task && <Link href={`/tasks#task-${task.id}`} className="rounded-full bg-accent px-2 py-1 text-accent-foreground hover:underline">مهمة: {task.title}</Link>}{project && <Link href={`/projects#${project.id}`} className="rounded-full bg-card px-2 py-1 hover:underline">مشروع: {project.title}</Link>}{goal && <Link href={`/goals#${goal.id}`} className="rounded-full bg-primary/10 px-2 py-1 text-primary hover:underline">هدف: {goal.title}</Link>}</div>}
-          <HabitHeatmap dates={recentDates} history={habit.history ?? {}} title={habit.title} />
+          <HabitHeatmap dates={recentDates} history={{ ...(habit.history ?? {}), [today]: habit.doneToday }} title={habit.title} />
         </div>
       })}</div>}
       <div className="mt-5 flex items-center gap-3 rounded-2xl bg-accent p-4"><Sparkles className="h-5 w-5 text-accent-foreground" /><p className="text-xs leading-6 text-accent-foreground">العادة لا تحتاج يومًا مثاليًا؛ فقط ارجع للمسار في الخطوة التالية.</p></div>
     </ContentCard>
-    <ContentCard className="lg:col-span-4" title="استمراريتك" description="الصورة الأكبر لآخر خمسة أسابيع"><div className="flex items-end gap-3"><span className="text-5xl font-semibold">{completionPercent}%</span><span className="mb-2 text-xs text-muted-foreground">إنجاز اليوم</span></div><div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${completionPercent}%` }} /></div><div className="mt-5 grid grid-cols-7 gap-1.5">{['س', 'ح', 'ن', 'ث', 'ر', 'خ', 'ج'].map((day, index) => <div key={day} className="text-center"><span className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full text-[10px] ${index < Math.min(completed, 5) ? 'bg-positive text-positive-foreground' : 'bg-muted text-muted-foreground'}`}>{index < Math.min(completed, 5) ? <Check className="h-3 w-3" /> : day}</span><span className="mt-1 block text-[10px] text-muted-foreground">{day}</span></div>)}</div><p className="mt-4 text-xs leading-5 text-muted-foreground">كل مربع في سجل العادة يمثل يومًا مكتملًا، وتبقى البيانات المحلية مفيدة حتى عند غياب قاعدة البيانات.</p></ContentCard>
+          <ContentCard className="lg:col-span-4" title="استمراريتك" description="مقارنة واضحة بين إنجاز اليوم والأسبوع"><div className="flex items-end gap-3"><span className="text-5xl font-semibold">{completionPercent}%</span><span className="mb-2 text-xs text-muted-foreground">إنجاز اليوم</span></div><div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${completionPercent}%` }} /></div><div className="mt-5 flex items-end justify-between gap-3"><div><p className="text-2xl font-semibold">{weeklyPercent}%</p><p className="text-[10px] text-muted-foreground">إنجاز الأسبوع</p></div><p className="text-start text-[10px] leading-4 text-muted-foreground">{weeklyCompleted} من {weeklyTarget} إنجازًا مستهدفًا</p></div><div className="mt-4 grid grid-cols-7 gap-1.5">{weeklyDayScores.map(({ date, completed: dayCompleted }) => <div key={date} className="text-center" title={`${formatShortDate(date)}: ${dayCompleted} من ${habits.length}`}><span className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full text-[10px] ${dayCompleted > 0 ? 'bg-positive text-positive-foreground' : 'bg-muted text-muted-foreground'}`}>{dayCompleted > 0 ? <Check className="h-3 w-3" /> : '·'}</span><span className="mt-1 block text-[10px] text-muted-foreground">{formatWeekday(date)}</span></div>)}</div><p className="mt-4 text-xs leading-5 text-muted-foreground">كل مربع في سجل العادة يمثل يومًا مكتملًا، وتبقى البيانات المحلية مفيدة حتى عند غياب قاعدة البيانات.</p></ContentCard>
+
   </div>
 }
 
