@@ -28,7 +28,7 @@ function safePrayerLogs(value: unknown) {
   if (!Array.isArray(value)) return defaults.prayerLogs
   return value.slice(0, 10).map((item) => {
     const prayer = item as Record<string, unknown>
-    const status = prayer.status === 'done' || prayer.status === 'missed' ? prayer.status : 'pending'
+    const status = prayer.status === 'done' || prayer.status === 'on-time' || prayer.status === 'congregation' || prayer.status === 'qada' || prayer.status === 'missed' ? prayer.status : 'pending'
     return {
       id: stringValue(prayer.id, 'prayer', 40),
       name: stringValue(prayer.name, 'صلاة', 40),

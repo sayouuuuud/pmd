@@ -315,7 +315,7 @@ export function mapRemoteReminder(item: RemoteReminder): Reminder {
 }
 
 function asPrayerStatus(value: string): PrayerLog['status'] {
-  return value === 'done' || value === 'missed' ? value : 'pending'
+  return value === 'done' || value === 'on-time' || value === 'congregation' || value === 'qada' || value === 'missed' ? value : 'pending'
 }
 
 export function mapRemoteWeeklyReview(item: RemoteWeeklyReview): WeeklyReview {

@@ -102,11 +102,17 @@ export type EntertainmentItem = {
   createdAt: string
 }
 
+export type PrayerStatus = 'pending' | 'done' | 'on-time' | 'congregation' | 'qada' | 'missed'
+
+export function isPrayerCompletedStatus(status: PrayerStatus) {
+  return status === 'done' || status === 'on-time' || status === 'congregation' || status === 'qada'
+}
+
 export type PrayerLog = {
   id: string
   name: string
   time: string
-  status: 'pending' | 'done' | 'missed'
+  status: PrayerStatus
   localDate: string
 }
 
@@ -256,7 +262,7 @@ type CommandCenterContextValue = {
   updateFinanceEntry: (id: string, patch: Partial<FinanceEntry>) => void
   archiveFinanceEntry: (id: string) => void
   updateBudget: (monthlyLimit: number) => void
-  togglePrayer: (id: string) => void
+  togglePrayer: (id: string, status?: PrayerStatus) => void
   addWirdProgress: (minutes: number) => void
   toggleDhikr: (session: 'morning' | 'evening') => void
   incrementDhikr: (session: 'morning' | 'evening', itemId: string, target?: number) => void
@@ -741,11 +747,15 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setBudget((current) => ({ ...current, monthlyLimit: safeLimit }))
       void updateRemoteBudget(safeLimit)
     },
-    togglePrayer: (id) => {
+    togglePrayer: (id, requestedStatus) => {
       setReligious((current) => {
-        const prayerLogs = current.prayerLogs.map((prayer) => prayer.id === id ? { ...prayer, status: (prayer.status === 'done' ? 'pending' : 'done') as PrayerLog['status'] } : prayer)
+        const prayerLogs = current.prayerLogs.map((prayer) => {
+          if (prayer.id !== id) return prayer
+          const status = requestedStatus ?? (isPrayerCompletedStatus(prayer.status) ? 'pending' : 'done')
+          return { ...prayer, status }
+        })
         const localDate = prayerLogs[0]?.localDate ?? new Date().toISOString().slice(0, 10)
-        const completed = prayerLogs.filter((prayer) => prayer.status === 'done').length
+        const completed = prayerLogs.filter((prayer) => isPrayerCompletedStatus(prayer.status)).length
         const historyByDate = new Map((current.prayerHistory ?? []).map((day) => [day.localDate, day]))
         historyByDate.set(localDate, { localDate, completed, total: prayerLogs.length })
         const prayerHistory = Array.from(historyByDate.values()).sort((left, right) => left.localDate.localeCompare(right.localDate)).slice(-30)
@@ -753,7 +763,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         void updateRemoteReligious(next)
         return next
       })
-      setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: item.status === 'done' ? 'pending' : 'done' } : item))
+      setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: requestedStatus ? (isPrayerCompletedStatus(requestedStatus) ? 'done' : 'pending') : (item.status === 'done' ? 'pending' : 'done') } : item))
     },
     addMemorizationProgress: (ayahs) => {
       setReligious((current) => {

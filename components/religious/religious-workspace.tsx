@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, Forward, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Rewind, Sparkles, Sunrise, SunMedium, Trash2, Volume2 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
-import { useCommandCenter } from '@/lib/command-center-store'
+import { isPrayerCompletedStatus, type PrayerStatus, useCommandCenter } from '@/lib/command-center-store'
 
 const prayerIcons: Record<string, typeof Sunrise> = {
   الفجر: Sunrise,
@@ -13,6 +13,23 @@ const prayerIcons: Record<string, typeof Sunrise> = {
   العصر: SunMedium,
   المغرب: Moon,
   العشاء: Moon,
+}
+
+const prayerStatusOptions: Array<{ value: PrayerStatus; label: string }> = [
+  { value: 'pending', label: 'لم تُسجّل' },
+  { value: 'on-time', label: 'في وقتها' },
+  { value: 'congregation', label: 'جماعة' },
+  { value: 'qada', label: 'قضاء' },
+  { value: 'missed', label: 'فائتة' },
+]
+
+const prayerStatusLabels: Record<PrayerStatus, string> = {
+  pending: 'لم تُسجّل',
+  done: 'في وقتها',
+  'on-time': 'في وقتها',
+  congregation: 'جماعة',
+  qada: 'قضاء',
+  missed: 'فائتة',
 }
 
 const calculationMethods: Record<string, string> = {
@@ -83,7 +100,7 @@ export function ReligiousWorkspace() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [sunnahChecks, setSunnahChecks] = useState<Record<string, boolean>>({ duha: false, witr: false, rawatib: false, sadaqah: false })
   const [duaInput, setDuaInput] = useState('')
-  const completedPrayers = religious.prayerLogs.filter((prayer) => prayer.status === 'done').length
+  const completedPrayers = religious.prayerLogs.filter((prayer) => isPrayerCompletedStatus(prayer.status)).length
   const prayerPercent = Math.round((completedPrayers / Math.max(religious.prayerLogs.length, 1)) * 100)
   const wirdPercent = Math.round((religious.quran.completedMinutes / Math.max(religious.quran.targetMinutes, 1)) * 100)
   const memorizationTarget = religious.quran.memorizationTarget ?? 10
@@ -251,12 +268,18 @@ export function ReligiousWorkspace() {
             <div className="grid gap-2 sm:grid-cols-2">
               {religious.prayerLogs.map((prayer) => {
                 const Icon = prayerIcons[prayer.name] ?? Clock3
-                const done = prayer.status === 'done'
-                return <button key={prayer.id} type="button" onClick={() => togglePrayer(prayer.id)} className={`flex items-center gap-3 rounded-2xl border p-3 text-right transition-colors ${done ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}>
-                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${done ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'}`}><Icon className="h-5 w-5" /></span>
-                  <span className="flex-1"><span className="block text-sm font-semibold">صلاة {prayer.name}</span><span className="mt-1 block text-xs text-muted-foreground">{prayer.time}</span></span>
-                  <span className={`flex h-7 w-7 items-center justify-center rounded-full border-2 ${done ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{done && <Check className="h-3.5 w-3.5" />}</span>
-                </button>
+                const done = isPrayerCompletedStatus(prayer.status)
+                const statusLabel = prayerStatusLabels[prayer.status]
+                return <div key={prayer.id} className={`flex items-center gap-3 rounded-2xl border p-3 text-right transition-colors ${done ? 'border-primary/30 bg-primary/8' : prayer.status === 'missed' ? 'border-destructive/30 bg-destructive/5' : 'border-border bg-background'}`}>
+                  <button type="button" aria-pressed={done} onClick={() => togglePrayer(prayer.id)} className="flex min-w-0 flex-1 items-center gap-3 text-right">
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${done ? 'bg-primary text-primary-foreground' : prayer.status === 'missed' ? 'bg-destructive/10 text-destructive' : 'bg-accent text-accent-foreground'}`}><Icon className="h-5 w-5" /></span>
+                    <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">صلاة {prayer.name}</span><span className="mt-1 block text-xs text-muted-foreground">{prayer.time} · {statusLabel}</span></span>
+                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${done ? 'border-primary bg-primary text-primary-foreground' : prayer.status === 'missed' ? 'border-destructive text-destructive' : 'border-border'}`}>{done && <Check className="h-3.5 w-3.5" />}</span>
+                  </button>
+                  <select aria-label={`حالة صلاة ${prayer.name}`} value={prayer.status} onChange={(event) => togglePrayer(prayer.id, event.currentTarget.value as PrayerStatus)} className="w-24 shrink-0 rounded-xl border border-border bg-background px-2 py-2 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    {prayerStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </select>
+                </div>
               })}
             </div>
           </ContentCard>

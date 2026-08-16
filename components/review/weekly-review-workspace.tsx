@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, BookOpen, CheckCircle2, CircleAlert, ClipboardCheck, Clapperboard, Flame, HeartPulse, Landmark, Link2, ListMusic, Save, Target, WalletCards } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
-import { useCommandCenter } from '@/lib/command-center-store'
+import { isPrayerCompletedStatus, useCommandCenter } from '@/lib/command-center-store'
 
 export function WeeklyReviewWorkspace() {
   const { tasks, habits, notes, goals, projects, financeEntries, religious, entertainment, weeklyReview, saveWeeklyReview } = useCommandCenter()
@@ -22,7 +22,7 @@ export function WeeklyReviewWorkspace() {
     const doneTasks = tasks.filter((task) => task.status === 'done').length
     const openTasks = tasks.filter((task) => task.status !== 'done').length
     const doneHabits = habits.filter((habit) => habit.doneToday).length
-    const prayerCount = religious.prayerLogs.filter((prayer) => prayer.status === 'done').length
+    const prayerCount = religious.prayerLogs.filter((prayer) => isPrayerCompletedStatus(prayer.status)).length
     const prayerHistory = (religious.prayerHistory ?? []).filter((day) => day.localDate >= weeklyReview.weekStart && day.localDate <= weeklyReview.weekEnd)
     const prayerTotal = prayerHistory.reduce((sum, day) => sum + day.total, 0)
     const prayerCompleted = prayerHistory.reduce((sum, day) => sum + day.completed, 0)
