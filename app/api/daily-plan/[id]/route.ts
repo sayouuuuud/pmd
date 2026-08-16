@@ -22,6 +22,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const body = await request.json() as Record<string, unknown>
     const patch: Partial<typeof dailyPlanItem.$inferInsert> = { updatedAt: new Date() }
     if (typeof body.status === 'string' && statuses.has(body.status)) patch.status = body.status
+    if (typeof body.localDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.localDate)) patch.localDate = body.localDate
     if (typeof body.startAt === 'string') patch.startAt = body.startAt
     if (typeof body.endAt === 'string') patch.endAt = body.endAt
     if (typeof body.position === 'number') patch.position = body.position

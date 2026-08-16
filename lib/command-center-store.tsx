@@ -179,6 +179,7 @@ export type PlanItem = {
   title: string
   kind: 'task' | 'habit' | 'prayer' | 'quran' | 'rest'
   sourceId?: string
+  localDate?: string
   status: 'pending' | 'done' | 'snoozed' | 'skipped'
 }
 
@@ -304,6 +305,7 @@ type CommandCenterContextValue = {
   toggleHabit: (id: string) => void
   togglePlanItem: (id: string) => void
   updatePlanItem: (id: string, patch: Partial<Pick<PlanItem, 'title' | 'time'>>) => void
+  movePlanItem: (id: string, localDate: string) => void
   snoozePlanItem: (id: string) => void
   skipPlanItem: (id: string) => void
   restorePlanItem: (id: string) => void
@@ -426,6 +428,10 @@ function arrayOr<T>(value: unknown, fallback: T[]): T[] {
   return Array.isArray(value) ? value as T[] : fallback
 }
 
+function cairoToday() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
+}
+
 function calculateHabitStreak(history: Record<string, boolean>, localDate: string) {
   let streak = 0
   const base = new Date(`${localDate}T12:00:00Z`)
@@ -492,7 +498,7 @@ function normalizeState(value: unknown): PersistedState | null {
       frequency: habit.frequency === 'weekly' ? 'weekly' : 'daily',
       history: isRecord(habit.history) ? Object.fromEntries(Object.entries(habit.history).filter(([date, done]) => /^\\d{4}-\\d{2}-\\d{2}$/.test(date) && typeof done === 'boolean').slice(-60)) : {},
     })),
-    planItems: arrayOr(source.planItems, defaults.planItems),
+    planItems: arrayOr(source.planItems, defaults.planItems).map((item) => ({ ...item, localDate: typeof item.localDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.localDate) ? item.localDate : cairoToday() })),
     goals: arrayOr(source.goals, defaults.goals),
     projects: arrayOr(source.projects, defaults.projects),
     financeEntries: arrayOr(source.financeEntries, defaults.financeEntries).map((entry) => ({ ...entry, recurrence: entry.recurrence === 'weekly' || entry.recurrence === 'monthly' ? entry.recurrence : 'none' })),
@@ -1119,6 +1125,11 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     updatePlanItem: (id, patch) => {
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, ...patch } : item))
       void updateRemotePlanItem(id, patch)
+    },
+    movePlanItem: (id, localDate) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate)) return
+      setPlanItems((items) => items.map((item) => item.id === id ? { ...item, localDate } : item))
+      void updateRemotePlanItem(id, { localDate })
     },
     snoozePlanItem: (id) => {
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'snoozed' } : item))

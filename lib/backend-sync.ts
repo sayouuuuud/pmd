@@ -49,6 +49,7 @@ type RemotePlanItem = {
   title: string
   kind: string
   sourceId: string | null
+  localDate: string | null
   startAt: string | null
   status: string
 }
@@ -221,6 +222,7 @@ export function mapRemotePlanItem(item: RemotePlanItem): PlanItem {
     title: item.title,
     kind: asPlanKind(item.kind),
     sourceId: item.sourceId ?? undefined,
+    localDate: item.localDate ?? undefined,
     time: item.startAt ?? '—',
     status: asPlanStatus(item.status),
   }
