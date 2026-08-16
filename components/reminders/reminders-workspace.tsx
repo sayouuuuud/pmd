@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Bell, CalendarClock, Check, Clock3, Plus, RotateCcw, X } from 'lucide-react'
+import { Bell, CalendarClock, Check, Clock3, Plus, X } from 'lucide-react'
 import { ReminderKind, useCommandCenter } from '@/lib/command-center-store'
 
 const kindLabels: Record<ReminderKind, string> = {
@@ -27,6 +27,7 @@ export function RemindersWorkspace() {
   const [title, setTitle] = useState('')
   const [dueAt, setDueAt] = useState('اليوم، ١٨:٠٠')
   const [kind, setKind] = useState<ReminderKind>('task')
+  const [repeatLabel, setRepeatLabel] = useState('')
 
   const visibleReminders = useMemo(() => {
     const items = filter === 'active' ? reminders.filter((reminder) => reminder.status !== 'done') : reminders
@@ -38,8 +39,9 @@ export function RemindersWorkspace() {
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!title.trim()) return
-    addReminder({ title: title.trim(), kind, dueAt: dueAt.trim() || 'لاحقًا اليوم' })
+    addReminder({ title: title.trim(), kind, dueAt: dueAt.trim() || 'لاحقًا اليوم', repeatLabel: repeatLabel || undefined })
     setTitle('')
+    setRepeatLabel('')
     setAddOpen(false)
   }
 
@@ -57,7 +59,7 @@ export function RemindersWorkspace() {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-3xl bg-card p-5"><div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">المستحق الآن</span><Bell className="h-4 w-4 text-primary" /></div><p className="mt-3 text-3xl font-semibold">{pendingCount}</p><p className="mt-1 text-xs text-muted-foreground">تذكيرات تحتاج انتباهك</p></div>
         <div className="rounded-3xl bg-card p-5"><div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">تم اليوم</span><Check className="h-4 w-4 text-chart-2" /></div><p className="mt-3 text-3xl font-semibold">{reminders.filter((reminder) => reminder.status === 'done').length}</p><p className="mt-1 text-xs text-muted-foreground">خطوات صغيرة اتقفلت</p></div>
-        <div className="rounded-3xl bg-card p-5"><div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">التذكيرات المتكررة</span><RotateCcw className="h-4 w-4 text-chart-4" /></div><p className="mt-3 text-3xl font-semibold">{reminders.filter((reminder) => reminder.repeatLabel).length}</p><p className="mt-1 text-xs text-muted-foreground">تتراجع بشكل دوري</p></div>
+        <div className="rounded-3xl bg-card p-5"><div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">التذكيرات المتكررة</span><CalendarClock className="h-4 w-4 text-chart-4" /></div><p className="mt-3 text-3xl font-semibold">{reminders.filter((reminder) => reminder.repeatLabel).length}</p><p className="mt-1 text-xs text-muted-foreground">تتراجع بشكل دوري</p></div>
       </div>
 
       <div className="rounded-3xl bg-card p-5 sm:p-6">
@@ -75,7 +77,7 @@ export function RemindersWorkspace() {
         </div>
       </div>
 
-      {addOpen && <div className="fixed inset-0 z-50 flex items-start justify-center bg-foreground/30 p-4 pt-24 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="إضافة تذكير"><form onSubmit={submit} className="w-full max-w-lg rounded-3xl bg-card p-5 shadow-2xl"><div className="flex items-center justify-between"><div><h2 className="text-lg font-semibold">تذكير جديد</h2><p className="mt-1 text-xs text-muted-foreground">خليه واضح وقابل للتنفيذ.</p></div><button type="button" aria-label="إغلاق" onClick={() => setAddOpen(false)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button></div><label htmlFor="reminder-title" className="mt-5 block text-sm font-medium">عنوان التذكير</label><input id="reminder-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="مثال: دفع الاشتراك" /><div className="mt-4 grid gap-3 sm:grid-cols-2"><label className="text-sm font-medium">النوع<select value={kind} onChange={(event) => setKind(event.target.value as ReminderKind)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none"><option value="task">مهمة</option><option value="habit">عادة</option><option value="prayer">صلاة</option><option value="quran">ورد</option><option value="finance">مالية</option></select></label><label className="text-sm font-medium">الموعد<input value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none" placeholder="اليوم، ١٨:٠٠" /></label></div><div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => setAddOpen(false)} className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</button><button type="submit" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">حفظ التذكير</button></div></form></div>}
+      {addOpen && <div className="fixed inset-0 z-50 flex items-start justify-center bg-foreground/30 p-4 pt-24 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="إضافة تذكير"><form onSubmit={submit} className="w-full max-w-lg rounded-3xl bg-card p-5 shadow-2xl"><div className="flex items-center justify-between"><div><h2 className="text-lg font-semibold">تذكير جديد</h2><p className="mt-1 text-xs text-muted-foreground">خليه واضح وقابل للتنفيذ.</p></div><button type="button" aria-label="إغلاق" onClick={() => setAddOpen(false)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button></div><label htmlFor="reminder-title" className="mt-5 block text-sm font-medium">عنوان التذكير</label><input id="reminder-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="مثال: دفع الاشتراك" /><div className="mt-4 grid gap-3 sm:grid-cols-2"><label className="text-sm font-medium">النوع<select value={kind} onChange={(event) => setKind(event.target.value as ReminderKind)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none"><option value="task">مهمة</option><option value="habit">عادة</option><option value="prayer">صلاة</option><option value="quran">ورد</option><option value="finance">مالية</option></select></label><label className="text-sm font-medium">الموعد<input value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none" placeholder="اليوم، ١٨:٠٠" /></label></div><label className="mt-4 block text-sm font-medium">التكرار<select value={repeatLabel} onChange={(event) => setRepeatLabel(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none"><option value="">بدون تكرار</option><option value="يوميًا">يوميًا</option><option value="أسبوعيًا">أسبوعيًا</option><option value="شهريًا">شهريًا</option></select></label><div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => { setAddOpen(false); setRepeatLabel('') }} className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</button><button type="submit" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">حفظ التذكير</button></div></form></div>}
     </section>
   )
 }
