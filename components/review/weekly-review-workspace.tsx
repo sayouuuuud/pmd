@@ -23,14 +23,20 @@ export function WeeklyReviewWorkspace() {
     const openTasks = tasks.filter((task) => task.status !== 'done').length
     const doneHabits = habits.filter((habit) => habit.doneToday).length
     const prayerCount = religious.prayerLogs.filter((prayer) => prayer.status === 'done').length
+    const prayerHistory = (religious.prayerHistory ?? []).filter((day) => day.localDate >= weeklyReview.weekStart && day.localDate <= weeklyReview.weekEnd)
+    const prayerTotal = prayerHistory.reduce((sum, day) => sum + day.total, 0)
+    const prayerCompleted = prayerHistory.reduce((sum, day) => sum + day.completed, 0)
+    const prayerRate = prayerTotal ? Math.round((prayerCompleted / prayerTotal) * 100) : 0
+    const fullPrayerDays = prayerHistory.filter((day) => day.completed >= day.total).length
     const completedEntertainment = entertainment.filter((item) => item.status === 'completed').length
-    const income = financeEntries.filter((entry) => entry.kind === 'income').reduce((sum, entry) => sum + entry.amount, 0)
-    const expenses = financeEntries.filter((entry) => entry.kind === 'expense').reduce((sum, entry) => sum + entry.amount, 0)
+    const weeklyFinance = financeEntries.filter((entry) => entry.localDate >= weeklyReview.weekStart && entry.localDate <= weeklyReview.weekEnd)
+    const income = weeklyFinance.filter((entry) => entry.kind === 'income').reduce((sum, entry) => sum + entry.amount, 0)
+    const expenses = weeklyFinance.filter((entry) => entry.kind === 'expense').reduce((sum, entry) => sum + entry.amount, 0)
     const activeGoals = goals.filter((goal) => goal.status === 'active')
     const goalProgress = activeGoals.length ? Math.round(activeGoals.reduce((sum, goal) => sum + goal.progress, 0) / activeGoals.length) : 0
     const activeProjects = projects.filter((project) => project.status !== 'done')
-    return { doneTasks, openTasks, doneHabits, prayerCount, completedEntertainment, income, expenses, goalProgress, activeProjects }
-  }, [tasks, habits, religious.prayerLogs, entertainment, financeEntries, goals, projects])
+    return { doneTasks, openTasks, doneHabits, prayerCount, prayerRate, fullPrayerDays, completedEntertainment, income, expenses, goalProgress, activeProjects }
+  }, [tasks, habits, religious.prayerLogs, religious.prayerHistory, entertainment, financeEntries, goals, projects, weeklyReview.weekStart, weeklyReview.weekEnd])
 
   const currency = (amount: number) => `${amount.toLocaleString('ar-EG')} ${'جنيه'}`
   const hasReflection = Boolean(wentWell.trim() || blockers.trim() || nextGoal.trim())
@@ -54,6 +60,8 @@ export function WeeklyReviewWorkspace() {
             <ReviewLine text={`أكملت ${metrics.doneTasks} من مهامك الحالية.`} done />
             <ReviewLine text={`حافظت على ${metrics.doneHabits} عادات اليوم.`} done={metrics.doneHabits > 0} />
             <ReviewLine text={`${notes.filter((note) => note.pinned).length} ملاحظات مثبتة تقدر ترجع لها.`} done={notes.some((note) => note.pinned)} />
+            <ReviewLine text={`أكملت ${metrics.prayerRate}% من الصلوات المسجلة هذا الأسبوع.`} done={metrics.prayerRate >= 80} />
+            <ReviewLine text={`قرأت ${religious.quran.completedMinutes} من ${religious.quran.targetMinutes} دقيقة من الورد.`} done={religious.quran.completedMinutes >= religious.quran.targetMinutes} />
             <ReviewLine text={`متوسط تقدم أهدافك النشطة ${metrics.goalProgress}%.`} done={metrics.goalProgress > 0} />
           </div>
         </ContentCard>
@@ -62,17 +70,20 @@ export function WeeklyReviewWorkspace() {
           <div className="space-y-3">
             <ReviewLine text={`${metrics.openTasks} مهام مفتوحة تحتاج ترتيبًا.`} />
             <ReviewLine text={`${metrics.activeProjects.length} مشاريع ما زالت قيد الحركة.`} />
-            <ReviewLine text={metrics.expenses > metrics.income ? 'مصروفاتك المسجلة أعلى من دخلك في البيانات الحالية.' : 'راجع مصروفات الأسبوع قبل تثبيت الخطة القادمة.'} />
+            <ReviewLine text={metrics.expenses > metrics.income ? `مصروفات الأسبوع (${currency(metrics.expenses)}) أعلى من دخلك المسجل (${currency(metrics.income)}).` : `راجع مصروفات الأسبوع (${currency(metrics.expenses)}) قبل تثبيت الخطة القادمة.`} />
+            <ReviewLine text={metrics.prayerRate < 80 ? `هناك ${metrics.fullPrayerDays} أيام مكتملة الصلاة من أصل الأيام المسجلة.` : 'ثبات الصلاة هذا الأسبوع جيد؛ حافظ على نفس الإيقاع.'} />
+            <ReviewLine text={religious.quran.completedMinutes < religious.quran.targetMinutes ? 'الورد لم يكتمل بعد؛ اختر وقتًا محددًا قبل نهاية اليوم.' : 'الورد اليومي مكتمل.'} />
             <ReviewLine text="اختر عادة واحدة فقط لرفع الالتزام بها." />
           </div>
         </ContentCard>
 
         <ContentCard className="lg:col-span-12" title="لقطة الأسبوع" description="مؤشرات من الأقسام الجديدة تساعدك على رؤية الصورة كاملة.">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-            <DomainMetric icon={WalletCards} label="الدخل" value={currency(metrics.income)} />
-            <DomainMetric icon={Landmark} label="المصروفات" value={currency(metrics.expenses)} />
-            <DomainMetric icon={Target} label="الأهداف" value={`${metrics.goalProgress}%`} />
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
+            <DomainMetric icon={WalletCards} label="دخل الأسبوع" value={currency(metrics.income)} />
+            <DomainMetric icon={Landmark} label="مصروفات الأسبوع" value={currency(metrics.expenses)} />
+            <DomainMetric icon={ClipboardCheck} label="صلوات الأسبوع" value={`${metrics.prayerRate}%`} />
             <DomainMetric icon={HeartPulse} label="الورد" value={`${religious.quran.completedMinutes}/${religious.quran.targetMinutes} د`} />
+            <DomainMetric icon={Target} label="الحفظ" value={`${religious.quran.memorizationCompleted ?? 0}/${religious.quran.memorizationTarget ?? 0}`} />
             <DomainMetric icon={Clapperboard} label="الترفيه المكتمل" value={metrics.completedEntertainment} />
           </div>
         </ContentCard>
