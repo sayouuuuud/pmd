@@ -726,3 +726,11 @@
 مرجع التحقق: `verification/religious-shared-controls-adoption-browser.md`، وسجل التفاعل: `verification/interaction-smoke-tests.md`.
 
 الحالة: **منفذة وظيفيًا، بانتظار بوابات الجودة والـcommit والـpush**.
+
+
+## دفعة اعتماد Button المشترك في مساحة الترفيه — 2026-08-16
+
+- **النطاق:** ترحيل الأزرار الخام المتبقية في `components/entertainment/entertainment-workspace.tsx` إلى `components/ui/button.tsx` مع الحفاظ على الـvariants والأحجام والكلاسات المحلية ومنطق الحالة.
+- **التحقق:** فحص بصري وتفاعلي على `/entertainment`؛ تفعيل وإلغاء فلتر «مرشّح لحد»؛ فتح وإلغاء نموذج «إضافة عمل» دون حفظ؛ مراجعة console دون أخطاء runtime أو hydration.
+- **التوثيق:** `verification/entertainment-shared-buttons-browser.md` و`verification/interaction-smoke-tests.md`.
+- **الحالة:** مكتمل وظيفيًا، بانتظار بوابات الجودة ثم commit وpush.

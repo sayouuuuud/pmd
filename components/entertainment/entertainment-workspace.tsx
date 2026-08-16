@@ -2,6 +2,7 @@
 
 import { Archive, Check, Clapperboard, Download, Film, ListPlus, Play, Search, Sparkles, Star, Tv } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ContentCard } from '@/components/ui/content-card'
 import { Input } from '@/components/ui/input'
@@ -105,7 +106,7 @@ export function EntertainmentWorkspace() {
       <ContentCard title="اقتراحك القادم" description="اقتراح بسيط من قائمتك، مستند إلى الأعمال التي قيّمتها سابقًا.">
         {suggestion ? <div className="flex flex-col gap-4 rounded-2xl bg-accent/50 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-start gap-3"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary"><Sparkles className="h-5 w-5" /></div><div className="min-w-0"><p className="truncate font-semibold">{suggestion.item.title}</p><p className="mt-1 text-xs text-muted-foreground">{suggestion.item.type === 'movie' ? 'فيلم' : 'مسلسل'} · {suggestion.item.genre}{suggestion.preferredGenre === suggestion.item.genre ? ' · قريب من ذوقك الأعلى تقييمًا' : suggestion.item.recommend ? ' · معلّم كترشيح' : ''}</p></div></div>
-          <div className="flex shrink-0 gap-2"><button type="button" onClick={() => { moveEntertainment(suggestion.item.id, 'watching'); setDismissedSuggestionId(suggestion.item.id) }} className="rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">ابدأ المشاهدة</button><button type="button" onClick={() => setDismissedSuggestionId(suggestion.item.id)} className="rounded-xl bg-muted px-3 py-2 text-xs font-medium">اقتراح آخر</button></div>
+          <div className="flex shrink-0 gap-2"><Button type="button" size="sm" onClick={() => { moveEntertainment(suggestion.item.id, 'watching'); setDismissedSuggestionId(suggestion.item.id) }} className="rounded-xl px-3 py-2 text-xs font-semibold">ابدأ المشاهدة</Button><Button type="button" size="sm" variant="ghost" onClick={() => setDismissedSuggestionId(suggestion.item.id)} className="rounded-xl bg-muted px-3 py-2 text-xs font-medium">اقتراح آخر</Button></div>
         </div> : <EmptyState icon={Sparkles} title="لا يوجد اقتراح بعد" description="أضف عملاً إلى قائمة المشاهدة أو قيّم تجربة مكتملة ليظهر اقتراح مناسب." />}
       </ContentCard>
       <ContentCard title={`إحصائيات ${monthlyStats.label}`} description="صورة سريعة عن الأعمال التي أنهيتها خلال الشهر الحالي.">
@@ -128,9 +129,9 @@ export function EntertainmentWorkspace() {
           <Select value={genreFilter} onChange={(event) => setGenreFilter(event.target.value)} aria-label="تصنيف الترفيه" className="rounded-2xl px-3 py-3">
             {genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}
           </Select>
-          <button type="button" onClick={() => setOnlyRecommended((value) => !value)} className={`rounded-2xl px-3 py-2 text-sm font-medium transition-colors ${onlyRecommended ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground hover:bg-accent'}`}>مرشّح لحد</button>
-          <button type="button" onClick={() => setOnlyDownloads((value) => !value)} className={`rounded-2xl px-3 py-2 text-sm font-medium transition-colors ${onlyDownloads ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground hover:bg-accent'}`}>عايز أنزله</button>
-          <button type="button" onClick={() => setShowForm((value) => !value)} className="flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"><ListPlus className="h-4 w-4" />إضافة عمل</button>
+          <Button type="button" variant={onlyRecommended ? 'default' : 'ghost'} onClick={() => setOnlyRecommended((value) => !value)} className={`rounded-2xl px-3 py-2 text-sm font-medium transition-colors ${onlyRecommended ? '' : 'bg-muted text-foreground hover:bg-accent'}`}>مرشّح لحد</Button>
+          <Button type="button" variant={onlyDownloads ? 'default' : 'ghost'} onClick={() => setOnlyDownloads((value) => !value)} className={`rounded-2xl px-3 py-2 text-sm font-medium transition-colors ${onlyDownloads ? '' : 'bg-muted text-foreground hover:bg-accent'}`}>عايز أنزله</Button>
+          <Button type="button" onClick={() => setShowForm((value) => !value)} className="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold"><ListPlus className="h-4 w-4" />إضافة عمل</Button>
         </div>
       </div>
     </ContentCard>
@@ -144,7 +145,7 @@ export function EntertainmentWorkspace() {
         <Textarea name="note" placeholder="ملاحظة شخصية أو سبب الإضافة" className="min-h-24 rounded-2xl px-4 py-3 md:col-span-2" />
         <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><Checkbox name="recommend" />أريد ترشيحه لشخص</label>
         <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><Checkbox name="downloadWanted" />أضيفه لقائمة التحميل</label>
-        <div className="flex gap-2 md:col-span-2"><button type="submit" className="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">حفظ في عايز أتفرج</button><button type="button" onClick={() => setShowForm(false)} className="rounded-2xl bg-muted px-5 py-3 text-sm font-medium">إلغاء</button></div>
+        <div className="flex gap-2 md:col-span-2"><Button type="submit" className="rounded-2xl px-5 py-3 text-sm font-semibold">حفظ في عايز أتفرج</Button><Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="rounded-2xl bg-muted px-5 py-3 text-sm font-medium">إلغاء</Button></div>
       </form>
     </ContentCard>}
 
@@ -174,11 +175,11 @@ function EntertainmentCard({ item, onMove, onUpdate, onArchive }: { item: Entert
   return <article id={`entertainment-${item.id}`} className="scroll-mt-24 rounded-2xl border border-border bg-background p-3 shadow-sm">
     <div className="flex items-start gap-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground">{item.type === 'movie' ? <Film className="h-5 w-5" /> : <Tv className="h-5 w-5" />}</div>
-      <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="truncate text-sm font-semibold">{item.title}</h3><button type="button" onClick={onArchive} aria-label={`أرشفة ${item.title}`} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"><Archive className="h-4 w-4" /></button></div><p className="mt-1 text-xs text-muted-foreground">{item.type === 'movie' ? 'فيلم' : 'مسلسل'} · {item.genre}{item.year ? ` · ${item.year}` : ''}</p></div>
+      <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="truncate text-sm font-semibold">{item.title}</h3><Button type="button" variant="ghost" size="icon-sm" onClick={onArchive} aria-label={`أرشفة ${item.title}`} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"><Archive className="h-4 w-4" /></Button></div><p className="mt-1 text-xs text-muted-foreground">{item.type === 'movie' ? 'فيلم' : 'مسلسل'} · {item.genre}{item.year ? ` · ${item.year}` : ''}</p></div>
     </div>
     {item.note && <p className="mt-3 rounded-xl bg-muted/70 px-3 py-2 text-xs leading-6 text-muted-foreground">{item.note}</p>}
-    {item.status === 'completed' && <div className="mt-3 space-y-2 rounded-xl bg-muted/70 p-3"><div className="flex items-center justify-between gap-2"><span className="text-xs font-medium">تقييمك</span><div className="flex gap-1" dir="ltr">{[1, 2, 3, 4, 5].map((rating) => <button type="button" key={rating} onClick={() => onUpdate({ rating })} aria-label={`تقييم ${rating} من 5`} className={`rounded p-0.5 ${rating <= (item.rating ?? 0) ? 'text-warning-foreground' : 'text-muted-foreground'}`}><Star className="h-4 w-4 fill-current" /></button>)}</div></div><Input value={item.impression ?? ''} onChange={(event) => onUpdate({ impression: event.target.value })} placeholder="سطر انطباع شخصي" className="w-full rounded-xl px-3 py-2 text-xs" /></div>}
-    <div className="mt-3 flex flex-wrap items-center gap-2"><Select value={item.status} onChange={(event) => onMove(event.target.value as EntertainmentStatus)} aria-label={`حالة ${item.title}`} className="min-w-0 flex-1 rounded-xl px-3 py-2 text-xs"><option value="want">عايز أتفرج</option><option value="watching">بتفرج</option><option value="completed">خلصت</option></Select><button type="button" onClick={() => onUpdate({ recommend: !item.recommend })} className={`rounded-xl px-2.5 py-2 text-xs ${item.recommend ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}><Star className="inline h-3.5 w-3.5" /> ترشيح</button><button type="button" onClick={() => onUpdate({ downloadWanted: !item.downloadWanted })} className={`rounded-xl px-2.5 py-2 text-xs ${item.downloadWanted ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}><Download className="inline h-3.5 w-3.5" /> تحميل</button></div>
+    {item.status === 'completed' && <div className="mt-3 space-y-2 rounded-xl bg-muted/70 p-3"><div className="flex items-center justify-between gap-2"><span className="text-xs font-medium">تقييمك</span><div className="flex gap-1" dir="ltr">{[1, 2, 3, 4, 5].map((rating) => <Button variant="ghost" size="icon-xs" type="button" key={rating} onClick={() => onUpdate({ rating })} aria-label={`تقييم ${rating} من 5`} className={`rounded p-0.5 ${rating <= (item.rating ?? 0) ? 'text-warning-foreground' : 'text-muted-foreground'}`}><Star className="h-4 w-4 fill-current" /></Button>)}</div></div><Input value={item.impression ?? ''} onChange={(event) => onUpdate({ impression: event.target.value })} placeholder="سطر انطباع شخصي" className="w-full rounded-xl px-3 py-2 text-xs" /></div>}
+    <div className="mt-3 flex flex-wrap items-center gap-2"><Select value={item.status} onChange={(event) => onMove(event.target.value as EntertainmentStatus)} aria-label={`حالة ${item.title}`} className="min-w-0 flex-1 rounded-xl px-3 py-2 text-xs"><option value="want">عايز أتفرج</option><option value="watching">بتفرج</option><option value="completed">خلصت</option></Select><Button type="button" variant={item.recommend ? 'default' : 'ghost'} onClick={() => onUpdate({ recommend: !item.recommend })} className={`rounded-xl px-2.5 py-2 text-xs ${item.recommend ? '' : 'bg-muted text-muted-foreground'}`}><Star className="inline h-3.5 w-3.5" /> ترشيح</Button><Button type="button" variant={item.downloadWanted ? 'default' : 'ghost'} onClick={() => onUpdate({ downloadWanted: !item.downloadWanted })} className={`rounded-xl px-2.5 py-2 text-xs ${item.downloadWanted ? '' : 'bg-muted text-muted-foreground'}`}><Download className="inline h-3.5 w-3.5" /> تحميل</Button></div>
   </article>
 }
 
@@ -201,6 +202,6 @@ function isEntertainmentInMonth(createdAt: string, monthKey: string) {
 }
 
 function QuickList({ label, count, icon: Icon, active, onClick }: { label: string; count: number; icon: typeof Star; active: boolean; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className={`flex items-center justify-between rounded-2xl border px-4 py-4 text-right transition-colors ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:bg-muted'}`}><span className="flex items-center gap-2 text-sm font-medium"><Icon className="h-4 w-4 text-primary" />{label}</span><span className="text-lg font-semibold">{count}</span></button>
+  return <Button type="button" variant="ghost" onClick={onClick} className={`flex h-auto w-full items-center justify-between rounded-2xl border px-4 py-4 text-right transition-colors ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:bg-muted'}`}><span className="flex items-center gap-2 text-sm font-medium"><Icon className="h-4 w-4 text-primary" />{label}</span><span className="text-lg font-semibold">{count}</span></Button>
 }
 

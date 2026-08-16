@@ -477,3 +477,7 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **النتيجة:** نجح العرض والتفاعل في RTL؛ أكد فحص DOM وجود `data-slot="select"` و`data-slot="input"` والكلاسات الدلالية، وعاد الهدف إلى `33` والحقل إلى قيمة فارغة. لم يظهر خطأ Next ظاهرًا ولم تُنشأ بيانات تجريبية.
 - **المرجع:** `verification/religious-shared-controls-adoption-browser.md`
 **الحالة: PASS.**
+
+## أزرار مساحة الترفيه مع Button المشترك — 2026-08-16
+فُتحت `/entertainment`، وفُعّل فلتر «مرشّح لحد» ثم أُعيد إلى حالته الأصلية. فُتح نموذج «إضافة عمل» ثم أُلغي دون حفظ، وبقي التخطيط العربي وRTL سليمين. لم تظهر أخطاء runtime أو hydration في console. التفاصيل في `verification/entertainment-shared-buttons-browser.md`.
+**الحالة: PASS.**
