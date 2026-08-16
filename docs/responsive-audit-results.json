@@ -15,8 +15,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/plain') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
@@ -48,8 +46,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -80,8 +76,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -112,8 +106,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -144,8 +136,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -176,8 +166,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -208,8 +196,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -240,8 +226,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -272,8 +256,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -304,8 +286,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -336,8 +316,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
     ],
@@ -369,8 +347,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -401,8 +377,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -432,9 +406,7 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
     ],
     "status": 200,
     "metrics": {
@@ -464,8 +436,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -495,9 +465,7 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
     ],
     "status": 200,
     "metrics": {
@@ -526,9 +494,7 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
     ],
     "status": 200,
     "metrics": {
@@ -557,8 +523,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/plain') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
@@ -590,8 +554,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -622,8 +584,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -654,8 +614,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -686,8 +644,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -718,8 +674,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -750,8 +704,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -782,8 +734,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -814,8 +764,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -846,8 +794,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -878,8 +824,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
     ],
@@ -911,8 +855,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -943,8 +885,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -974,9 +914,7 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
     ],
     "status": 200,
     "metrics": {
@@ -1006,8 +944,6 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
       "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     ],
     "status": 200,
@@ -1037,9 +973,7 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
     ],
     "status": 200,
     "metrics": {
@@ -1068,9 +1002,7 @@
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "Refused to execute script from 'http://localhost:3003/_vercel/insights/script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
     ],
     "status": 200,
     "metrics": {
