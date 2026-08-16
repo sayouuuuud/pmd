@@ -21,6 +21,15 @@ const kindStyles: Record<ReminderKind, string> = {
   finance: 'bg-chart-4/15 text-chart-4',
 }
 
+function sourceHref(sourceId?: string) {
+  if (!sourceId) return undefined
+  if (sourceId.startsWith('task-')) return `/tasks#task-${sourceId}`
+  if (sourceId.startsWith('habit-')) return `/habits#habit-${sourceId}`
+  if (sourceId.startsWith('plan-')) return `/daily-plan#plan-item-${sourceId}`
+  if (sourceId.startsWith('finance-')) return `/money#finance-${sourceId}`
+  return undefined
+}
+
 export function RemindersWorkspace() {
   const { reminders, addReminder, toggleReminder, snoozeReminder, archiveReminder } = useCommandCenter()
   const [filter, setFilter] = useState<'active' | 'all'>('active')
@@ -70,11 +79,14 @@ export function RemindersWorkspace() {
         </div>
         <div className="mt-5 space-y-2">
           {visibleReminders.length === 0 && <EmptyState icon={Bell} title="اليوم هادي" description="مفيش تذكيرات مفتوحة حاليًا." />}
-          {visibleReminders.map((reminder) => <article key={reminder.id} id={`reminder-${reminder.id}`} className={`scroll-mt-24 flex flex-col gap-3 rounded-2xl border border-border p-4 transition-opacity sm:flex-row sm:items-center ${reminder.status === 'done' ? 'opacity-55' : ''}`}>
+          {visibleReminders.map((reminder) => {
+            const contextHref = sourceHref(reminder.sourceId)
+            return <article key={reminder.id} id={`reminder-${reminder.id}`} className={`scroll-mt-24 flex flex-col gap-3 rounded-2xl border border-border p-4 transition-opacity sm:flex-row sm:items-center ${reminder.status === 'done' ? 'opacity-55' : ''}`}>
             <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${kindStyles[reminder.kind]}`}><Bell className="h-4 w-4" /></span>
-            <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className={`text-sm font-semibold ${reminder.status === 'done' ? 'line-through' : ''}`}>{reminder.title}</h3><span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">{kindLabels[reminder.kind]}</span>{reminder.repeatLabel && <span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">{reminder.repeatLabel}</span>}</div><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock3 className="h-3.5 w-3.5" /> {reminder.dueAt}</p></div>
+            <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className={`text-sm font-semibold ${reminder.status === 'done' ? 'line-through' : ''}`}>{reminder.title}</h3><span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">{kindLabels[reminder.kind]}</span>{reminder.repeatLabel && <span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">{reminder.repeatLabel}</span>}{contextHref && <a href={contextHref} className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary hover:bg-primary/15">فتح السياق</a>}</div><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock3 className="h-3.5 w-3.5" /> {reminder.dueAt}</p></div>
             <div className="flex items-center gap-2 sm:shrink-0"><button type="button" onClick={() => toggleReminder(reminder.id)} className="rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">{reminder.status === 'done' ? 'إعادة فتح' : 'تم'}</button>{reminder.status !== 'done' && <button type="button" onClick={() => snoozeReminder(reminder.id)} className="rounded-full bg-muted px-3 py-2 text-xs text-muted-foreground hover:text-foreground">تأجيل</button>}<button type="button" aria-label="أرشفة التذكير" onClick={() => archiveReminder(reminder.id)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button></div>
-          </article>)}
+          </article>
+          })}
         </div>
       </div>
 
