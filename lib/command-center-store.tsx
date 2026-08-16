@@ -892,6 +892,11 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     toggleReminder: (id) => {
       setReminders((items) => items.map((reminder) => {
         if (reminder.id !== id) return reminder
+        if (reminder.status !== 'done' && reminder.repeatLabel) {
+          const nextDueAt = reminder.repeatLabel === 'يوميًا' ? 'غدًا' : reminder.repeatLabel === 'أسبوعيًا' ? 'الأسبوع القادم' : reminder.repeatLabel === 'شهريًا' ? 'الشهر القادم' : reminder.dueAt
+          void updateRemoteReminder(id, { status: 'pending', dueAt: nextDueAt })
+          return { ...reminder, status: 'pending', dueAt: nextDueAt }
+        }
         const status = reminder.status === 'done' ? 'pending' : 'done'
         void updateRemoteReminder(id, { status })
         return { ...reminder, status }
