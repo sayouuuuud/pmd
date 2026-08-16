@@ -9,8 +9,9 @@ const defaults = {
   city: 'القاهرة',
   calculationMethod: 'مخصص',
   prayerLogs: [],
-  quranProgress: { reference: 'ورد اليوم', targetMinutes: 20, completedMinutes: 0 },
-  dhikrSessions: { morning: false, evening: false },
+  prayerHistory: [],
+  quranProgress: { reference: 'ورد اليوم', targetMinutes: 20, completedMinutes: 0, memorizationTarget: 10, memorizationCompleted: 0 },
+  dhikrSessions: { morning: false, evening: false, morningCount: 0, eveningCount: 0 },
 }
 
 function json(data: unknown, init?: ResponseInit) {
@@ -38,14 +39,30 @@ function safePrayerLogs(value: unknown) {
   })
 }
 
+function safePrayerHistory(value: unknown) {
+  if (!Array.isArray(value)) return defaults.prayerHistory
+  return value.slice(-30).map((item) => {
+    const day = item as Record<string, unknown>
+    return {
+      localDate: stringValue(day.localDate, new Date().toISOString().slice(0, 10), 12),
+      completed: Math.max(0, Math.min(10, Math.round(Number(day.completed) || 0))),
+      total: Math.max(1, Math.min(10, Math.round(Number(day.total) || 5))),
+    }
+  })
+}
+
 function safeQuranProgress(value: unknown) {
   const progress = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
   const targetMinutes = Math.max(1, Math.min(240, Number(progress.targetMinutes) || 20))
   const completedMinutes = Math.max(0, Math.min(targetMinutes, Number(progress.completedMinutes) || 0))
+  const memorizationTarget = Math.max(1, Math.min(1000, Math.round(Number(progress.memorizationTarget) || 10)))
+  const memorizationCompleted = Math.max(0, Math.min(memorizationTarget, Math.round(Number(progress.memorizationCompleted) || 0)))
   return {
     reference: stringValue(progress.reference, 'ورد اليوم', 160),
     targetMinutes,
     completedMinutes,
+    memorizationTarget,
+    memorizationCompleted,
   }
 }
 
@@ -54,6 +71,8 @@ function safeDhikrSessions(value: unknown) {
   return {
     morning: sessions.morning === true,
     evening: sessions.evening === true,
+    morningCount: Math.max(0, Math.min(10000, Math.round(Number(sessions.morningCount) || 0))),
+    eveningCount: Math.max(0, Math.min(10000, Math.round(Number(sessions.eveningCount) || 0))),
     ...(typeof sessions.lastSession === 'string' ? { lastSession: sessions.lastSession.slice(0, 40) } : {}),
   }
 }
@@ -84,6 +103,7 @@ export async function PATCH(request: Request) {
       city: stringValue(body.city, existing?.city ?? defaults.city),
       calculationMethod: stringValue(body.calculationMethod, existing?.calculationMethod ?? defaults.calculationMethod),
       prayerLogs: Array.isArray(body.prayerLogs) ? safePrayerLogs(body.prayerLogs) : existing?.prayerLogs ?? defaults.prayerLogs,
+      prayerHistory: body.prayerHistory !== undefined ? safePrayerHistory(body.prayerHistory) : existing?.prayerHistory ?? defaults.prayerHistory,
       quranProgress: body.quranProgress !== undefined ? safeQuranProgress(body.quranProgress) : existing?.quranProgress ?? defaults.quranProgress,
       dhikrSessions: body.dhikrSessions !== undefined ? safeDhikrSessions(body.dhikrSessions) : existing?.dhikrSessions ?? defaults.dhikrSessions,
       updatedAt: new Date(),

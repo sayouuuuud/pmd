@@ -45,11 +45,13 @@ const navItems = [
   { href: '/account', label: 'حسابي', icon: Settings },
 ]
 
-const gregorianDate = new Intl.DateTimeFormat('ar-EG', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-}).format(new Date())
+function formatGregorianDate() {
+  return new Intl.DateTimeFormat('ar-EG', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(new Date())
+}
 
 const quickAddTypes: { value: QuickAddKind; label: string }[] = [
   { value: 'task', label: 'مهمة' },
@@ -87,6 +89,11 @@ export function TopNav() {
   const [goalId, setGoalId] = useState('')
   const [preview, setPreview] = useState<ParsedQuickAdd | null>(null)
   const [error, setError] = useState('')
+  const [gregorianDate, setGregorianDate] = useState('')
+
+  useEffect(() => {
+    setGregorianDate(formatGregorianDate())
+  }, [])
 
   useEffect(() => {
     if (!quickAddOpen) return

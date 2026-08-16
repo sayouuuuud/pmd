@@ -1,4 +1,4 @@
-import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, Note, PlanItem, PrayerLog, Profile, Project, Reminder, ReligiousState, Task, WeeklyReview } from './command-center-store'
+import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, Note, PlanItem, PrayerHistoryDay, PrayerLog, Profile, Project, Reminder, ReligiousState, Task, WeeklyReview } from './command-center-store'
 
 type RemoteProfile = {
   city: string
@@ -143,6 +143,7 @@ type RemoteReligious = {
   city: string
   calculationMethod: string
   prayerLogs: PrayerLog[]
+  prayerHistory?: PrayerHistoryDay[]
   quranProgress: ReligiousState['quran']
   dhikrSessions: ReligiousState['dhikr']
 }
@@ -320,8 +321,9 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
     city: item.city || 'القاهرة',
     calculationMethod: item.calculationMethod || 'مخصص',
     prayerLogs: Array.isArray(item.prayerLogs) ? item.prayerLogs.map((prayer) => ({ ...prayer, status: asPrayerStatus(prayer.status) })) : [],
-    quran: { reference: item.quranProgress?.reference || 'ورد اليوم', targetMinutes: Math.max(1, Number(item.quranProgress?.targetMinutes) || 20), completedMinutes: Math.max(0, Number(item.quranProgress?.completedMinutes) || 0) },
-    dhikr: { morning: Boolean(item.dhikrSessions?.morning), evening: Boolean(item.dhikrSessions?.evening), lastSession: item.dhikrSessions?.lastSession },
+    prayerHistory: Array.isArray(item.prayerHistory) ? item.prayerHistory.slice(-30) : [],
+    quran: { reference: item.quranProgress?.reference || 'ورد اليوم', targetMinutes: Math.max(1, Number(item.quranProgress?.targetMinutes) || 20), completedMinutes: Math.max(0, Number(item.quranProgress?.completedMinutes) || 0), memorizationTarget: Math.max(1, Number(item.quranProgress?.memorizationTarget) || 10), memorizationCompleted: Math.max(0, Number(item.quranProgress?.memorizationCompleted) || 0) },
+    dhikr: { morning: Boolean(item.dhikrSessions?.morning), evening: Boolean(item.dhikrSessions?.evening), morningCount: Math.max(0, Number(item.dhikrSessions?.morningCount) || 0), eveningCount: Math.max(0, Number(item.dhikrSessions?.eveningCount) || 0), lastSession: item.dhikrSessions?.lastSession },
   }
 }
 
@@ -422,7 +424,7 @@ export function updateRemoteWeeklyReview(review: WeeklyReview) {
 export function updateRemoteReligious(religious: ReligiousState) {
   return request<{ religious: RemoteReligious }>('/api/religious', {
     method: 'PATCH',
-    body: JSON.stringify({ city: religious.city, calculationMethod: religious.calculationMethod, prayerLogs: religious.prayerLogs, quranProgress: religious.quran, dhikrSessions: religious.dhikr }),
+    body: JSON.stringify({ city: religious.city, calculationMethod: religious.calculationMethod, prayerLogs: religious.prayerLogs, prayerHistory: religious.prayerHistory ?? [], quranProgress: religious.quran, dhikrSessions: religious.dhikr }),
   })
 }
 

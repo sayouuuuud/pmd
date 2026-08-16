@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BookOpen, Check, Clock3, Compass, LoaderCircle, MapPin, Moon, Play, RefreshCw, Sunrise, SunMedium, Volume2 } from 'lucide-react'
+import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Sparkles, Sunrise, SunMedium, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter } from '@/lib/command-center-store'
@@ -42,7 +42,7 @@ type Reciter = { id: number; name: string; read?: string; server: string; surahT
 type RecitersResponse = { source: string; reciters?: Reciter[]; error?: string }
 
 export function ReligiousWorkspace() {
-  const { religious, togglePrayer, addWirdProgress, toggleDhikr, updateReligiousSettings, updatePrayerTimes } = useCommandCenter()
+  const { religious, togglePrayer, addWirdProgress, addMemorizationProgress, toggleDhikr, updateReligiousSettings, updatePrayerTimes } = useCommandCenter()
   const [timingState, setTimingState] = useState<TimingState>('idle')
   const [timingMessage, setTimingMessage] = useState('')
   const [timingDate, setTimingDate] = useState<string | null>(null)
@@ -55,9 +55,18 @@ export function ReligiousWorkspace() {
   const [selectedReciter, setSelectedReciter] = useState<Reciter | null>(null)
   const [audioUrl, setAudioUrl] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
+  const [sunnahChecks, setSunnahChecks] = useState<Record<string, boolean>>({ duha: false, witr: false, rawatib: false, sadaqah: false })
   const completedPrayers = religious.prayerLogs.filter((prayer) => prayer.status === 'done').length
   const prayerPercent = Math.round((completedPrayers / Math.max(religious.prayerLogs.length, 1)) * 100)
   const wirdPercent = Math.round((religious.quran.completedMinutes / Math.max(religious.quran.targetMinutes, 1)) * 100)
+  const memorizationTarget = religious.quran.memorizationTarget ?? 10
+  const memorizationCompleted = religious.quran.memorizationCompleted ?? 0
+  const memorizationPercent = Math.round((memorizationCompleted / Math.max(memorizationTarget, 1)) * 100)
+  const prayerHistory = religious.prayerHistory ?? []
+  const prayerStreak = prayerHistory.slice().reverse().reduce((streak, day) => day.completed >= day.total ? streak + 1 : streak, 0)
+  const monthlyCompleted = prayerHistory.reduce((sum, day) => sum + day.completed, 0)
+  const monthlyTotal = prayerHistory.reduce((sum, day) => sum + day.total, 0)
+  const monthlyRate = Math.round((monthlyCompleted / Math.max(monthlyTotal, 1)) * 100)
 
   async function refreshPrayerTimes() {
     setTimingState('loading')
@@ -177,6 +186,17 @@ export function ReligiousWorkspace() {
         </ContentCard>
       </div>
 
+      <div className="grid gap-5 lg:grid-cols-3">
+        <ContentCard title="ثبات الصلاة" description="مؤشر مبني على الأيام المسجلة داخل حسابك." action={<Flame className="h-5 w-5 text-primary" />}>
+          <div className="flex items-end justify-between gap-4"><div><p className="text-4xl font-bold tracking-tight text-primary">{prayerStreak}</p><p className="mt-1 text-sm text-muted-foreground">أيام متتالية مكتملة</p></div><div className="rounded-2xl bg-accent/60 p-3 text-left"><p className="text-xs text-muted-foreground">آخر سجل</p><p className="mt-1 text-sm font-semibold">{prayerHistory.at(-1)?.localDate ?? 'لا يوجد'}</p></div></div>
+          <div className="mt-5 grid grid-cols-2 gap-3 text-sm"><div className="rounded-2xl bg-muted/50 p-3"><span className="block text-xs text-muted-foreground">آخر 30 يومًا</span><strong className="mt-1 block">{monthlyRate}%</strong></div><div className="rounded-2xl bg-muted/50 p-3"><span className="block text-xs text-muted-foreground">سجلات محفوظة</span><strong className="mt-1 block">{prayerHistory.length} يوم</strong></div></div>
+        </ContentCard>
+        <ContentCard title="خطة الحفظ" description="تقدم تقريبي تحفظه أنت؛ لا يتم تخزين نص الآيات." action={<BookOpen className="h-5 w-5 text-primary" />}>
+          <div className="flex items-center justify-between text-sm"><span>الإنجاز الحالي</span><strong>{memorizationCompleted} من {memorizationTarget} آيات</strong></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, memorizationPercent)}%` }} /></div><div className="mt-2 flex items-center justify-between text-xs text-muted-foreground"><span>{memorizationPercent}% مكتمل</span><span>المتبقي {Math.max(0, memorizationTarget - memorizationCompleted)}</span></div><div className="mt-4 flex gap-2"><Button size="sm" variant="outline" onClick={() => addMemorizationProgress(1)}><Plus className="ms-1 h-3.5 w-3.5" /> آية</Button><Button size="sm" onClick={() => addMemorizationProgress(3)}>أنجزت 3 آيات</Button></div>
+        </ContentCard>
+        <ContentCard title="السنن والنوافل" description="قائمة تذكير يومية محلية قابلة للتعديل من هاتفك." action={<Sparkles className="h-5 w-5 text-primary" />}><div className="grid gap-2">{[['duha', 'صلاة الضحى'], ['witr', 'الوتر'], ['rawatib', 'السنن الرواتب'], ['sadaqah', 'صدقة أو إحسان']].map(([id, label]) => <button key={id} type="button" onClick={() => setSunnahChecks((current) => ({ ...current, [id]: !current[id] }))} className={`flex items-center gap-3 rounded-2xl border p-3 text-right text-sm transition-colors ${sunnahChecks[id] ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}><span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${sunnahChecks[id] ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{sunnahChecks[id] && <Check className="h-3 w-3" />}</span><span className="flex-1">{label}</span></button>)}</div></ContentCard>
+      </div>
+
       <ContentCard title="المصحف والتلاوة" description={quran?.surah?.name ? `${quran.surah.name} · ${quran.surah.numberOfAyahs ?? 0} آية` : 'النص والتلاوة يجلبان عند الطلب من مصادر خارجية موثوقة.'} action={<span className="text-xs text-muted-foreground">{quranMessage}</span>}>
         <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
           <label className="space-y-2 text-sm font-medium"><span>السورة</span><select value={selectedSurah} onChange={(event) => setSelectedSurah(Number(event.target.value))} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary"><option value={1}>1 — الفاتحة</option><option value={2}>2 — البقرة</option><option value={18}>18 — الكهف</option><option value={36}>36 — يس</option><option value={55}>55 — الرحمن</option><option value={67}>67 — الملك</option><option value={112}>112 — الإخلاص</option></select></label>
@@ -190,7 +210,8 @@ export function ReligiousWorkspace() {
 
       <div className="grid gap-5 lg:grid-cols-3">
         <ContentCard title="الأذكار" description="سجل الجلسة فقط، ويمكنك الرجوع لمصدرك الموثوق.">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1"><DhikrButton label="أذكار الصباح" done={religious.dhikr.morning} onClick={() => toggleDhikr('morning')} /><DhikrButton label="أذكار المساء" done={religious.dhikr.evening} onClick={() => toggleDhikr('evening')} /></div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1"><DhikrButton label="أذكار الصباح" count={religious.dhikr.morningCount ?? 0} done={religious.dhikr.morning} onClick={() => toggleDhikr('morning')} /><DhikrButton label="أذكار المساء" count={religious.dhikr.eveningCount ?? 0} done={religious.dhikr.evening} onClick={() => toggleDhikr('evening')} /></div>
+          <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><BarChart3 className="h-3.5 w-3.5 text-primary" /> جلسات مسجلة: {(religious.dhikr.morningCount ?? 0) + (religious.dhikr.eveningCount ?? 0)}</p>
         </ContentCard>
         <ContentCard className="lg:col-span-2" title="إعدادات المواقيت" description="الإعدادات الحالية محلية وتُزامن عند توفر الحساب وقاعدة البيانات.">
           <div className="grid gap-4 sm:grid-cols-2"><label className="space-y-2 text-sm font-medium"><span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> المدينة</span><input value={religious.city} onChange={(event) => updateReligiousSettings({ city: event.target.value, calculationMethod: religious.calculationMethod })} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary" placeholder="Cairo" /></label><label className="space-y-2 text-sm font-medium"><span>طريقة الحساب</span><select value={religious.calculationMethod} onChange={(event) => updateReligiousSettings({ city: religious.city, calculationMethod: event.target.value })} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary"><option>مخصص</option><option>الهيئة المصرية العامة للمساحة</option><option>رابطة العالم الإسلامي</option></select></label></div>
@@ -201,6 +222,6 @@ export function ReligiousWorkspace() {
   )
 }
 
-function DhikrButton({ label, done, onClick }: { label: string; done: boolean; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className={`flex items-center gap-3 rounded-2xl border p-3 text-right transition-colors ${done ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${done ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'}`}><Moon className="h-4 w-4" /></span><span className="flex-1 text-sm font-semibold">{label}</span><span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${done ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{done && <Check className="h-3 w-3" />}</span></button>
+function DhikrButton({ label, count, done, onClick }: { label: string; count: number; done: boolean; onClick: () => void }) {
+  return <button type="button" onClick={onClick} className={`flex items-center gap-3 rounded-2xl border p-3 text-right transition-colors ${done ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${done ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'}`}><Moon className="h-4 w-4" /></span><span className="flex-1 text-sm font-semibold">{label}<span className="mt-1 block text-xs font-normal text-muted-foreground">{count} جلسة مسجلة</span></span><span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${done ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{done && <Check className="h-3 w-3" />}</span></button>
 }

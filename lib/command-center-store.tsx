@@ -108,12 +108,19 @@ export type PrayerLog = {
   localDate: string
 }
 
+export type PrayerHistoryDay = {
+  localDate: string
+  completed: number
+  total: number
+}
+
 export type ReligiousState = {
   city: string
   calculationMethod: string
   prayerLogs: PrayerLog[]
-  quran: { reference: string; targetMinutes: number; completedMinutes: number }
-  dhikr: { morning: boolean; evening: boolean; lastSession?: string }
+  prayerHistory?: PrayerHistoryDay[]
+  quran: { reference: string; targetMinutes: number; completedMinutes: number; memorizationTarget?: number; memorizationCompleted?: number }
+  dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; lastSession?: string }
 }
 
 export type Note = {
@@ -219,6 +226,7 @@ type CommandCenterContextValue = {
   toggleDhikr: (session: 'morning' | 'evening') => void
   updateReligiousSettings: (patch: Pick<ReligiousState, 'city' | 'calculationMethod'>) => void
   updatePrayerTimes: (times: Partial<Record<PrayerLog['name'], string>>) => void
+  addMemorizationProgress: (ayahs: number) => void
   addReminder: (input: Pick<Reminder, 'title' | 'kind' | 'dueAt'> & Partial<Pick<Reminder, 'sourceId' | 'repeatLabel'>>) => void
   toggleReminder: (id: string) => void
   snoozeReminder: (id: string) => void
@@ -289,8 +297,16 @@ const initialReligious: ReligiousState = {
     { id: 'maghrib', name: 'المغرب', time: '18:40', status: 'pending', localDate: '2026-08-15' },
     { id: 'isha', name: 'العشاء', time: '20:05', status: 'pending', localDate: '2026-08-15' },
   ],
-  quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8 },
-  dhikr: { morning: true, evening: false },
+  prayerHistory: [
+    { localDate: '2026-08-10', completed: 4, total: 5 },
+    { localDate: '2026-08-11', completed: 5, total: 5 },
+    { localDate: '2026-08-12', completed: 3, total: 5 },
+    { localDate: '2026-08-13', completed: 5, total: 5 },
+    { localDate: '2026-08-14', completed: 4, total: 5 },
+    { localDate: '2026-08-15', completed: 1, total: 5 },
+  ],
+  quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4 },
+  dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6 },
 }
 
 const initialNotes: Note[] = [
@@ -618,11 +634,26 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     },
     togglePrayer: (id) => {
       setReligious((current) => {
-        const next = { ...current, prayerLogs: current.prayerLogs.map((prayer) => prayer.id === id ? { ...prayer, status: (prayer.status === 'done' ? 'pending' : 'done') as PrayerLog['status'] } : prayer) }
+        const prayerLogs = current.prayerLogs.map((prayer) => prayer.id === id ? { ...prayer, status: (prayer.status === 'done' ? 'pending' : 'done') as PrayerLog['status'] } : prayer)
+        const localDate = prayerLogs[0]?.localDate ?? new Date().toISOString().slice(0, 10)
+        const completed = prayerLogs.filter((prayer) => prayer.status === 'done').length
+        const historyByDate = new Map((current.prayerHistory ?? []).map((day) => [day.localDate, day]))
+        historyByDate.set(localDate, { localDate, completed, total: prayerLogs.length })
+        const prayerHistory = Array.from(historyByDate.values()).sort((left, right) => left.localDate.localeCompare(right.localDate)).slice(-30)
+        const next = { ...current, prayerLogs, prayerHistory }
         void updateRemoteReligious(next)
         return next
       })
       setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: item.status === 'done' ? 'pending' : 'done' } : item))
+    },
+    addMemorizationProgress: (ayahs) => {
+      setReligious((current) => {
+        const target = Math.max(1, current.quran.memorizationTarget ?? 10)
+        const completed = Math.min(target, Math.max(0, (current.quran.memorizationCompleted ?? 0) + Math.max(0, Math.round(ayahs))))
+        const next = { ...current, quran: { ...current.quran, memorizationTarget: target, memorizationCompleted: completed } }
+        void updateRemoteReligious(next)
+        return next
+      })
     },
     addWirdProgress: (minutes) => {
       setReligious((current) => {
@@ -633,7 +664,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     },
     toggleDhikr: (session) => {
       setReligious((current) => {
-        const next = { ...current, dhikr: { ...current.dhikr, [session]: !current.dhikr[session], lastSession: new Date().toISOString() } }
+        const nextValue = !current.dhikr[session]
+        const next = { ...current, dhikr: { ...current.dhikr, [session]: nextValue, [`${session}Count`]: (current.dhikr[`${session}Count` as 'morningCount' | 'eveningCount'] ?? 0) + (nextValue ? 1 : 0), lastSession: new Date().toISOString() } }
         void updateRemoteReligious(next)
         return next
       })

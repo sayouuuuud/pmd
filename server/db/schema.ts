@@ -70,6 +70,7 @@ export const religiousSettings = pgTable('religious_settings', {
   city: text('city').notNull().default('القاهرة'),
   calculationMethod: text('calculation_method').notNull().default('مخصص'),
   prayerLogs: jsonb('prayer_logs').notNull().default([]),
+  prayerHistory: jsonb('prayer_history').notNull().default([]),
   quranProgress: jsonb('quran_progress').notNull().default({}),
   dhikrSessions: jsonb('dhikr_sessions').notNull().default({}),
   createdAt: timestamp('created_at').notNull().defaultNow(),
