@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, BookOpen, CheckCircle2, CircleAlert, ClipboardCheck, Clapperboard, Flame, HeartPulse, Landmark, Link2, ListMusic, ListPlus, Save, Target, WalletCards } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
+import { Textarea } from '@/components/ui/textarea'
 import { isPrayerCompletedStatus, useCommandCenter } from '@/lib/command-center-store'
 
 export function WeeklyReviewWorkspace() {
@@ -174,7 +175,7 @@ function ContextShortcut({ href, label, value }: { href: string; label: string; 
 }
 
 function ReflectionField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
-  return <label className="block space-y-2"><span className="text-sm font-semibold">{label}</span><textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={5} maxLength={2400} className="w-full resize-none rounded-2xl border border-border bg-background px-3 py-3 text-sm leading-7 outline-none transition focus:border-primary" /></label>
+  return <label className="block space-y-2"><span className="text-sm font-semibold">{label}</span><Textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={5} maxLength={2400} className="min-h-32 resize-none rounded-2xl border-border px-3 py-3 leading-7 focus-visible:border-primary" /></label>
 }
 
 function ReviewLine({ text, done = false }: { text: string; done?: boolean }) {

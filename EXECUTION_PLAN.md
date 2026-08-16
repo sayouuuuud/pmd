@@ -668,3 +668,7 @@
 استُبدلت الكلاسات السداسية المباشرة في `ReviewMetric` بتوكنات `insight-warm` و`insight-violet` الدلالية، مع الحفاظ على القيم البصرية الحالية وإضافة تعريفاتها إلى `app/globals.css` وربطها بـTailwind.
 اختُبرت `/review` بصريًا داخل RTL، وظهرت مؤشرات المراجعة بالأخضر والبرتقالي والبنفسجي والأزرق دون تغيير في المحتوى أو المنطق. راجعت console ولم تظهر أخطاء runtime أو hydration. التفاصيل في `verification/weekly-review-semantic-colors-browser.md` و`verification/interaction-smoke-tests.md`.
 نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
+## سجل دفعة — اعتماد الحقول المشتركة في المساحات — 2026-08-16
+اعتمدت `WeeklyReviewWorkspace` على `Textarea` المشترك في حقول المراجعة الثلاثة، واعتمد `ReligiousWorkspace` على `Input` و`Select` و`Textarea` في اسم قائمة التلاوة وتدبر الآيات وإعدادات المدينة وطريقة الحساب، مع الحفاظ على handlers والقيم والخصائص الحالية.
+اختُبرت `/religious` و`/review` بصريًا وتفاعليًا داخل RTL. اختيرت قيمة «مخصص» الحالية في إعدادات المواقيت دون تغيير مقصود، وظهرت الحقول والقيم والأزرار دون فقدان. راجعت console ولم تظهر أخطاء runtime أو hydration. التفاصيل في `verification/shared-fields-adoption-browser.md` و`verification/interaction-smoke-tests.md`.
+نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
