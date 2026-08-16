@@ -159,6 +159,9 @@ export type Habit = {
   target: string
   frequency?: 'daily' | 'weekly'
   history?: Record<string, boolean>
+  taskId?: string
+  projectId?: string
+  goalId?: string
 }
 
 export type PlanItem = {
@@ -283,7 +286,7 @@ type CommandCenterContextValue = {
   archiveJournalEntry: (id: string) => void
   archiveHabit: (id: string) => void
   archiveBoardNote: (payload: BoardArchivePayload) => void
-  addHabit: (input: Pick<Habit, 'title' | 'target'> & Partial<Pick<Habit, 'icon' | 'frequency'>>) => void
+  addHabit: (input: Pick<Habit, 'title' | 'target'> & Partial<Pick<Habit, 'icon' | 'frequency' | 'taskId' | 'projectId' | 'goalId'>>) => void
   restoreArchivedItem: (id: string) => void
   saveWeeklyReview: (patch: Pick<WeeklyReview, 'wentWell' | 'blockers' | 'nextGoal'> & Partial<Pick<WeeklyReview, 'status'>>) => void
   addNote: (input: Pick<Note, 'title' | 'body' | 'tag'>) => void
@@ -362,10 +365,10 @@ const initialNotes: Note[] = [
 
 const initialHabits: Habit[] = [
   { id: 'habit-1', title: 'قراءة القرآن', icon: 'قرآن', streak: 12, doneToday: true, target: '20 دقيقة' },
-  { id: 'habit-2', title: 'رياضة', icon: 'صحة', streak: 7, doneToday: true, target: '30 دقيقة' },
+  { id: 'habit-2', title: 'رياضة', icon: 'صحة', streak: 7, doneToday: true, target: '30 دقيقة', projectId: 'project-3', goalId: 'goal-2' },
   { id: 'habit-3', title: 'شرب مياه كفاية', icon: 'صحة', streak: 5, doneToday: true, target: '8 أكواب' },
   { id: 'habit-4', title: 'قراءة كتاب', icon: 'تعلم', streak: 3, doneToday: false, target: '10 صفحات' },
-  { id: 'habit-5', title: 'نوم بدري', icon: 'راحة', streak: 2, doneToday: false, target: 'قبل 11:30' },
+  { id: 'habit-5', title: 'نوم بدري', icon: 'راحة', streak: 2, doneToday: false, target: 'قبل 11:30', projectId: 'project-3', goalId: 'goal-2' },
 ]
 
 const initialPlanItems: PlanItem[] = [
@@ -1022,9 +1025,12 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         streak: 0,
         doneToday: false,
         history: {},
+        taskId: input.taskId,
+        projectId: input.projectId,
+        goalId: input.goalId,
       }
       setHabits((items) => [habit, ...items])
-      void createRemoteHabit({ title: habit.title, icon: habit.icon, target: habit.target, frequency: habit.frequency })
+      void createRemoteHabit({ title: habit.title, icon: habit.icon, target: habit.target, frequency: habit.frequency, taskId: habit.taskId, projectId: habit.projectId, goalId: habit.goalId })
     },
     restoreArchivedItem: (id) => {
       const item = archive.find((entry) => entry.id === id)

@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
-import { habit, habitLog } from '@/server/db/schema'
+import { goal, habit, habitLog, project, task } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
 
 export const dynamic = 'force-dynamic'
@@ -75,6 +75,18 @@ export async function POST(request: Request) {
     if (!title) return json({ error: 'اسم العادة مطلوب.' }, { status: 400 })
 
     const db = getDb()
+    const taskId = typeof body.taskId === 'string' && body.taskId.trim() ? body.taskId.trim() : undefined
+    const projectId = typeof body.projectId === 'string' && body.projectId.trim() ? body.projectId.trim() : undefined
+    const goalId = typeof body.goalId === 'string' && body.goalId.trim() ? body.goalId.trim() : undefined
+    const [ownedTasks, ownedProjects, ownedGoals] = await Promise.all([
+      taskId ? db.select({ id: task.id }).from(task).where(and(eq(task.id, taskId), eq(task.userId, user.id), isNull(task.archivedAt))).limit(1) : Promise.resolve([]),
+      projectId ? db.select({ id: project.id }).from(project).where(and(eq(project.id, projectId), eq(project.userId, user.id), isNull(project.archivedAt))).limit(1) : Promise.resolve([]),
+      goalId ? db.select({ id: goal.id }).from(goal).where(and(eq(goal.id, goalId), eq(goal.userId, user.id), isNull(goal.archivedAt))).limit(1) : Promise.resolve([]),
+    ])
+    if ((taskId && !ownedTasks[0]) || (projectId && !ownedProjects[0]) || (goalId && !ownedGoals[0])) {
+      return json({ error: 'لا يمكن ربط العادة بعنصر غير موجود أو غير مملوك للحساب.' }, { status: 400 })
+    }
+
     const [created] = await db.insert(habit).values({
       id: crypto.randomUUID(),
       userId: user.id,
@@ -82,6 +94,9 @@ export async function POST(request: Request) {
       icon: typeof body.icon === 'string' && body.icon.trim() ? body.icon.trim() : 'عادة',
       target: typeof body.target === 'string' && body.target.trim() ? body.target.trim() : 'يوميًا',
       frequency: typeof body.frequency === 'string' && body.frequency.trim() ? body.frequency.trim() : 'daily',
+      taskId,
+      projectId,
+      goalId,
     }).returning()
     return json({ item: { ...created, streak: 0, doneToday: false } }, { status: 201 })
   } catch {
