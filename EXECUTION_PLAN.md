@@ -664,3 +664,7 @@
 أضيفت مكونات `Input` و`Textarea` و`Select` و`Badge` إلى `components/ui` بمتغيرات التصميم الدلالية وحالات تركيز وإبطال موحدة، ثم استُخدمت فعليًا في صفحة `/design-system` بدل عناصر الحقول والشارات المكررة.
 اختُبرت الصفحة بصريًا وتفاعليًا: أُدخل «نص تجريبي» في Input، وتغيّر Select إلى «هذا الأسبوع»، وظهرت الشارات الدلالية، ثم فُتح Dialog المرجعي وأُغلق عبر `Escape` دون أخطاء أو تغيير بيانات. التفاصيل في `verification/shared-fields-badge-browser.md` و`verification/interaction-smoke-tests.md`.
 نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
+## سجل دفعة — توكنات ألوان المراجعة الأسبوعية — 2026-08-16
+استُبدلت الكلاسات السداسية المباشرة في `ReviewMetric` بتوكنات `insight-warm` و`insight-violet` الدلالية، مع الحفاظ على القيم البصرية الحالية وإضافة تعريفاتها إلى `app/globals.css` وربطها بـTailwind.
+اختُبرت `/review` بصريًا داخل RTL، وظهرت مؤشرات المراجعة بالأخضر والبرتقالي والبنفسجي والأزرق دون تغيير في المحتوى أو المنطق. راجعت console ولم تظهر أخطاء runtime أو hydration. التفاصيل في `verification/weekly-review-semantic-colors-browser.md` و`verification/interaction-smoke-tests.md`.
+نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.

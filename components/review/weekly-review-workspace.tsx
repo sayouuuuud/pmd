@@ -161,7 +161,7 @@ export function WeeklyReviewWorkspace() {
 }
 
 function ReviewMetric({ icon: Icon, label, value, tone }: { icon: typeof CheckCircle2; label: string; value: number; tone: 'green' | 'orange' | 'purple' | 'blue' }) {
-  const tones = { green: 'bg-positive text-positive-foreground', orange: 'bg-[#fff0dc] text-[#c77b18]', purple: 'bg-[#ebe8ff] text-[#6f5fe6]', blue: 'bg-accent text-accent-foreground' }
+  const tones = { green: 'bg-positive text-positive-foreground', orange: 'bg-insight-warm text-insight-warm-foreground', purple: 'bg-insight-violet text-insight-violet-foreground', blue: 'bg-accent text-accent-foreground' }
   return <div className="rounded-3xl bg-card p-4"><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${tones[tone]}`}><Icon className="h-4 w-4" /></span><p className="mt-4 text-xs text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-semibold">{value}</p></div>
 }
 

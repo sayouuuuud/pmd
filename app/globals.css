@@ -30,6 +30,10 @@
   --color-positive-foreground: var(--positive-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-insight-warm: var(--insight-warm);
+  --color-insight-warm-foreground: var(--insight-warm-foreground);
+  --color-insight-violet: var(--insight-violet);
+  --color-insight-violet-foreground: var(--insight-violet-foreground);
   --color-partial: var(--partial);
   --color-partial-foreground: var(--partial-foreground);
   --color-board-note-yellow: var(--board-note-yellow);
@@ -77,6 +81,10 @@
   --positive-foreground: #4caf6e;
   --warning: #fde3e3;
   --warning-foreground: #e05b5b;
+  --insight-warm: #fff0dc;
+  --insight-warm-foreground: #c77b18;
+  --insight-violet: #ebe8ff;
+  --insight-violet-foreground: #6f5fe6;
   --partial: #fff3c4;
   --partial-foreground: #9a6700;
   --board-note-yellow: #fff7c7;
