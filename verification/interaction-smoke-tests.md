@@ -203,3 +203,11 @@
 - **التحقق:** TypeScript وESLint و`git diff --check` و`next build` ناجحة، وفحص console أظهر React DevTools وHMR فقط دون أخطاء تطبيقية.
 - **التفاصيل:** `verification/quran-memorization-browser.md`.
 - **النطاق:** الاختبار عبر localStorage fallback؛ الحفظ البعيد يستخدم حقل JSONB الحالي دون migration جديدة عند توفر Neon.
+
+## 2026-08-16 — أعمدة زمنية للمهام
+- **المسار:** `/tasks`
+- **الدورة:** ظهرت أعمدة «النهاردة»، «بكرة»، «الأسبوع ده»، و«بعدين»، ثم نُقلت «حجز موعد الدكتور» إلى «بكرة» بالنقر على زر النقل المباشر، فتغير العدّاد من 4/1 إلى 3/2، ثم أُعيدت إلى «النهاردة» فعادت العدادات الأصلية.
+- **النتيجة:** PASS؛ تعمل أزرار النقل المباشر، ويظل السحب والإفلات مدعومًا كمسار إضافي.
+- **التحقق:** TypeScript وESLint و`git diff --check` و`next build` ناجحة، وفحص console خالٍ من أخطاء تطبيقية.
+- **التفاصيل:** `verification/tasks-time-buckets-browser.md`.
+- **النطاق:** localStorage fallback؛ مزامنة النقل تستخدم `updateTask` الحالي عند توفر backend.
