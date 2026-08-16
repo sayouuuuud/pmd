@@ -5,12 +5,17 @@ import './globals.css'
 import { CommandCenterProvider } from '@/lib/command-center-store'
 import { PwaRegister } from '@/components/pwa/pwa-register'
 
-const _cairo = Cairo({ subsets: ['arabic', 'latin'] })
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  variable: '--font-cairo',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
-  title: 'المساحة الشخصية | لوحة التحكم',
-  description: 'لوحة تحكم شخصية شاملة لتنظيم المهام والملاحظات والعادات والحياة اليومية',
-  generator: 'v0.app',
+  title: 'المساحة الشخصية | مركز القيادة',
+  description: 'نظام تشغيل شخصي عربي لتنظيم اليوم والمهام والعادات والحياة.',
+  applicationName: 'المساحة الشخصية',
+  keywords: ['تنظيم اليوم', 'المهام', 'العادات', 'خطة اليوم', 'مركز القيادة الشخصية'],
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -44,7 +49,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className="bg-background">
-      <body className={`${_cairo.className} font-sans antialiased`}>
+      <body className={`${cairo.variable} font-sans antialiased`}>
         <PwaRegister />
         <CommandCenterProvider>
           {children}
