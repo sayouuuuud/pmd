@@ -105,13 +105,14 @@
 
 المطلوب بالتفصيل:
 - [~] استخراج لوحة الألوان من التصميم المرفوع وتعريفها كـ semantic tokens في `globals.css` (`--background`, `--foreground`, `--card`, `--primary`, `--accent`, `--muted`, `--destructive`... إلخ). **لا تستخدم ألواناً مباشرة (bg-white / text-black) في أي مكان في الكود.** أُنجز ترحيل ألوان أوراق السبورة وتوكنز نصوصها وحدودها، كما رُحّلت حالة اليوم الجزئية في تقويم الصلاة إلى توكنز `partial`؛ ما زالت مراجعة بقية الاستخدامات المباشرة مفتوحة.
+- [x] أُنشئ `components/ui/dialog.tsx` كمكوّن موحد، ثم رُحّلت نافذة Quick Add في `components/layout/top-nav.tsx` لاستخدامه مع الحفاظ على تبويبات وحقول وسلوك مسح المسودة.
 - [ ] استخراج الخطوط المستخدمة في التصميم وإعدادها عبر `next/font` في `layout.tsx` مع ربطها بكلاسات `font-sans` / `font-mono`. خط عربي مناسب إذا كان التصميم يتطلب ذلك (بحد أقصى خطّان).
 - [ ] ضبط `--radius` والمسافات لتطابق التصميم.
 - [ ] إضافة كلاس لون الخلفية على وسم `<html>` في `layout.tsx`.
 - [ ] بناء المكونات المشتركة الملتزمة بالتصميم والتي ستُستخدم في كل الأقسام:
   - كارت إحصائية (Stat Card) بنفس شكل كروت الـ Dashboard في التصميم
   - كارت محتوى عام (Content Card)
-  - Modal / Dialog موحد للإضافة والتعديل
+  - [x] Modal / Dialog موحد للإضافة والتعديل، مع ترحيل Quick Add إليه؛ تبقى النوافذ الفعلية الأخرى للترحيل التدريجي.
   - Inputs / Select / Textarea / Checkbox موحدة
   - Badge للأولويات والحالات
   - Empty State موحد (عندما يكون القسم فارغاً)
@@ -638,4 +639,8 @@
 ## سجل دفعة — مرجع نظام التصميم وDialog المشترك — 2026-08-16
 أُنشئت صفحة داخلية `app/design-system/page.tsx` لعرض مكونات النظام الحالية جنبًا إلى جنب، بما في ذلك StatCard وContentCard وButton variants والشارات وحقول الإدخال وEmptyState وLoadingState والتوكنز الدلالية. كما أُنشئ `components/ui/dialog.tsx` كمكوّن نافذة موحد يدعم الإغلاق من زر الإغلاق، والضغط خارج النافذة، ومفتاح Escape، مع RTL وطبقات التركيز الحالية.
 اختُبرت الصفحة بصريًا وتفاعليًا على `http://localhost:3004/design-system`: ظهرت الأقسام العربية والمكونات المشتركة، فُتحت نافذة المعاينة وظهر overlay والعنوان والأزرار، ثم أُغلقت عبر `Escape` بنجاح دون أخطاء runtime أو hydration. التفاصيل في `verification/design-system-browser.md` و`verification/interaction-smoke-tests.md`.
-نجحت بوابات `tsc --noEmit` وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations. تبقى مراجعة الألوان المباشرة الأخرى وتحويل النوافذ الفعلية تدريجيًا إلى Dialog المشترك ضمن البنود المفتوحة.
+نجحت بوابات `tsc --noEmit` وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
+## سجل دفعة — ترحيل Quick Add إلى Dialog المشترك — 2026-08-16
+استُبدل غلاف نافذة Quick Add المكرر في `components/layout/top-nav.tsx` باستخدام `components/ui/dialog.tsx` المشترك. احتفظت النافذة بتبويباتها وحقولها وسلوك مسح المسودة عند الإغلاق، بينما أصبح التعامل مع الـoverlay وزر الإغلاق وEscape موحدًا مع باقي النظام، دون تغيير في التخطيط العربي أو منطق الحفظ.
+اختُبرت الصفحة الرئيسية بصريًا وتفاعليًا على `http://localhost:3004/`: فُتحت «إضافة سريعة»، وتحققت عناصر النافذة، ثم أُغلقت عبر `Escape` بنجاح دون أخطاء runtime أو hydration، ولم تُحفظ بيانات تجريبية. التفاصيل في `verification/quick-add-dialog-browser.md` و`verification/interaction-smoke-tests.md`.
+نجحت بوابات `tsc --noEmit` وESLint و`git diff --check` و`next build`، ولم تُضف secrets أو migrations. أصبح ترحيل Quick Add إلى Dialog المشترك منجزًا، وتبقى مراجعة الألوان المباشرة الأخرى وتحويل النوافذ الفعلية المتبقية ضمن البنود المفتوحة.

@@ -22,12 +22,12 @@ import {
   StickyNote,
   Target,
   Wallet,
-  X,
 } from 'lucide-react'
 import { useCommandCenter } from '@/lib/command-center-store'
 import { authClient } from '@/lib/auth-client'
 import { parseQuickAdd, type ParsedQuickAdd, type QuickAddKind } from '@/lib/quick-add-parser'
 import { GlobalSearchDialog } from '@/components/search/global-search-dialog'
+import { Dialog } from '@/components/ui/dialog'
 
 const navItems = [
   { href: '/', label: 'الرئيسية', icon: LayoutGrid },
@@ -94,15 +94,6 @@ export function TopNav() {
   useEffect(() => {
     setGregorianDate(formatGregorianDate())
   }, [])
-
-  useEffect(() => {
-    if (!quickAddOpen) return
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setQuickAddOpen(false)
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [quickAddOpen])
 
   function openQuickAdd() {
     setQuickAddOpen(true)
@@ -237,20 +228,18 @@ export function TopNav() {
 
       <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {quickAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/30 p-4 pt-16 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="quick-add-dialog-title">
-          <form onSubmit={submitQuickAdd} className="w-full max-w-lg rounded-3xl bg-card p-5 shadow-2xl">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 id="quick-add-dialog-title" className="text-lg font-semibold">إضافة سريعة</h2>
-                <p className="mt-1 text-xs text-muted-foreground">اكتبها بطريقتك، راجع التفاصيل، وبعدها احفظها.</p>
-              </div>
-              <button type="button" aria-label="إغلاق" onClick={closeQuickAdd} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="mt-5 grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
+      <Dialog
+        open={quickAddOpen}
+        onOpenChange={(open) => {
+          if (open) setQuickAddOpen(true)
+          else closeQuickAdd()
+        }}
+        title="إضافة سريعة"
+        description="اكتبها بطريقتك، راجع التفاصيل، وبعدها احفظها."
+        className="max-w-lg"
+      >
+          <form onSubmit={submitQuickAdd}>
+            <div className="grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
               {quickAddTypes.map((item) => (
                 <button key={item.value} type="button" onClick={() => changeType(item.value)} aria-pressed={type === item.value} className={`rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
                   {item.label}
@@ -319,8 +308,7 @@ export function TopNav() {
               </div>
             )}
           </form>
-        </div>
-      )}
+      </Dialog>
     </>
   )
 }
