@@ -706,3 +706,9 @@
 اعتمد `EntertainmentWorkspace` على `Input` في البحث وحقول الاسم والتصنيف والسنة والانطباع، وعلى `Select` في فلاتر النوع والتصنيف وحالة المشاهدة، وعلى `Textarea` للملاحظة، وعلى `Checkbox` لخيارَي الترشيح والتحميل. حُفظت الكلاسات الخاصة بالتخطيط والمظهر الحالي، وبقي منطق `FormData` والفلاتر وتحديث الحالة كما هو.
 اختُبرت `/entertainment` بصريًا وتفاعليًا؛ أُدخلت كلمة «دراما» في البحث، واختير التصنيف نفسه، ثم فُتح نموذج الإضافة وفُعّل Checkbox الترشيح وأُلغي النموذج دون حفظ. لم تظهر أخطاء runtime أو hydration في console. التفاصيل في `verification/entertainment-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل إنشاء commit ودفع الدفعة.
+
+
+## سجل دفعة — اعتماد الحقول المشتركة في مساحة الأهداف — 2026-08-17
+اعتمد `GoalsWorkspace` و`GoalCard` على `Input` و`Select` و`Textarea` و`Button` المشتركة في نموذج إنشاء الهدف، وتعديل الوصف والموعد، وإضافة مهمة مرتبطة بالهدف، مع إبقاء أزرار البطاقات المتخصصة وسلوك `FormData` والحالة كما هي.
+اختُبرت `/goals` بصريًا وتفاعليًا؛ فُتحت تفاصيل الهدف ووضع التعديل، وأُدخل وصف عربي مؤقت ثم أُعيدت القيمة الأصلية دون حفظ. ظهر نموذج الهدف الجديد وحقل المهمة دون أخطاء، ولم تُنشأ بيانات اختبارية. التفاصيل في `verification/goals-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل إنشاء commit ودفع الدفعة.

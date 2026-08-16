@@ -2,8 +2,12 @@
 
 import { Archive, CalendarDays, CheckCircle2, ChevronDown, Circle, Pause, Pencil, Play, Plus, Save, Target } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { useCommandCenter, type Goal, type GoalHorizon, type Project, type Task } from '@/lib/command-center-store'
 
 const horizonLabels: Record<GoalHorizon, string> = {
@@ -54,17 +58,17 @@ export function GoalsWorkspace() {
 
       <ContentCard title="هدف جديد" description="اختار نتيجة قابلة للفهم، مش مجرد قائمة أمنيات.">
         <form onSubmit={createGoal} className="space-y-3">
-          <input name="title" required className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="مثال: إطلاق النسخة الأولى" />
-          <textarea name="description" className="min-h-20 w-full resize-none rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="ليه الهدف ده مهم؟" />
+          <Input name="title" required className="w-full rounded-2xl px-4 py-3" placeholder="مثال: إطلاق النسخة الأولى" />
+          <Textarea name="description" className="min-h-20 w-full rounded-2xl px-4 py-3" placeholder="ليه الهدف ده مهم؟" />
           <div className="grid grid-cols-2 gap-2">
-            <select name="horizon" defaultValue="quarter" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+            <Select name="horizon" defaultValue="quarter" className="rounded-2xl px-3 py-3">
               <option value="quarter">هذا الربع</option>
               <option value="year">هذه السنة</option>
               <option value="someday">لاحقًا</option>
-            </select>
-            <input name="targetLabel" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="موعد تقريبي" />
+            </Select>
+            <Input name="targetLabel" className="rounded-2xl px-3 py-3" placeholder="موعد تقريبي" />
           </div>
-          <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"><Plus className="h-4 w-4" /> إضافة الهدف</button>
+          <Button type="submit" className="flex w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> إضافة الهدف</Button>
         </form>
       </ContentCard>
     </div>
@@ -116,10 +120,10 @@ function GoalCard({ goal, projects, tasks, progress, taskCount, completedTasks, 
 
     {expanded && <div className="mt-4 space-y-4 border-t border-border pt-4">
       <div className="flex items-center justify-between gap-2"><div><p className="text-sm font-semibold">تفاصيل الهدف</p><p className="mt-1 text-xs text-muted-foreground">التقدم محسوب من المهام المرتبطة بمشاريع هذا الهدف.</p></div><button type="button" onClick={() => setEditing((value) => !value)} className="inline-flex items-center gap-1 rounded-xl bg-muted px-3 py-2 text-xs font-medium hover:bg-accent"><Pencil className="h-3.5 w-3.5" /> تعديل</button></div>
-      {editing && <div className="space-y-2 rounded-2xl bg-background p-3"><textarea value={description} onChange={(event) => setDescription(event.target.value)} aria-label="وصف الهدف" className="min-h-20 w-full rounded-xl border border-input bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-ring" placeholder="وصف الهدف" /><input value={targetLabel} onChange={(event) => setTargetLabel(event.target.value)} aria-label="موعد الهدف" className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-ring" placeholder="موعد تقريبي" /><button type="button" onClick={saveDetails} className="inline-flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground"><Save className="h-3.5 w-3.5" />حفظ التعديلات</button></div>}
+      {editing && <div className="space-y-2 rounded-2xl bg-background p-3"><Textarea value={description} onChange={(event) => setDescription(event.target.value)} aria-label="وصف الهدف" className="min-h-20 w-full rounded-xl px-3 py-2 text-xs" placeholder="وصف الهدف" /><Input value={targetLabel} onChange={(event) => setTargetLabel(event.target.value)} aria-label="موعد الهدف" className="w-full rounded-xl px-3 py-2 text-xs" placeholder="موعد تقريبي" /><Button type="button" size="sm" onClick={saveDetails} className="rounded-xl"><Save className="h-3.5 w-3.5" />حفظ التعديلات</Button></div>}
       <div className="space-y-2"><p className="text-xs font-semibold text-muted-foreground">المشاريع الحاملة للهدف</p>{projects.length ? projects.map((project) => <div key={project.id} className="flex items-center justify-between rounded-xl bg-background px-3 py-2 text-xs"><span className="font-medium">{project.title}</span><span className="text-muted-foreground">{project.progress}% · {project.status === 'done' ? 'مكتمل' : project.status === 'in-progress' ? 'شغال' : project.status === 'paused' ? 'متوقف' : 'أفكار'}</span></div>) : <div className="rounded-xl bg-background px-3 py-3 text-xs text-muted-foreground">اربط مشروعًا بهذا الهدف من صفحة المشاريع.</div>}</div>
       <div className="space-y-2"><div className="flex items-center justify-between"><p className="text-xs font-semibold text-muted-foreground">المهام المرتبطة</p><span className="text-xs text-muted-foreground">{linkedTasks.length} مهام</span></div>{linkedTasks.length ? linkedTasks.map((task) => <button type="button" key={task.id} onClick={() => onToggleTask(task.id)} className="flex w-full items-center gap-2 rounded-xl bg-background px-3 py-2 text-right text-xs hover:bg-accent">{task.status === 'done' ? <CheckCircle2 className="h-4 w-4 shrink-0 text-success" /> : <Circle className="h-4 w-4 shrink-0 text-muted-foreground" />}<span className={task.status === 'done' ? 'text-muted-foreground line-through' : 'font-medium'}>{task.title}</span></button>) : <div className="rounded-xl bg-background px-3 py-3 text-xs text-muted-foreground">لا توجد مهام بعد لهذا الهدف.</div>}</div>
-      {firstProject && <form onSubmit={createTask} className="flex gap-2"><input value={taskTitle} onChange={(event) => setTaskTitle(event.target.value)} aria-label="مهمة جديدة للهدف" placeholder={`أضف مهمة إلى ${firstProject.title}`} className="min-w-0 flex-1 rounded-xl border border-input bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-ring" /><button type="submit" className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground"><Plus className="h-3.5 w-3.5" />مهمة</button></form>}
+      {firstProject && <form onSubmit={createTask} className="flex gap-2"><Input value={taskTitle} onChange={(event) => setTaskTitle(event.target.value)} aria-label="مهمة جديدة للهدف" placeholder={`أضف مهمة إلى ${firstProject.title}`} className="min-w-0 flex-1 rounded-xl px-3 py-2 text-xs" /><Button type="submit" size="sm" className="shrink-0 rounded-xl"><Plus className="h-3.5 w-3.5" />مهمة</Button></form>}
     </div>}
   </article>
 }
