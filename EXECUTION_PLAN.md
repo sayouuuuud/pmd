@@ -629,3 +629,8 @@
 نُقلت حالة اليوم الجزئية في `components/religious/religious-workspace.tsx` من اللون المباشر إلى توكنز دلالية جديدة في `app/globals.css` (`bg-partial` و`partial-foreground`). بقيت حالات اليوم المكتمل وغير المسجل، وبنية التقويم، والهوية البصرية الحالية دون تغيير.
 اختُبرت `/religious` بصريًا وتفاعليًا: سُجّلت صلاة الظهر مؤقتًا كـ«في وقتها» لإنشاء حالة جزئية، وأكد فحص DOM وComputed Styles ظهور خلايا التقويم بالصنف `bg-partial` واللون المحسوب `rgb(255, 243, 196)`. أُعيدت الصلاة إلى «لم تُسجّل» لتنظيف أثر الاختبار. التفاصيل في `verification/prayer-calendar-semantic-colors-browser.md` و`verification/interaction-smoke-tests.md`.
 نجحت بوابات `tsc --noEmit` وESLint و`git diff --check` و`next build`، ولم تُضف secrets أو migrations. تبقى مراجعة الألوان المباشرة الأخرى ضمن بند نظام التصميم المفتوح.
+
+## سجل دفعة — استخراج StatCard المشترك من Dashboard — 2026-08-16
+أُنشئ `components/ui/stat-card.tsx` كمكوّن مشترك لكروت الإحصاءات، مع دعم النغمات الدلالية الحالية `blue` و`green` و`purple` و`orange`، وحالات hover/focus، وروابط تنقل قابلة للوصول. استُبدل التعريف المحلي المكرر داخل `components/dashboard/dashboard-home.tsx` باستخدام المكوّن الجديد دون تغيير النصوص أو الحسابات أو الهوية البصرية.
+اختُبرت الصفحة الرئيسية بصريًا وتفاعليًا على `http://localhost:3004/`: ظهرت الكروت الأربعة RTL كما هو متوقع، ونقل النقر على كارت «إنجاز المهام» إلى `/tasks` بنجاح، مع بقاء صفحة المهام وفلاترها سليمة. التفاصيل في `verification/stat-card-browser.md` و`verification/interaction-smoke-tests.md`.
+نجحت بوابات `tsc --noEmit` وESLint و`git diff --check` و`next build`، ولم تُضف secrets أو migrations.
