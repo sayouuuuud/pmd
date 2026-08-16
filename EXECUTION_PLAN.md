@@ -520,3 +520,9 @@
 - **التحقق:** نجح TypeScript وESLint و`git diff --check` و`next build`، كما نجح اختبار المتصفح لإنشاء ملاحظة بثلاثة وسوم، والفلترة بوسم «شغل»، والبحث المتزامن، مع سجل console خالٍ من أخطاء التطبيق أو hydration.
 - **التفاصيل:** `verification/notes-tags-browser.md`
 - **ملاحظة backend:** بقي عقد API الحالي متوافقًا؛ المزامنة البعيدة الفعلية تحتاج جلسة credentials وبيانات backend اختبارية، بينما يعمل localStorage fallback والحفظ المتفائل في الواجهة.
+
+## 2026-08-17 — Quick Capture وتثبيت الملاحظات
+- **المسار:** `/notes`.
+- **الدورة:** أضيف حفظ سريع للملاحظة عبر `Enter` داخل حقل العنوان مع تجاهل Enter أثناء IME، وأصبح ترتيب البطاقات يضع الملاحظات المثبتة أولًا.
+- **التحقق:** أُنشئت ملاحظة عربية عبر Enter، ثم ثُبتت وانتقلت إلى مقدمة القائمة. نجحت TypeScript وESLint و`git diff --check` و`next build`.
+- **التفاصيل:** `verification/notes-quick-capture-browser.md`.
