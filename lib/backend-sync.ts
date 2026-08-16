@@ -524,7 +524,7 @@ export function updateRemoteProfile(profile: Partial<Profile>) {
   })
 }
 
-export function createRemoteTask(input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'recurring' | 'projectId'>>) {
+export function createRemoteTask(input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'recurring' | 'projectId' | 'sourceNoteId'>>) {
   return request<{ item: RemoteTask }>('/api/tasks', { method: 'POST', body: JSON.stringify(input) })
 }
 
