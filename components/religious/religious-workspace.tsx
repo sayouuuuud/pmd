@@ -27,6 +27,20 @@ const dhikrGroups = {
   evening: { label: 'أذكار المساء', items: [{ id: 'evening-1', label: 'تسبيح' }, { id: 'evening-2', label: 'تحميد' }, { id: 'evening-3', label: 'تكبير' }, { id: 'evening-4', label: 'استغفار' }] },
 } as const
 
+const cairoDateFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' })
+
+function getCairoDateKey(date = new Date()) {
+  const parts = cairoDateFormatter.formatToParts(date)
+  const values = Object.fromEntries(parts.filter((part) => part.type !== 'literal').map((part) => [part.type, part.value]))
+  return `${values.year}-${values.month}-${values.day}`
+}
+
+function shiftDateKey(localDate: string, offset: number) {
+  const date = new Date(`${localDate}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + offset)
+  return date.toISOString().slice(0, 10)
+}
+
 type TimingState = 'idle' | 'loading' | 'success' | 'error'
 
 type TimingsResponse = {
@@ -76,7 +90,17 @@ export function ReligiousWorkspace() {
   const memorizationCompleted = religious.quran.memorizationCompleted ?? 0
   const memorizationPercent = Math.round((memorizationCompleted / Math.max(memorizationTarget, 1)) * 100)
   const prayerHistory = religious.prayerHistory ?? []
-  const prayerStreak = prayerHistory.slice().reverse().reduce((streak, day) => day.completed >= day.total ? streak + 1 : streak, 0)
+  const orderedPrayerHistory = prayerHistory.slice().sort((left, right) => left.localDate.localeCompare(right.localDate))
+  const prayerHistoryByDate = new Map(orderedPrayerHistory.map((day) => [day.localDate, day]))
+  const latestPrayerDay = orderedPrayerHistory.at(-1)
+  let prayerStreak = 0
+  if (latestPrayerDay && latestPrayerDay.completed >= latestPrayerDay.total) {
+    let cursor = latestPrayerDay.localDate
+    while (prayerHistoryByDate.get(cursor)?.completed === prayerHistoryByDate.get(cursor)?.total && (prayerHistoryByDate.get(cursor)?.total ?? 0) > 0) {
+      prayerStreak += 1
+      cursor = shiftDateKey(cursor, -1)
+    }
+  }
   const monthlyCompleted = prayerHistory.reduce((sum, day) => sum + day.completed, 0)
   const monthlyTotal = prayerHistory.reduce((sum, day) => sum + day.total, 0)
   const monthlyRate = Math.round((monthlyCompleted / Math.max(monthlyTotal, 1)) * 100)
@@ -252,6 +276,7 @@ export function ReligiousWorkspace() {
         <ContentCard title="ثبات الصلاة" description="مؤشر مبني على الأيام المسجلة داخل حسابك." action={<Flame className="h-5 w-5 text-primary" />}>
           <div className="flex items-end justify-between gap-4"><div><p className="text-4xl font-bold tracking-tight text-primary">{prayerStreak}</p><p className="mt-1 text-sm text-muted-foreground">أيام متتالية مكتملة</p></div><div className="rounded-2xl bg-accent/60 p-3 text-left"><p className="text-xs text-muted-foreground">آخر سجل</p><p className="mt-1 text-sm font-semibold">{prayerHistory.at(-1)?.localDate ?? 'لا يوجد'}</p></div></div>
           <div className="mt-5 grid grid-cols-2 gap-3 text-sm"><div className="rounded-2xl bg-muted/50 p-3"><span className="block text-xs text-muted-foreground">آخر 30 يومًا</span><strong className="mt-1 block">{monthlyRate}%</strong></div><div className="rounded-2xl bg-muted/50 p-3"><span className="block text-xs text-muted-foreground">سجلات محفوظة</span><strong className="mt-1 block">{prayerHistory.length} يوم</strong></div></div>
+          <div className="mt-5 rounded-2xl border border-border bg-background/70 p-3"><div className="flex items-center justify-between gap-3"><span className="text-xs font-semibold text-muted-foreground">تقويم آخر 30 يومًا</span><span className="text-[11px] text-muted-foreground">مكتمل / جزئي / غير مسجل</span></div><div className="mt-3 grid grid-cols-10 gap-1.5" aria-label="تقويم متابعة الصلاة">{Array.from({ length: 30 }, (_, index) => shiftDateKey(getCairoDateKey(), index - 29)).map((day) => { const record = prayerHistoryByDate.get(day); const complete = record && record.completed >= record.total; const partial = record && record.completed > 0 && !complete; return <span key={day} title={`${day} · ${record ? `${record.completed}/${record.total}` : 'غير مسجل'}`} className={`aspect-square rounded-md border ${complete ? 'border-primary/30 bg-primary' : partial ? 'border-amber-300 bg-amber-100 dark:bg-amber-950/40' : 'border-border bg-muted/50'}`} /> })}</div></div>
         </ContentCard>
         <ContentCard title="خطة الحفظ" description="تقدم تقريبي تحفظه أنت؛ لا يتم تخزين نص الآيات." action={<BookOpen className="h-5 w-5 text-primary" />}>
           <div className="flex items-center justify-between text-sm"><span>الإنجاز الحالي</span><strong>{memorizationCompleted} من {memorizationTarget} آيات</strong></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, memorizationPercent)}%` }} /></div><div className="mt-2 flex items-center justify-between text-xs text-muted-foreground"><span>{memorizationPercent}% مكتمل</span><span>المتبقي {Math.max(0, memorizationTarget - memorizationCompleted)}</span></div><div className="mt-4 flex gap-2"><Button size="sm" variant="outline" onClick={() => addMemorizationProgress(1)}><Plus className="ms-1 h-3.5 w-3.5" /> آية</Button><Button size="sm" onClick={() => addMemorizationProgress(3)}>أنجزت 3 آيات</Button></div>
