@@ -30,6 +30,14 @@
   --color-positive-foreground: var(--positive-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-board-note-yellow: var(--board-note-yellow);
+  --color-board-note-blue: var(--board-note-blue);
+  --color-board-note-green: var(--board-note-green);
+  --color-board-note-pink: var(--board-note-pink);
+  --color-board-note-ink: var(--board-note-ink);
+  --color-board-note-muted: var(--board-note-muted);
+  --color-board-note-soft: var(--board-note-soft);
+  --color-board-note-border: var(--board-note-border);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -67,6 +75,14 @@
   --positive-foreground: #4caf6e;
   --warning: #fde3e3;
   --warning-foreground: #e05b5b;
+  --board-note-yellow: #fff7c7;
+  --board-note-blue: #e4f0ff;
+  --board-note-green: #e5f7e8;
+  --board-note-pink: #ffe7ef;
+  --board-note-ink: #334155;
+  --board-note-muted: #475569;
+  --board-note-soft: #ffffff;
+  --board-note-border: #334155;
   --radius: 1rem;
 }
 
