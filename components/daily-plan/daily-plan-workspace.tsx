@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Check, Clock3, FolderKanban, Moon, Pause, Play, Repeat, Sparkles, Target } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter } from '@/lib/command-center-store'
 
 export function DailyPlanWorkspace() {
@@ -12,7 +13,7 @@ export function DailyPlanWorkspace() {
   return <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
     <ContentCard className="lg:col-span-8" title="Timeline اليوم" description="خطة مرنة، وليست جدولًا يعاقبك إذا تغيّر يومك. كل مهمة تقودك إلى سياقها عندما يكون متاحًا.">
       <div className="space-y-2">
-        {planItems.map((item) => <div key={item.id} className={`rounded-2xl border px-3 py-3 transition-colors ${item.status === 'done' ? 'border-positive bg-positive/40' : item.status === 'snoozed' ? 'border-border bg-muted/50 opacity-60' : 'border-border/70 bg-card'}`}>
+        {planItems.length === 0 ? <EmptyState icon={Sparkles} title="خطة اليوم جاهزة للإضافة" description="لا توجد عناصر مجدولة الآن. ابدأ بمهمة واحدة أو عادة صغيرة، وستظهر هنا كسطر قابل للتعديل." action={<Link href="/tasks" className="inline-flex rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">أضف أول مهمة</Link>} /> : planItems.map((item) => <div key={item.id} className={`rounded-2xl border px-3 py-3 transition-colors ${item.status === 'done' ? 'border-positive bg-positive/40' : item.status === 'snoozed' ? 'border-border bg-muted/50 opacity-60' : 'border-border/70 bg-card'}`}>
           <div className="flex items-center gap-3">
             <span className="w-12 shrink-0 text-xs font-semibold text-muted-foreground">{item.time}</span>
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${item.status === 'done' ? 'bg-positive text-positive-foreground' : 'bg-accent text-accent-foreground'}`}><PlanKindIcon kind={item.kind} /></span>
