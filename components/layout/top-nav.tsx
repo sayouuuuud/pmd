@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   AlignJustify,
   Bell,
@@ -12,7 +12,6 @@ import {
   Clapperboard,
   FolderKanban,
   LayoutGrid,
-  LayoutPanelLeft,
   ListChecks,
   Moon,
   Plus,
@@ -26,6 +25,7 @@ import {
 } from 'lucide-react'
 import { useCommandCenter } from '@/lib/command-center-store'
 import { authClient } from '@/lib/auth-client'
+import { parseQuickAdd, type ParsedQuickAdd, type QuickAddKind } from '@/lib/quick-add-parser'
 import { GlobalSearchDialog } from '@/components/search/global-search-dialog'
 
 const navItems = [
@@ -49,28 +49,118 @@ const gregorianDate = new Intl.DateTimeFormat('ar-EG', {
   month: 'long',
 }).format(new Date())
 
+const quickAddTypes: { value: QuickAddKind; label: string }[] = [
+  { value: 'task', label: 'مهمة' },
+  { value: 'note', label: 'ملاحظة' },
+  { value: 'finance', label: 'مصروف' },
+  { value: 'entertainment', label: 'فيلم' },
+]
+
+function previewLabel(parsed: ParsedQuickAdd) {
+  if (parsed.kind === 'task') return `مهمة · ${parsed.dueLabel}`
+  if (parsed.kind === 'note') return 'ملاحظة سريعة'
+  if (parsed.kind === 'finance') return `${parsed.financeKind === 'income' ? 'دخل' : 'مصروف'} · ${parsed.amount} جنيه`
+  return parsed.entertainmentType === 'series' ? 'مسلسل · عايز أتفرج' : 'فيلم · عايز أتفرج'
+}
+
 export function TopNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const { addTask, addNote, reminders } = useCommandCenter()
+  const {
+    addTask,
+    addNote,
+    addFinanceEntry,
+    addEntertainment,
+    projects,
+    goals,
+    reminders,
+  } = useCommandCenter()
   const { data: session } = authClient.useSession()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [type, setType] = useState<'task' | 'note'>('task')
+  const [type, setType] = useState<QuickAddKind>('task')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
+  const [projectId, setProjectId] = useState('')
+  const [goalId, setGoalId] = useState('')
+  const [preview, setPreview] = useState<ParsedQuickAdd | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!quickAddOpen) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setQuickAddOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [quickAddOpen])
+
+  function openQuickAdd() {
+    setQuickAddOpen(true)
+    setPreview(null)
+    setError('')
+  }
+
+  function closeQuickAdd() {
+    setQuickAddOpen(false)
+    setPreview(null)
+    setError('')
+    setTitle('')
+    setBody('')
+    setProjectId('')
+    setGoalId('')
+  }
+
+  function changeType(nextType: QuickAddKind) {
+    setType(nextType)
+    setPreview(null)
+    setError('')
+    setTitle('')
+    setBody('')
+  }
 
   function submitQuickAdd(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!title.trim()) return
-    if (type === 'task') {
-      addTask({ title: title.trim(), priority: 'medium', dueLabel: 'النهاردة', category: 'سريع' })
-    } else {
-      addNote({ title: title.trim(), body: body.trim() || 'ملاحظة سريعة', tag: 'سريع' })
+    const source = type === 'note' ? `${title}\n${body}` : title
+    const parsed = parseQuickAdd(type, source)
+    if (!parsed) {
+      setError(type === 'finance' ? 'اكتب المبلغ ووصف المصروف، مثال: سجل مصروف ١٢٠ مواصلات.' : 'اكتب بيانات الإضافة أولًا بصيغة واضحة.')
+      return
     }
-    setTitle('')
-    setBody('')
-    setQuickAddOpen(false)
+    setPreview(parsed)
+    setError('')
+  }
+
+  function confirmQuickAdd() {
+    if (!preview) return
+    if (preview.kind === 'task') {
+      addTask({
+        title: preview.title,
+        priority: 'medium',
+        dueLabel: preview.dueLabel ?? 'النهاردة',
+        category: 'سريع',
+        projectId: projectId || undefined,
+      })
+    } else if (preview.kind === 'note') {
+      addNote({ title: preview.title, body: preview.body || 'ملاحظة سريعة', tag: 'سريع' })
+    } else if (preview.kind === 'finance') {
+      addFinanceEntry({
+        title: preview.title,
+        amount: preview.amount ?? 0,
+        kind: preview.financeKind ?? 'expense',
+        category: preview.category ?? 'عام',
+        localDate: new Date().toISOString().slice(0, 10),
+        projectId: projectId || undefined,
+        goalId: goalId || undefined,
+      })
+    } else {
+      addEntertainment({
+        title: preview.title,
+        type: preview.entertainmentType ?? 'movie',
+        genre: preview.genre ?? 'عام',
+      })
+    }
+    closeQuickAdd()
   }
 
   return (
@@ -91,7 +181,7 @@ export function TopNav() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setQuickAddOpen(true)}
+              onClick={openQuickAdd}
               className="flex items-center gap-2 rounded-full bg-card py-1.5 pr-2 pl-4 text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               إضافة سريعة
@@ -136,28 +226,85 @@ export function TopNav() {
       <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {quickAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-foreground/30 p-4 pt-24 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="إضافة سريعة">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/30 p-4 pt-16 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="إضافة سريعة">
           <form onSubmit={submitQuickAdd} className="w-full max-w-lg rounded-3xl bg-card p-5 shadow-2xl">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">إضافة سريعة</h2>
-                <p className="mt-1 text-xs text-muted-foreground">سجّل الحاجة قبل ما تخرج من دماغك.</p>
+                <p className="mt-1 text-xs text-muted-foreground">اكتبها بطريقتك، راجع التفاصيل، وبعدها احفظها.</p>
               </div>
-              <button type="button" aria-label="إغلاق" onClick={() => setQuickAddOpen(false)} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
+              <button type="button" aria-label="إغلاق" onClick={closeQuickAdd} className="rounded-full p-2 text-muted-foreground hover:bg-muted">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="mt-5 flex rounded-2xl bg-muted p-1">
-              <button type="button" onClick={() => setType('task')} className={`flex-1 rounded-xl px-3 py-2 text-sm ${type === 'task' ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>مهمة</button>
-              <button type="button" onClick={() => setType('note')} className={`flex-1 rounded-xl px-3 py-2 text-sm ${type === 'note' ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>ملاحظة</button>
+
+            <div className="mt-5 grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
+              {quickAddTypes.map((item) => (
+                <button key={item.value} type="button" onClick={() => changeType(item.value)} className={`rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
+                  {item.label}
+                </button>
+              ))}
             </div>
-            <label className="mt-5 block text-sm font-medium" htmlFor="quick-add-title">{type === 'task' ? 'اسم المهمة' : 'عنوان الملاحظة'}</label>
-            <input id="quick-add-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder={type === 'task' ? 'مثال: الاتصال بالعميل' : 'مثال: فكرة جديدة'} />
-            {type === 'note' && <textarea value={body} onChange={(event) => setBody(event.target.value)} className="mt-3 min-h-24 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="اكتب التفاصيل هنا..." />}
-            <div className="mt-5 flex justify-end gap-2">
-              <button type="button" onClick={() => setQuickAddOpen(false)} className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</button>
-              <button type="submit" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">حفظ</button>
-            </div>
+
+            {!preview ? (
+              <>
+                <label className="mt-5 block text-sm font-medium" htmlFor="quick-add-title">
+                  {type === 'task' ? 'اكتب المهمة بصيغتها الطبيعية' : type === 'note' ? 'عنوان الملاحظة' : type === 'finance' ? 'اكتب العملية' : 'اكتب اسم العمل'}
+                </label>
+                <input
+                  id="quick-add-title"
+                  autoFocus
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  placeholder={type === 'task' ? 'مثال: ضيف مهمة بكرة الساعة ٨ الاتصال بالعميل' : type === 'note' ? 'مثال: فكرة إطلاق المنتج' : type === 'finance' ? 'مثال: سجل مصروف ١٢٠ مواصلات' : 'مثال: فيلم إنترستيلر'}
+                />
+                {type === 'note' && <textarea value={body} onChange={(event) => setBody(event.target.value)} className="mt-3 min-h-24 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="اكتب التفاصيل هنا..." />}
+                {type === 'task' && (
+                  <label className="mt-3 block text-sm font-medium" htmlFor="quick-add-project">
+                    المشروع المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>
+                    <select id="quick-add-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                      <option value="">بدون مشروع</option>
+                      {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
+                    </select>
+                  </label>
+                )}
+                {type === 'finance' && (
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <label className="block text-sm font-medium" htmlFor="quick-add-finance-project">المشروع المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>
+                      <select id="quick-add-finance-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                        <option value="">بدون مشروع</option>
+                        {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium" htmlFor="quick-add-goal">الهدف المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>
+                      <select id="quick-add-goal" value={goalId} onChange={(event) => setGoalId(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                        <option value="">بدون هدف</option>
+                        {goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}
+                      </select>
+                    </label>
+                  </div>
+                )}
+                {error && <p role="alert" className="mt-3 rounded-2xl bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+                <div className="mt-5 flex justify-end gap-2">
+                  <button type="button" onClick={closeQuickAdd} className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</button>
+                  <button type="submit" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">مراجعة قبل الحفظ</button>
+                </div>
+              </>
+            ) : (
+              <div className="mt-5 rounded-3xl border border-border bg-background p-4">
+                <p className="text-xs font-semibold text-muted-foreground">معاينة الإضافة</p>
+                <p className="mt-3 text-sm font-semibold">{preview.title}</p>
+                {preview.body && <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{preview.body}</p>}
+                <p className="mt-3 text-xs text-muted-foreground">{previewLabel(preview)}</p>
+                {preview.category && <p className="mt-1 text-xs text-muted-foreground">التصنيف: {preview.category}</p>}
+                {(projectId || goalId) && <p className="mt-1 text-xs text-muted-foreground">{projectId ? `المشروع: ${projects.find((project) => project.id === projectId)?.title ?? 'مرتبط'}` : ''}{projectId && goalId ? ' · ' : ''}{goalId ? `الهدف: ${goals.find((goal) => goal.id === goalId)?.title ?? 'مرتبط'}` : ''}</p>}
+                <div className="mt-5 flex justify-end gap-2">
+                  <button type="button" onClick={() => setPreview(null)} className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">تعديل</button>
+                  <button type="button" onClick={confirmQuickAdd} className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">تأكيد وحفظ</button>
+                </div>
+              </div>
+            )}
           </form>
         </div>
       )}
