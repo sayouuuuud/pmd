@@ -304,6 +304,7 @@ type CommandCenterContextValue = {
   toggleHabit: (id: string) => void
   togglePlanItem: (id: string) => void
   snoozePlanItem: (id: string) => void
+  restorePlanItem: (id: string) => void
 }
 
 const initialProfile: Profile = {
@@ -1116,6 +1117,10 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     snoozePlanItem: (id) => {
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'snoozed' } : item))
       void updateRemotePlanItem(id, { status: 'snoozed' })
+    },
+    restorePlanItem: (id) => {
+      setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'pending' } : item))
+      void updateRemotePlanItem(id, { status: 'pending' })
     },
   }), [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
 

@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter } from '@/lib/command-center-store'
 
 export function DailyPlanWorkspace() {
-  const { planItems, tasks, habits, projects, goals, togglePlanItem, snoozePlanItem } = useCommandCenter()
+  const { planItems, tasks, habits, projects, goals, togglePlanItem, snoozePlanItem, restorePlanItem } = useCommandCenter()
   const completed = planItems.filter((item) => item.status === 'done').length
 
   return <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
@@ -19,6 +19,7 @@ export function DailyPlanWorkspace() {
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${item.status === 'done' ? 'bg-positive text-positive-foreground' : 'bg-accent text-accent-foreground'}`}><PlanKindIcon kind={item.kind} /></span>
             <button type="button" onClick={() => togglePlanItem(item.id)} className={`flex-1 text-right text-sm font-medium ${item.status === 'done' ? 'text-muted-foreground line-through' : ''}`}>{item.title}</button>
             {item.status !== 'done' && item.status !== 'snoozed' && <button type="button" aria-label="تأجيل" onClick={() => snoozePlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><Pause className="h-4 w-4" /></button>}
+            {item.status === 'snoozed' && <button type="button" aria-label="إرجاع إلى الخطة" onClick={() => restorePlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"><Play className="h-4 w-4" /></button>}
             <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${item.status === 'done' ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{item.status === 'done' && <Check className="h-3.5 w-3.5" />}</span>
           </div>
           <PlanContext item={item} tasks={tasks} habits={habits} projects={projects} goals={goals} />
