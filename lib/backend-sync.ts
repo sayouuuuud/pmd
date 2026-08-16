@@ -247,7 +247,7 @@ function asGoalStatus(value: string): Goal['status'] {
 }
 
 function asProjectStatus(value: string): Project['status'] {
-  return value === 'in-progress' || value === 'done' ? value : 'backlog'
+  return value === 'in-progress' || value === 'paused' || value === 'done' ? value : 'backlog'
 }
 
 export function mapRemoteGoal(item: RemoteGoal): Goal {

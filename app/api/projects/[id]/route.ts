@@ -5,7 +5,7 @@ import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/
 
 export const dynamic = 'force-dynamic'
 
-const statuses = new Set(['backlog', 'in-progress', 'done'])
+const statuses = new Set(['backlog', 'in-progress', 'paused', 'done'])
 
 function json(data: unknown, init?: ResponseInit) {
   return Response.json(data, { ...init, headers: { 'cache-control': 'no-store', ...(init?.headers ?? {}) } })
