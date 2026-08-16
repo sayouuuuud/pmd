@@ -258,6 +258,8 @@ type CommandCenterContextValue = {
   toggleDhikr: (session: 'morning' | 'evening') => void
   incrementDhikr: (session: 'morning' | 'evening', itemId: string, target?: number) => void
   addTasbeeh: (count?: number) => void
+  setTasbeehTarget: (target: number) => void
+  resetTasbeeh: () => void
   addSavedDua: (text: string) => void
   removeSavedDua: (index: number) => void
   updateReligiousSettings: (patch: Pick<ReligiousState, 'city' | 'calculationMethod'>) => void
@@ -803,6 +805,21 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setReligious((current) => {
         const target = Math.max(1, current.dhikr.tasbeehTarget ?? 100)
         const next = { ...current, dhikr: { ...current.dhikr, tasbeehTarget: target, tasbeehCount: Math.min(100000, Math.max(0, (current.dhikr.tasbeehCount ?? 0) + Math.max(1, Math.round(count)))) } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    setTasbeehTarget: (target) => {
+      setReligious((current) => {
+        const safeTarget = Math.min(100000, Math.max(1, Math.round(target)))
+        const next = { ...current, dhikr: { ...current.dhikr, tasbeehTarget: safeTarget } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    resetTasbeeh: () => {
+      setReligious((current) => {
+        const next = { ...current, dhikr: { ...current.dhikr, tasbeehCount: 0 } }
         void updateRemoteReligious(next)
         return next
       })
