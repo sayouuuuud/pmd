@@ -370,8 +370,9 @@ function arrayOr<T>(value: unknown, fallback: T[]): T[] {
 
 function normalizeState(value: unknown): PersistedState | null {
   if (!isRecord(value)) return null
-  if (value.app !== 'personal-command-center' || !isRecord(value.data)) return null
-  const source = value.data
+  const source = value.app === 'personal-command-center' && isRecord(value.data)
+    ? value.data
+    : value
   const requiredArrays = ['tasks', 'notes', 'habits', 'planItems', 'goals', 'projects', 'financeEntries', 'reminders', 'entertainment', 'journal']
   if (!isRecord(source.profile) || !isRecord(source.budget) || !isRecord(source.religious) || !isRecord(source.weeklyReview)) return null
   if (requiredArrays.some((key) => !Array.isArray(source[key]))) return null
