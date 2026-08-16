@@ -20,6 +20,7 @@ export function DailyPlanWorkspace() {
   const [editingTitle, setEditingTitle] = useState('')
   const [editingTime, setEditingTime] = useState('')
   const visiblePlanItems = planItems.filter((item) => (item.localDate ?? cairoToday()) === viewDate)
+  const sortedVisiblePlanItems = sortPlanItems(visiblePlanItems, tasks)
   const completed = visiblePlanItems.filter((item) => item.status === 'done').length
   const activePlanItems = visiblePlanItems.filter((item) => item.status !== 'skipped')
 
@@ -53,8 +54,9 @@ export function DailyPlanWorkspace() {
         <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground" htmlFor="daily-plan-date"><CalendarDays className="h-4 w-4 text-primary" />عرض يوم</label>
         <input id="daily-plan-date" type="date" value={viewDate} onChange={(event) => setViewDate(event.target.value)} className="rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none focus:border-primary" />
       </div>
+      <p className="mb-3 rounded-2xl border border-border/70 bg-muted/40 px-3 py-2 text-[11px] leading-5 text-muted-foreground">ترتيب مرن حسب وقت العنصر، ثم أولوية المهمة عند تساوي الوقت. لا يتم تغيير أي موعد تلقائيًا.</p>
       <div className="space-y-2">
-        {visiblePlanItems.length === 0 ? <EmptyState icon={Sparkles} title="لا توجد عناصر في هذا اليوم" description="اختر يومًا آخر أو أضف عنصرًا جديدًا من قسم المهام، ثم انقله إلى هذا التاريخ عند الحاجة." action={<Link href="/tasks" className="inline-flex rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">أضف أول مهمة</Link>} /> : visiblePlanItems.map((item) => <div key={item.id} id={`plan-item-${item.id}`} className={`scroll-mt-24 rounded-2xl border px-3 py-3 transition-colors ${item.status === 'done' ? 'border-positive bg-positive/40' : item.status === 'snoozed' || item.status === 'skipped' ? 'border-border bg-muted/50 opacity-60' : 'border-border/70 bg-card'}`}>
+        {visiblePlanItems.length === 0 ? <EmptyState icon={Sparkles} title="لا توجد عناصر في هذا اليوم" description="اختر يومًا آخر أو أضف عنصرًا جديدًا من قسم المهام، ثم انقله إلى هذا التاريخ عند الحاجة." action={<Link href="/tasks" className="inline-flex rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">أضف أول مهمة</Link>} /> : sortedVisiblePlanItems.map((item) => <div key={item.id} id={`plan-item-${item.id}`} className={`scroll-mt-24 rounded-2xl border px-3 py-3 transition-colors ${item.status === 'done' ? 'border-positive bg-positive/40' : item.status === 'snoozed' || item.status === 'skipped' ? 'border-border bg-muted/50 opacity-60' : 'border-border/70 bg-card'}`}>
           <div className="flex items-center gap-3">
             <span className="w-12 shrink-0 text-xs font-semibold text-muted-foreground">{item.time}</span>
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${item.status === 'done' ? 'bg-positive text-positive-foreground' : 'bg-accent text-accent-foreground'}`}><PlanKindIcon kind={item.kind} /></span>
@@ -84,6 +86,22 @@ export function DailyPlanWorkspace() {
       </ContentCard>
     </div>
   </div>
+}
+
+function sortPlanItems(items: { id: string; title: string; time: string; kind: string; status: string; sourceId?: string; localDate?: string }[], tasks: { id: string; priority: 'high' | 'medium' | 'low' }[]) {
+  const priorityRank = { high: 0, medium: 1, low: 2 }
+  return [...items].sort((left, right) => {
+    const timeDifference = planTimeValue(left.time) - planTimeValue(right.time)
+    if (timeDifference !== 0) return timeDifference
+    const leftTask = left.kind === 'task' && left.sourceId ? tasks.find((task) => task.id === left.sourceId) : undefined
+    const rightTask = right.kind === 'task' && right.sourceId ? tasks.find((task) => task.id === right.sourceId) : undefined
+    return (leftTask ? priorityRank[leftTask.priority] : 3) - (rightTask ? priorityRank[rightTask.priority] : 3)
+  })
+}
+
+function planTimeValue(time: string) {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(time)
+  return match ? Number(match[1]) * 60 + Number(match[2]) : Number.MAX_SAFE_INTEGER
 }
 
 function PlanContext({ item, tasks, habits, projects, goals }: { item: { kind: string; sourceId?: string }; tasks: { id: string; title: string; projectId?: string; goalId?: string }[]; habits: { id: string; title: string; projectId?: string; goalId?: string }[]; projects: { id: string; title: string; goalId?: string }[]; goals: { id: string; title: string }[] }) {
