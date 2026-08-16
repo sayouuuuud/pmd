@@ -113,7 +113,7 @@
   - كارت إحصائية (Stat Card) بنفس شكل كروت الـ Dashboard في التصميم
   - كارت محتوى عام (Content Card)
   - [x] Modal / Dialog موحد للإضافة والتعديل، مع ترحيل Quick Add ونافذة «تذكير جديد» إليه؛ تبقى النوافذ الفعلية الأخرى للترحيل التدريجي.
-  - Inputs / Select / Textarea / Checkbox موحدة
+  - [x] Inputs / Select / Textarea / Checkbox موحدة
   - Badge للأولويات والحالات
   - Empty State موحد (عندما يكون القسم فارغاً)
 - [x] تحديث `metadata` في `layout.tsx` بعنوان ووصف واسم تطبيق وكلمات مفتاحية عربية متسقة مع `public/manifest.json`.
@@ -692,3 +692,11 @@
 اعتمد `NotesWorkspace` و`NoteCard` على `Input` و`Textarea` و`Select` و`Button` المشتركة في البحث وفلترة الوسوم والتقاط الملاحظة وتحريرها، مع إبقاء أزرار الوسوم التفاعلية المخصصة كما هي لأنها تمثل حالة متعددة الاختيار داخل البطاقة.
 اختُبرت `/notes` بصريًا وتفاعليًا؛ أُدخل «مشروع» في البحث ثم اختير وسم «تطوير»، فظهرت النتيجة المطابقة وظهر خيار «مسح الفلتر» دون إنشاء أو تعديل أي ملاحظة. التفاصيل في `verification/notes-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة.
+
+## سجل دفعة — Checkbox المشترك وترحيل الأرشيف — 2026-08-17
+
+أُنشئ `components/ui/checkbox.tsx` كمكوّن مشترك لحالات التحديد مع توكنات `border-input` و`bg-background` و`accent-primary` وحالات التركيز والإبطال. رُحّل مربعا التحديد الجماعي والفردي في `components/archive/archive-workspace.tsx` إليه، مع الحفاظ على `checked` و`disabled` و`aria-label` ومنطق التحديد والاستعادة دون تغيير عقد البيانات.
+
+وُثّق Checkbox في `/design-system` واختُبرت حالته التفاعلية. فُتحت `/archive` بصريًا، وأكد فحص DOM وجود المكوّن المشترك وتعطيل التحديد الجماعي عند خلو النتائج، دون تنفيذ استعادة أو تعديل بيانات. التفاصيل في `verification/shared-checkbox-archive-browser.md` و`verification/interaction-smoke-tests.md`.
+
+تبقى بوابات TypeScript وESLint و`git diff --check` و`next build` قبل إنشاء commit ودفع الدفعة.

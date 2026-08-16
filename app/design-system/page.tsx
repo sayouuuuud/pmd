@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Archive, CheckCircle2, ClipboardList, FileText, Layers3, Sparkles } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Dialog } from '@/components/ui/dialog'
@@ -90,7 +91,7 @@ export default function DesignSystemPage() {
               <Textarea className="mt-2" placeholder="اكتب التفاصيل..." />
             </label>
             <label className="mt-4 flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={checked} onChange={(event) => setChecked(event.target.checked)} className="h-4 w-4 accent-primary" />
+              <Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} />
               تفعيل التذكير
             </label>
           </ContentCard>

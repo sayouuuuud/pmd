@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Archive, ArchiveRestore, Check, Clock3, ListChecks, Search } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type ArchiveKind, type ArchivedItem } from '@/lib/command-center-store'
 
@@ -129,7 +130,7 @@ export function ArchiveWorkspace() {
         </div>
         <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/60 p-3 sm:flex-row sm:items-center sm:justify-between">
           <label className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-            <input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} disabled={filteredItems.length === 0} className="size-4 accent-primary" aria-label="تحديد كل النتائج الظاهرة" />
+            <Checkbox checked={allVisibleSelected} onChange={toggleAllVisible} disabled={filteredItems.length === 0} aria-label="تحديد كل النتائج الظاهرة" />
             تحديد كل النتائج الظاهرة
             {selectedKeys.length > 0 && <span className="text-xs font-medium text-muted-foreground">({selectedKeys.length} محدد)</span>}
           </label>
@@ -159,7 +160,7 @@ export function ArchiveWorkspace() {
             <article key={itemKey(item)} className="group rounded-[1.5rem] border border-border/70 bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
               <div className="flex items-start justify-between gap-4">
                 <label className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                  <input type="checkbox" checked={selectedKeys.includes(itemKey(item))} onChange={() => toggleSelected(item)} className="size-4 accent-primary" aria-label={`تحديد ${item.title}`} />
+                  <Checkbox checked={selectedKeys.includes(itemKey(item))} onChange={() => toggleSelected(item)} aria-label={`تحديد ${item.title}`} />
                   <span className="sr-only">تحديد</span>
                 </label>
                 <div className="min-w-0 flex-1">
