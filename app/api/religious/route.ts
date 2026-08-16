@@ -95,7 +95,15 @@ function safeQuranProgress(value: unknown) {
     const surahNumbers = Array.isArray(playlist.surahNumbers) ? playlist.surahNumbers.filter((number): number is number => typeof number === 'number' && Number.isFinite(number)).map((number) => Math.max(1, Math.min(114, Math.round(number)))).filter((number, index, numbers) => numbers.indexOf(number) === index).slice(0, 30) : []
     return [{ id: stringValue(playlist.id, `quran-playlist-${Date.now()}`, 80), name: stringValue(playlist.name, 'قائمة تلاوة', 80), surahNumbers, createdAt: stringValue(playlist.createdAt, new Date().toISOString(), 40) }]
   }) : []
-  return { reference: stringValue(progress.reference, 'ورد اليوم', 160), targetMinutes, completedMinutes, memorizationTarget, memorizationCompleted, memorizationSurahStatus, playlists, listenLater, listenedSurahNumbers, ...(lastPosition ? { lastPosition } : {}) }
+  const favoriteAyahs = Array.isArray(progress.favoriteAyahs) ? progress.favoriteAyahs.slice(0, 100).flatMap((item) => {
+    const favorite = item && typeof item === 'object' ? item as Record<string, unknown> : null
+    if (!favorite) return []
+    const surahNumber = Number(favorite.surahNumber)
+    const ayahNumber = Number(favorite.ayahNumber)
+    if (!Number.isInteger(surahNumber) || surahNumber < 1 || surahNumber > 114 || !Number.isInteger(ayahNumber) || ayahNumber < 1 || ayahNumber > 1000) return []
+    return [{ id: stringValue(favorite.id, `favorite-ayah-${surahNumber}-${ayahNumber}`, 100), surahNumber, ayahNumber, reflection: stringValue(favorite.reflection, '', 500), createdAt: stringValue(favorite.createdAt, new Date().toISOString(), 40) }]
+  }) : []
+  return { reference: stringValue(progress.reference, 'ورد اليوم', 160), targetMinutes, completedMinutes, memorizationTarget, memorizationCompleted, memorizationSurahStatus, playlists, favoriteAyahs, listenLater, listenedSurahNumbers, ...(lastPosition ? { lastPosition } : {}) }
 }
 
 function safeDhikrProgress(value: unknown) {
