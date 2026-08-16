@@ -102,9 +102,16 @@ function safeDhikrProgress(value: unknown) {
 
 function safeDhikrSessions(value: unknown) {
   const sessions = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
+  const rawSunnahChecks = sessions.sunnahChecks && typeof sessions.sunnahChecks === 'object' && !Array.isArray(sessions.sunnahChecks) ? sessions.sunnahChecks as Record<string, unknown> : {}
   return {
     morning: sessions.morning === true,
     evening: sessions.evening === true,
+    sunnahChecks: {
+      duha: rawSunnahChecks.duha === true,
+      witr: rawSunnahChecks.witr === true,
+      rawatib: rawSunnahChecks.rawatib === true,
+      sadaqah: rawSunnahChecks.sadaqah === true,
+    },
     morningCount: Math.max(0, Math.min(10000, Math.round(Number(sessions.morningCount) || 0))),
     eveningCount: Math.max(0, Math.min(10000, Math.round(Number(sessions.eveningCount) || 0))),
     morningProgress: safeDhikrProgress(sessions.morningProgress),

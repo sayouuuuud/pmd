@@ -80,7 +80,7 @@ type Reciter = { id: number; name: string; read?: string; server: string; surahT
 type RecitersResponse = { source: string; reciters?: Reciter[]; error?: string }
 
 export function ReligiousWorkspace() {
-  const { religious, togglePrayer, addWirdProgress, addMemorizationProgress, saveQuranPosition, createQuranPlaylist, toggleQuranPlaylistSurah, toggleQuranListenLater, toggleQuranListened, incrementDhikr, addTasbeeh, setTasbeehTarget, resetTasbeeh, addSavedDua, removeSavedDua, updateReligiousSettings, updatePrayerTimes } = useCommandCenter()
+  const { religious, togglePrayer, addWirdProgress, addMemorizationProgress, saveQuranPosition, createQuranPlaylist, toggleQuranPlaylistSurah, toggleQuranListenLater, toggleQuranListened, incrementDhikr, addTasbeeh, setTasbeehTarget, resetTasbeeh, addSavedDua, removeSavedDua, updateReligiousSettings, updatePrayerTimes, toggleSunnah } = useCommandCenter()
   const [timingState, setTimingState] = useState<TimingState>('idle')
   const [timingMessage, setTimingMessage] = useState('')
   const [timingDate, setTimingDate] = useState<string | null>(null)
@@ -98,7 +98,6 @@ export function ReligiousWorkspace() {
   const [quranFontScale, setQuranFontScale] = useState<'sm' | 'md' | 'lg'>('md')
   const [playlistName, setPlaylistName] = useState('')
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [sunnahChecks, setSunnahChecks] = useState<Record<string, boolean>>({ duha: false, witr: false, rawatib: false, sadaqah: false })
   const [duaInput, setDuaInput] = useState('')
   const completedPrayers = religious.prayerLogs.filter((prayer) => isPrayerCompletedStatus(prayer.status)).length
   const prayerPercent = Math.round((completedPrayers / Math.max(religious.prayerLogs.length, 1)) * 100)
@@ -316,7 +315,7 @@ export function ReligiousWorkspace() {
         <ContentCard title="خطة الحفظ" description="تقدم تقريبي تحفظه أنت؛ لا يتم تخزين نص الآيات." action={<BookOpen className="h-5 w-5 text-primary" />}>
           <div className="flex items-center justify-between text-sm"><span>الإنجاز الحالي</span><strong>{memorizationCompleted} من {memorizationTarget} آيات</strong></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, memorizationPercent)}%` }} /></div><div className="mt-2 flex items-center justify-between text-xs text-muted-foreground"><span>{memorizationPercent}% مكتمل</span><span>المتبقي {Math.max(0, memorizationTarget - memorizationCompleted)}</span></div><div className="mt-4 flex gap-2"><Button size="sm" variant="outline" onClick={() => addMemorizationProgress(1)}><Plus className="ms-1 h-3.5 w-3.5" /> آية</Button><Button size="sm" onClick={() => addMemorizationProgress(3)}>أنجزت 3 آيات</Button></div>
         </ContentCard>
-        <ContentCard title="السنن والنوافل" description="قائمة تذكير يومية محلية قابلة للتعديل من هاتفك." action={<Sparkles className="h-5 w-5 text-primary" />}><div className="grid gap-2">{[['duha', 'صلاة الضحى'], ['witr', 'الوتر'], ['rawatib', 'السنن الرواتب'], ['sadaqah', 'صدقة أو إحسان']].map(([id, label]) => <button key={id} type="button" onClick={() => setSunnahChecks((current) => ({ ...current, [id]: !current[id] }))} className={`flex items-center gap-3 rounded-2xl border p-3 text-right text-sm transition-colors ${sunnahChecks[id] ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}><span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${sunnahChecks[id] ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{sunnahChecks[id] && <Check className="h-3 w-3" />}</span><span className="flex-1">{label}</span></button>)}</div></ContentCard>
+        <ContentCard title="السنن والنوافل" description="قائمة تذكير يومية محلية قابلة للتعديل من هاتفك." action={<Sparkles className="h-5 w-5 text-primary" />}><div className="grid gap-2">{[['duha', 'صلاة الضحى'], ['witr', 'الوتر'], ['rawatib', 'السنن الرواتب'], ['sadaqah', 'صدقة أو إحسان']].map(([id, label]) => <button key={id} type="button" onClick={() => toggleSunnah(id as 'duha' | 'witr' | 'rawatib' | 'sadaqah')} className={`flex items-center gap-3 rounded-2xl border p-3 text-right text-sm transition-colors ${religious.dhikr.sunnahChecks?.[id as 'duha' | 'witr' | 'rawatib' | 'sadaqah'] ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}><span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${religious.dhikr.sunnahChecks?.[id as 'duha' | 'witr' | 'rawatib' | 'sadaqah'] ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{religious.dhikr.sunnahChecks?.[id as 'duha' | 'witr' | 'rawatib' | 'sadaqah'] && <Check className="h-3 w-3" />}</span><span className="flex-1">{label}</span></button>)}</div></ContentCard>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">

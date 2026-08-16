@@ -178,3 +178,5 @@
 - **التحقق:** TypeScript وESLint و`git diff --check` و`next build` ناجحة، ولا أخطاء تطبيقية في وحدة التحكم بعد إعادة التحميل.
 - **الأثر الجانبي:** لا توجد بيانات اختبارية متبقية؛ عادت الخطة إلى حالتها الأصلية.
 - **التفاصيل:** `verification/daily-plan-move-browser.md`.
+
+- **حفظ السنن والنوافل:** في `/religious` فُعّلت «صلاة الضحى»، ظهرت علامة الإنجاز، ثم بقيت الحالة بعد إعادة تحميل الصفحة. أصبحت الحالة محفوظة ضمن `religious.dhikr.sunnahChecks` عبر localStorage fallback. فحص console خالٍ من أخطاء تطبيقية؛ رسائل React DevTools وHMR فقط.

@@ -1,4 +1,4 @@
-import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, Note, PlanItem, PrayerHistoryDay, PrayerLog, Profile, Project, QuranPlaylist, QuranPosition, Reminder, ReligiousState, Task, WeeklyReview } from './command-center-store'
+import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, Note, PlanItem, PrayerHistoryDay, PrayerLog, Profile, Project, QuranPlaylist, QuranPosition, Reminder, ReligiousState, SunnahKey, Task, WeeklyReview } from './command-center-store'
 import { normalizeReminderRepeatLabel } from './reminder-utils'
 
 type RemoteProfile = {
@@ -251,6 +251,10 @@ function asGoalStatus(value: string): Goal['status'] {
 function asProjectStatus(value: string): Project['status'] {
   return value === 'in-progress' || value === 'paused' || value === 'done' ? value : 'backlog'
 }
+function normalizeRemoteSunnahChecks(value: unknown): Record<SunnahKey, boolean> {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
+  return { duha: source.duha === true, witr: source.witr === true, rawatib: source.rawatib === true, sadaqah: source.sadaqah === true }
+}
 
 export function mapRemoteGoal(item: RemoteGoal): Goal {
   return { id: item.id, title: item.title, description: item.description, horizon: asGoalHorizon(item.horizon), status: asGoalStatus(item.status), progress: Math.max(0, Math.min(100, item.progress)), targetLabel: item.targetLabel }
@@ -386,7 +390,7 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
     prayerLogs: Array.isArray(item.prayerLogs) ? item.prayerLogs.map((prayer) => ({ ...prayer, status: asPrayerStatus(prayer.status) })) : [],
     prayerHistory: Array.isArray(item.prayerHistory) ? item.prayerHistory.slice(-30).map(normalizeRemotePrayerHistory) : [],
     quran: { reference: item.quranProgress?.reference || 'ورد اليوم', targetMinutes: Math.max(1, Number(item.quranProgress?.targetMinutes) || 20), completedMinutes: Math.max(0, Number(item.quranProgress?.completedMinutes) || 0), memorizationTarget: Math.max(1, Number(item.quranProgress?.memorizationTarget) || 10), memorizationCompleted: Math.max(0, Number(item.quranProgress?.memorizationCompleted) || 0), lastPosition: normalizeRemoteQuranPosition(item.quranProgress?.lastPosition), playlists: normalizeRemotePlaylists(item.quranProgress?.playlists), listenLater: normalizeRemoteSurahList(item.quranProgress?.listenLater), listenedSurahNumbers: normalizeRemoteSurahList(item.quranProgress?.listenedSurahNumbers) },
-    dhikr: { morning: Boolean(item.dhikrSessions?.morning), evening: Boolean(item.dhikrSessions?.evening), morningCount: Math.max(0, Number(item.dhikrSessions?.morningCount) || 0), eveningCount: Math.max(0, Number(item.dhikrSessions?.eveningCount) || 0), morningProgress: normalizeRemoteProgress(item.dhikrSessions?.morningProgress, progressFromRemoteCount('morning', item.dhikrSessions?.morningCount)), eveningProgress: normalizeRemoteProgress(item.dhikrSessions?.eveningProgress, progressFromRemoteCount('evening', item.dhikrSessions?.eveningCount)), lastSession: item.dhikrSessions?.lastSession, tasbeehCount: Math.max(0, Number(item.dhikrSessions?.tasbeehCount) || 0), tasbeehTarget: Math.max(1, Number(item.dhikrSessions?.tasbeehTarget) || 100), savedDuas: Array.isArray(item.dhikrSessions?.savedDuas) ? item.dhikrSessions.savedDuas.filter((dua): dua is string => typeof dua === 'string').slice(-20) : [] },
+    dhikr: { morning: Boolean(item.dhikrSessions?.morning), evening: Boolean(item.dhikrSessions?.evening), morningCount: Math.max(0, Number(item.dhikrSessions?.morningCount) || 0), eveningCount: Math.max(0, Number(item.dhikrSessions?.eveningCount) || 0), morningProgress: normalizeRemoteProgress(item.dhikrSessions?.morningProgress, progressFromRemoteCount('morning', item.dhikrSessions?.morningCount)), eveningProgress: normalizeRemoteProgress(item.dhikrSessions?.eveningProgress, progressFromRemoteCount('evening', item.dhikrSessions?.eveningCount)), lastSession: item.dhikrSessions?.lastSession, tasbeehCount: Math.max(0, Number(item.dhikrSessions?.tasbeehCount) || 0), tasbeehTarget: Math.max(1, Number(item.dhikrSessions?.tasbeehTarget) || 100), savedDuas: Array.isArray(item.dhikrSessions?.savedDuas) ? item.dhikrSessions.savedDuas.filter((dua): dua is string => typeof dua === 'string').slice(-20) : [], sunnahChecks: normalizeRemoteSunnahChecks(item.dhikrSessions?.sunnahChecks) },
   }
 }
 

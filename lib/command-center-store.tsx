@@ -140,13 +140,15 @@ export type QuranPlaylist = {
   createdAt: string
 }
 
+export type SunnahKey = 'duha' | 'witr' | 'rawatib' | 'sadaqah'
+
 export type ReligiousState = {
   city: string
   calculationMethod: string
   prayerLogs: PrayerLog[]
   prayerHistory?: PrayerHistoryDay[]
   quran: { reference: string; targetMinutes: number; completedMinutes: number; memorizationTarget?: number; memorizationCompleted?: number; lastPosition?: QuranPosition; playlists?: QuranPlaylist[]; listenLater?: number[]; listenedSurahNumbers?: number[] }
-  dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; morningProgress?: Record<string, number>; eveningProgress?: Record<string, number>; lastSession?: string; tasbeehCount?: number; tasbeehTarget?: number; savedDuas?: string[] }
+  dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; morningProgress?: Record<string, number>; eveningProgress?: Record<string, number>; lastSession?: string; tasbeehCount?: number; tasbeehTarget?: number; savedDuas?: string[]; sunnahChecks?: Record<SunnahKey, boolean> }
 }
 
 export type Note = {
@@ -277,6 +279,7 @@ type CommandCenterContextValue = {
   removeSavedDua: (index: number) => void
   updateReligiousSettings: (patch: Pick<ReligiousState, 'city' | 'calculationMethod'>) => void
   updatePrayerTimes: (times: Partial<Record<PrayerLog['name'], string>>) => void
+  toggleSunnah: (key: SunnahKey) => void
   addMemorizationProgress: (ayahs: number) => void
   saveQuranPosition: (position: Omit<QuranPosition, 'updatedAt'>) => void
   createQuranPlaylist: (name: string, surahNumber?: number) => void
@@ -368,7 +371,7 @@ const initialReligious: ReligiousState = {
     { localDate: '2026-08-15', completed: 1, total: 5, statusCounts: { 'on-time': 1, pending: 3, missed: 1 }, missedByPrayer: { العشاء: 1 } },
   ],
   quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4, playlists: [], listenLater: [], listenedSurahNumbers: [] },
-  dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, morningProgress: { 'morning-1': 2, 'morning-2': 2, 'morning-3': 2, 'morning-4': 2 }, eveningProgress: { 'evening-1': 2, 'evening-2': 2, 'evening-3': 1, 'evening-4': 1 }, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'] },
+  dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, morningProgress: { 'morning-1': 2, 'morning-2': 2, 'morning-3': 2, 'morning-4': 2 }, eveningProgress: { 'evening-1': 2, 'evening-2': 2, 'evening-3': 1, 'evening-4': 1 }, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'], sunnahChecks: { duha: false, witr: false, rawatib: false, sadaqah: false } },
 }
 
 const initialNotes: Note[] = [
@@ -426,6 +429,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function arrayOr<T>(value: unknown, fallback: T[]): T[] {
   return Array.isArray(value) ? value as T[] : fallback
+}
+
+function normalizeSunnahChecks(value: unknown, fallback: Record<SunnahKey, boolean>): Record<SunnahKey, boolean> {
+  const source = isRecord(value) ? value : {}
+  return {
+    duha: source.duha === undefined ? fallback.duha : source.duha === true,
+    witr: source.witr === undefined ? fallback.witr : source.witr === true,
+    rawatib: source.rawatib === undefined ? fallback.rawatib : source.rawatib === true,
+    sadaqah: source.sadaqah === undefined ? fallback.sadaqah : source.sadaqah === true,
+  }
 }
 
 function cairoToday() {
@@ -515,6 +528,7 @@ function normalizeState(value: unknown): PersistedState | null {
         tasbeehCount: Math.max(0, Math.min(100000, Math.round(Number(religious.dhikr?.tasbeehCount) || defaults.religious.dhikr.tasbeehCount || 0))),
         tasbeehTarget: Math.max(1, Math.min(100000, Math.round(Number(religious.dhikr?.tasbeehTarget) || defaults.religious.dhikr.tasbeehTarget || 100))),
         savedDuas: Array.isArray(religious.dhikr?.savedDuas) ? religious.dhikr.savedDuas.filter((dua): dua is string => typeof dua === 'string' && dua.trim().length > 0).map((dua) => dua.trim().slice(0, 240)).slice(0, 20) : defaults.religious.dhikr.savedDuas,
+        sunnahChecks: normalizeSunnahChecks(religious.dhikr?.sunnahChecks, defaults.religious.dhikr.sunnahChecks ?? { duha: false, witr: false, rawatib: false, sadaqah: false }),
       },
     },
     reminders: arrayOr(source.reminders, defaults.reminders),
@@ -926,6 +940,14 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
           ...current,
           prayerLogs: current.prayerLogs.map((prayer) => ({ ...prayer, time: times[prayer.name] ?? prayer.time })),
         }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    toggleSunnah: (key) => {
+      setReligious((current) => {
+        const sunnahChecks = { duha: false, witr: false, rawatib: false, sadaqah: false, ...current.dhikr.sunnahChecks, [key]: !current.dhikr.sunnahChecks?.[key] }
+        const next = { ...current, dhikr: { ...current.dhikr, sunnahChecks } }
         void updateRemoteReligious(next)
         return next
       })
