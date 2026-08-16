@@ -22,6 +22,17 @@ export function WeeklyReviewWorkspace() {
     const doneTasks = tasks.filter((task) => task.status === 'done').length
     const openTasks = tasks.filter((task) => task.status !== 'done').length
     const doneHabits = habits.filter((habit) => habit.doneToday).length
+    const reviewDates: string[] = []
+    const reviewDateCursor = new Date(`${weeklyReview.weekStart}T12:00:00Z`)
+    const reviewDateEnd = new Date(`${weeklyReview.weekEnd}T12:00:00Z`)
+    while (reviewDateCursor <= reviewDateEnd) {
+      reviewDates.push(reviewDateCursor.toISOString().slice(0, 10))
+      reviewDateCursor.setUTCDate(reviewDateCursor.getUTCDate() + 1)
+    }
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
+    const isDoneOn = (habit: (typeof habits)[number], localDate: string) => localDate === today ? habit.doneToday : Boolean(habit.history?.[localDate])
+    const habitWeekCompletions = habits.reduce((total, habit) => total + reviewDates.filter((localDate) => isDoneOn(habit, localDate)).length, 0)
+    const habitWeekDays = reviewDates.filter((localDate) => habits.some((habit) => isDoneOn(habit, localDate))).length
     const prayerCount = religious.prayerLogs.filter((prayer) => isPrayerCompletedStatus(prayer.status)).length
     const prayerHistory = (religious.prayerHistory ?? []).filter((day) => day.localDate >= weeklyReview.weekStart && day.localDate <= weeklyReview.weekEnd)
     const prayerTotal = prayerHistory.reduce((sum, day) => sum + day.total, 0)
@@ -37,7 +48,7 @@ export function WeeklyReviewWorkspace() {
     const activeProjects = projects.filter((project) => project.status !== 'done')
     const listenedSurahs = religious.quran.listenedSurahNumbers?.length ?? 0
     const listenLaterSurahs = religious.quran.listenLater?.length ?? 0
-    return { doneTasks, openTasks, doneHabits, prayerCount, prayerRate, fullPrayerDays, completedEntertainment, income, expenses, goalProgress, activeProjects, listenedSurahs, listenLaterSurahs }
+    return { doneTasks, openTasks, doneHabits, habitWeekCompletions, habitWeekDays, prayerCount, prayerRate, fullPrayerDays, completedEntertainment, income, expenses, goalProgress, activeProjects, listenedSurahs, listenLaterSurahs }
   }, [tasks, habits, religious.prayerLogs, religious.prayerHistory, religious.quran.listenedSurahNumbers, religious.quran.listenLater, entertainment, financeEntries, goals, projects, weeklyReview.weekStart, weeklyReview.weekEnd])
 
   const context = useMemo(() => ({
@@ -67,7 +78,7 @@ export function WeeklyReviewWorkspace() {
         <ContentCard className="lg:col-span-7" title="ماذا سار جيدًا؟" description="أشياء تستحق أن تلاحظها بدل ما تمر عليها">
           <div className="space-y-3">
             <ReviewLine text={`أكملت ${metrics.doneTasks} من مهامك الحالية.`} done />
-            <ReviewLine text={`حافظت على ${metrics.doneHabits} عادات اليوم.`} done={metrics.doneHabits > 0} />
+            <ReviewLine text={`سجلت ${metrics.habitWeekCompletions} إنجازات عادات خلال ${metrics.habitWeekDays} أيام هذا الأسبوع.`} done={metrics.habitWeekCompletions > 0} />
             <ReviewLine text={`${notes.filter((note) => note.pinned).length} ملاحظات مثبتة تقدر ترجع لها.`} done={notes.some((note) => note.pinned)} />
             <ReviewLine text={`أكملت ${metrics.prayerRate}% من الصلوات المسجلة هذا الأسبوع.`} done={metrics.prayerRate >= 80} />
             <ReviewLine text={`قرأت ${religious.quran.completedMinutes} من ${religious.quran.targetMinutes} دقيقة من الورد.`} done={religious.quran.completedMinutes >= religious.quran.targetMinutes} />
@@ -87,10 +98,11 @@ export function WeeklyReviewWorkspace() {
         </ContentCard>
 
         <ContentCard className="lg:col-span-12" title="لقطة الأسبوع" description="مؤشرات من الأقسام الجديدة تساعدك على رؤية الصورة كاملة.">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-8">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-9">
             <DomainMetric icon={WalletCards} label="دخل الأسبوع" value={currency(metrics.income)} />
             <DomainMetric icon={Landmark} label="مصروفات الأسبوع" value={currency(metrics.expenses)} />
             <DomainMetric icon={ClipboardCheck} label="صلوات الأسبوع" value={`${metrics.prayerRate}%`} />
+            <DomainMetric icon={Flame} label="إنجازات العادات" value={`${metrics.habitWeekCompletions} · ${metrics.habitWeekDays} أيام`} />
             <DomainMetric icon={HeartPulse} label="الورد" value={`${religious.quran.completedMinutes}/${religious.quran.targetMinutes} د`} />
             <DomainMetric icon={Target} label="الحفظ" value={`${religious.quran.memorizationCompleted ?? 0}/${religious.quran.memorizationTarget ?? 0}`} />
             <DomainMetric icon={Clapperboard} label="الترفيه المكتمل" value={metrics.completedEntertainment} />

@@ -1098,7 +1098,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         const doneToday = !habit.doneToday
         const history = { ...(habit.history ?? {}), [localDate]: doneToday }
         const streak = calculateHabitStreak(history, localDate)
-        void toggleRemoteHabit(id, doneToday)
+        void toggleRemoteHabit(id, doneToday, localDate)
         return { ...habit, doneToday, history, streak }
       }))
       setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: item.status === 'done' ? 'pending' : 'done' } : item))

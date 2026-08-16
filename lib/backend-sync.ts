@@ -579,10 +579,10 @@ export function archiveRemoteHabit(id: string) {
   return request<{ item: RemoteHabit }>(`/api/habits/${id}?action=archive`, { method: 'DELETE' })
 }
 
-export function toggleRemoteHabit(id: string, doneToday: boolean) {
+export function toggleRemoteHabit(id: string, doneToday: boolean, localDate: string) {
   return doneToday
-    ? request(`/api/habits/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'done' }) })
-    : request(`/api/habits/${id}`, { method: 'DELETE' })
+    ? request(`/api/habits/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'done', localDate }) })
+    : request(`/api/habits/${id}?date=${encodeURIComponent(localDate)}`, { method: 'DELETE' })
 }
 
 export function updateRemotePlanItem(id: string, patch: Partial<PlanItem>) {
