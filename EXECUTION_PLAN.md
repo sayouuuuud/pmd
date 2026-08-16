@@ -656,3 +656,7 @@
 رُحّلت نافذة «تذكير جديد» في `components/reminders/reminders-workspace.tsx` إلى `components/ui/dialog.tsx` المشترك. بقيت الحقول العربية والنوع والموعد والتكرار، وربط زر الحفظ بالنموذج عبر `form`، مع الحفاظ على مسح التكرار عند الإلغاء وسلوك الحفظ المحلي/البعيد.
 اختُبرت `/reminders` بصريًا وتفاعليًا: ظهرت النافذة والحقول، ثم أُغلقت عبر `Escape` دون حفظ بيانات تجريبية أو تغيير العدادات. التفاصيل في `verification/reminders-dialog-browser.md` و`verification/interaction-smoke-tests.md`.
 نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
+## سجل دفعة — ترحيل البحث الشامل إلى Dialog — 2026-08-16
+رُحّلت `GlobalSearchDialog` إلى `components/ui/dialog.tsx`، وأضيف خيار `hideHeader` لدعم رأس البحث الداخلي مع بقاء العنوان متاحًا لشجرة الوصول. احتُفظ بمنطق البحث العربي، نتائج الأقسام، الروابط، زر الإغلاق ومسح الاستعلام.
+اختُبرت الصفحة الرئيسية بصريًا وتفاعليًا: فُتح البحث، أُدخلت «مهمة» وظهرت نتائج من المهام وخطة اليوم، ثم أُغلق عبر `Escape` دون تنقل أو تعديل بيانات. التفاصيل في `verification/global-search-dialog-browser.md` و`verification/interaction-smoke-tests.md`.
+نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.

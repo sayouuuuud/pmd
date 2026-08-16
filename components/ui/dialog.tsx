@@ -12,6 +12,7 @@ export function Dialog({
   children,
   footer,
   className,
+  hideHeader = false,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -20,6 +21,7 @@ export function Dialog({
   children: ReactNode
   footer?: ReactNode
   className?: string
+  hideHeader?: boolean
 }) {
   const titleId = useId()
   const descriptionId = useId()
@@ -50,21 +52,25 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 id={titleId} className="text-lg font-semibold">{title}</h2>
-            {description && <p id={descriptionId} className="mt-1 text-xs text-muted-foreground">{description}</p>}
+        {hideHeader ? (
+          <h2 id={titleId} className="sr-only">{title}</h2>
+        ) : (
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 id={titleId} className="text-lg font-semibold">{title}</h2>
+              {description && <p id={descriptionId} className="mt-1 text-xs text-muted-foreground">{description}</p>}
+            </div>
+            <button
+              type="button"
+              aria-label="إغلاق النافذة"
+              onClick={() => onOpenChange(false)}
+              className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <button
-            type="button"
-            aria-label="إغلاق النافذة"
-            onClick={() => onOpenChange(false)}
-            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="mt-5">{children}</div>
+        )}
+        <div className={cn(hideHeader ? '' : 'mt-5')}>{children}</div>
         {footer && <div className="mt-5 flex justify-end gap-2">{footer}</div>}
       </section>
     </div>
