@@ -680,3 +680,7 @@
 اعتمد `AuthForm` على `Input` المشترك في حقول الاسم والبريد وكلمة المرور، وعلى `Button` المشترك لزر الدخول وإنشاء الحساب، مع الحفاظ على منطق Better Auth والتحقق المحلي ورسائل الخطأ وخصائص RTL و`dir="ltr"` للبيانات الإنجليزية.
 اختُبرت `/login` بصريًا، ثم بُدّل النموذج إلى وضع إنشاء الحساب دون إرسال بيانات أو تنفيذ مصادقة، وظهر حقل الاسم وتغير الزر كما هو متوقع. التفاصيل في `verification/auth-form-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة.
+## سجل دفعة — اعتماد Input في البحث الشامل — 2026-08-16
+اعتمد `GlobalSearchDialog` على `Input` المشترك لحقل البحث، مع إبقاء شريط البحث بلا حدود أو خلفية إضافية حتى لا يتغير التصميم الحالي داخل `Dialog`.
+اختُبرت الصفحة الرئيسية بصريًا، وفُتح البحث وأُدخلت كلمة «مهمة» فظهرت النتائج في «المهام» و«خطة اليوم»، ثم أُغلق عبر Escape وعادت الصفحة دون تنقل أو استعلام عالق. التفاصيل في `verification/global-search-input-adoption-browser.md` و`verification/interaction-smoke-tests.md`.
+لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة.

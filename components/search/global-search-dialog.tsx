@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowUpRight, Search, X } from 'lucide-react'
 import { Dialog } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { useCommandCenter } from '@/lib/command-center-store'
 
 type SearchResult = {
@@ -71,7 +72,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
     <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) close() }} title="البحث الشامل" hideHeader className="max-w-2xl overflow-hidden p-0">
       <div className="flex items-center gap-3 border-b border-border px-5 py-4">
         <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-        <input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" placeholder="ابحث في مهامك وملاحظاتك ومشاريعك..." aria-label="اكتب كلمة البحث" aria-controls="global-search-results" />
+        <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} className="h-auto min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 py-0 text-sm shadow-none outline-none focus-visible:border-0 focus-visible:ring-0" placeholder="ابحث في مهامك وملاحظاتك ومشاريعك..." aria-label="اكتب كلمة البحث" aria-controls="global-search-results" />
         <kbd className="hidden rounded-lg bg-muted px-2 py-1 text-[10px] text-muted-foreground sm:block">Esc</kbd>
         <button type="button" aria-label="إغلاق البحث" onClick={close} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><X className="h-4 w-4" aria-hidden="true" /></button>
       </div>
