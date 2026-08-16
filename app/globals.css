@@ -44,6 +44,14 @@
   --color-board-note-muted: var(--board-note-muted);
   --color-board-note-soft: var(--board-note-soft);
   --color-board-note-border: var(--board-note-border);
+  --color-chart-blue: var(--chart-blue);
+  --color-chart-teal: var(--chart-teal);
+  --color-chart-amber: var(--chart-amber);
+  --color-chart-red: var(--chart-red);
+  --color-chart-violet: var(--chart-violet);
+  --color-chart-pink: var(--chart-pink);
+  --color-chart-emerald: var(--chart-emerald);
+  --color-chart-slate: var(--chart-slate);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -95,6 +103,14 @@
   --board-note-muted: #475569;
   --board-note-soft: #ffffff;
   --board-note-border: #334155;
+  --chart-blue: #2563eb;
+  --chart-teal: #14b8a6;
+  --chart-amber: #f59e0b;
+  --chart-red: #ef4444;
+  --chart-violet: #8b5cf6;
+  --chart-pink: #ec4899;
+  --chart-emerald: #0f766e;
+  --chart-slate: #64748b;
   --radius: 1rem;
 }
 

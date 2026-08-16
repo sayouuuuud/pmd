@@ -48,7 +48,7 @@ export function MoneyWorkspace() {
   const categoryTotals = useMemo(() => {
     const totals = new Map<string, number>()
     expenses.forEach((entry) => totals.set(entry.category, (totals.get(entry.category) ?? 0) + entry.amount))
-    const colors = ['#2563eb', '#14b8a6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#0f766e', '#64748b']
+    const colors = ['var(--chart-blue)', 'var(--chart-teal)', 'var(--chart-amber)', 'var(--chart-red)', 'var(--chart-violet)', 'var(--chart-pink)', 'var(--chart-emerald)', 'var(--chart-slate)']
     return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([category, value], index) => ({ category, value, color: colors[index % colors.length], percentage: totalExpenses ? Math.round((value / totalExpenses) * 100) : 0 }))
   }, [expenses, totalExpenses])
   const monthlyComparison = useMemo(() => monthOptions.map(({ key, label }) => {

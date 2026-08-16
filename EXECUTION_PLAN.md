@@ -672,3 +672,7 @@
 اعتمدت `WeeklyReviewWorkspace` على `Textarea` المشترك في حقول المراجعة الثلاثة، واعتمد `ReligiousWorkspace` على `Input` و`Select` و`Textarea` في اسم قائمة التلاوة وتدبر الآيات وإعدادات المدينة وطريقة الحساب، مع الحفاظ على handlers والقيم والخصائص الحالية.
 اختُبرت `/religious` و`/review` بصريًا وتفاعليًا داخل RTL. اختيرت قيمة «مخصص» الحالية في إعدادات المواقيت دون تغيير مقصود، وظهرت الحقول والقيم والأزرار دون فقدان. راجعت console ولم تظهر أخطاء runtime أو hydration. التفاصيل في `verification/shared-fields-adoption-browser.md` و`verification/interaction-smoke-tests.md`.
 نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
+## سجل دفعة — ألوان مخطط المال الدلالية — 2026-08-16
+أضيفت توكنات `chart-blue` و`chart-teal` و`chart-amber` و`chart-red` و`chart-violet` و`chart-pink` و`chart-emerald` و`chart-slate` إلى `app/globals.css`، واستُبدلت بها القيم السداسية المباشرة في donut وشرائط تصنيفات المصروفات داخل `MoneyWorkspace`.
+اختُبرت `/money` بصريًا داخل RTL، وبقيت النسب والبيانات والمقارنة الشهرية وألوان المخطط متسقة. راجعت console ولم تظهر أخطاء runtime أو hydration. التفاصيل في `verification/money-chart-semantic-colors-browser.md` و`verification/interaction-smoke-tests.md`.
+نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
