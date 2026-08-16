@@ -634,3 +634,8 @@
 أُنشئ `components/ui/stat-card.tsx` كمكوّن مشترك لكروت الإحصاءات، مع دعم النغمات الدلالية الحالية `blue` و`green` و`purple` و`orange`، وحالات hover/focus، وروابط تنقل قابلة للوصول. استُبدل التعريف المحلي المكرر داخل `components/dashboard/dashboard-home.tsx` باستخدام المكوّن الجديد دون تغيير النصوص أو الحسابات أو الهوية البصرية.
 اختُبرت الصفحة الرئيسية بصريًا وتفاعليًا على `http://localhost:3004/`: ظهرت الكروت الأربعة RTL كما هو متوقع، ونقل النقر على كارت «إنجاز المهام» إلى `/tasks` بنجاح، مع بقاء صفحة المهام وفلاترها سليمة. التفاصيل في `verification/stat-card-browser.md` و`verification/interaction-smoke-tests.md`.
 نجحت بوابات `tsc --noEmit` وESLint و`git diff --check` و`next build`، ولم تُضف secrets أو migrations.
+
+## سجل دفعة — مرجع نظام التصميم وDialog المشترك — 2026-08-16
+أُنشئت صفحة داخلية `app/design-system/page.tsx` لعرض مكونات النظام الحالية جنبًا إلى جنب، بما في ذلك StatCard وContentCard وButton variants والشارات وحقول الإدخال وEmptyState وLoadingState والتوكنز الدلالية. كما أُنشئ `components/ui/dialog.tsx` كمكوّن نافذة موحد يدعم الإغلاق من زر الإغلاق، والضغط خارج النافذة، ومفتاح Escape، مع RTL وطبقات التركيز الحالية.
+اختُبرت الصفحة بصريًا وتفاعليًا على `http://localhost:3004/design-system`: ظهرت الأقسام العربية والمكونات المشتركة، فُتحت نافذة المعاينة وظهر overlay والعنوان والأزرار، ثم أُغلقت عبر `Escape` بنجاح دون أخطاء runtime أو hydration. التفاصيل في `verification/design-system-browser.md` و`verification/interaction-smoke-tests.md`.
+نجحت بوابات `tsc --noEmit` وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations. تبقى مراجعة الألوان المباشرة الأخرى وتحويل النوافذ الفعلية تدريجيًا إلى Dialog المشترك ضمن البنود المفتوحة.
