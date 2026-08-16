@@ -116,12 +116,27 @@ export type PrayerHistoryDay = {
   total: number
 }
 
+export type QuranPosition = {
+  surahNumber: number
+  positionSeconds: number
+  ayahNumber?: number
+  reciterId?: number
+  updatedAt: string
+}
+
+export type QuranPlaylist = {
+  id: string
+  name: string
+  surahNumbers: number[]
+  createdAt: string
+}
+
 export type ReligiousState = {
   city: string
   calculationMethod: string
   prayerLogs: PrayerLog[]
   prayerHistory?: PrayerHistoryDay[]
-  quran: { reference: string; targetMinutes: number; completedMinutes: number; memorizationTarget?: number; memorizationCompleted?: number }
+  quran: { reference: string; targetMinutes: number; completedMinutes: number; memorizationTarget?: number; memorizationCompleted?: number; lastPosition?: QuranPosition; playlists?: QuranPlaylist[] }
   dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; morningProgress?: Record<string, number>; eveningProgress?: Record<string, number>; lastSession?: string; tasbeehCount?: number; tasbeehTarget?: number; savedDuas?: string[] }
 }
 
@@ -248,6 +263,9 @@ type CommandCenterContextValue = {
   updateReligiousSettings: (patch: Pick<ReligiousState, 'city' | 'calculationMethod'>) => void
   updatePrayerTimes: (times: Partial<Record<PrayerLog['name'], string>>) => void
   addMemorizationProgress: (ayahs: number) => void
+  saveQuranPosition: (position: Omit<QuranPosition, 'updatedAt'>) => void
+  createQuranPlaylist: (name: string, surahNumber?: number) => void
+  toggleQuranPlaylistSurah: (playlistId: string, surahNumber: number) => void
   addReminder: (input: Pick<Reminder, 'title' | 'kind' | 'dueAt'> & Partial<Pick<Reminder, 'sourceId' | 'repeatLabel'>>) => void
   toggleReminder: (id: string) => void
   snoozeReminder: (id: string) => void
@@ -328,7 +346,7 @@ const initialReligious: ReligiousState = {
     { localDate: '2026-08-14', completed: 4, total: 5 },
     { localDate: '2026-08-15', completed: 1, total: 5 },
   ],
-  quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4 },
+  quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4, playlists: [] },
   dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, morningProgress: { 'morning-1': 2, 'morning-2': 2, 'morning-3': 2, 'morning-4': 2 }, eveningProgress: { 'evening-1': 2, 'evening-2': 2, 'evening-3': 1, 'evening-4': 1 }, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'] },
 }
 
@@ -398,6 +416,19 @@ function progressFromCount(prefix: 'morning' | 'evening', value: unknown): Recor
   }))
 }
 
+function normalizeQuran(value: unknown, fallback: ReligiousState['quran']): ReligiousState['quran'] {
+  const source = isRecord(value) ? value : {}
+  const position = isRecord(source.lastPosition) && Number.isFinite(Number(source.lastPosition.surahNumber))
+    ? { surahNumber: Math.max(1, Math.min(114, Math.round(Number(source.lastPosition.surahNumber)))), positionSeconds: Math.max(0, Math.min(86400, Math.round(Number(source.lastPosition.positionSeconds) || 0))), ...(Number.isFinite(Number(source.lastPosition.ayahNumber)) ? { ayahNumber: Math.max(1, Math.min(1000, Math.round(Number(source.lastPosition.ayahNumber)))) } : {}), ...(Number.isFinite(Number(source.lastPosition.reciterId)) ? { reciterId: Math.max(1, Math.round(Number(source.lastPosition.reciterId))) } : {}), updatedAt: typeof source.lastPosition.updatedAt === 'string' ? source.lastPosition.updatedAt.slice(0, 40) : new Date().toISOString() }
+    : fallback.lastPosition
+  const playlists = Array.isArray(source.playlists) ? source.playlists.slice(0, 12).flatMap((item) => {
+    if (!isRecord(item) || typeof item.id !== 'string' || typeof item.name !== 'string' || !Array.isArray(item.surahNumbers)) return []
+    const surahNumbers = item.surahNumbers.filter((number): number is number => typeof number === 'number' && Number.isFinite(number)).map((number) => Math.max(1, Math.min(114, Math.round(number)))).filter((number, index, numbers) => numbers.indexOf(number) === index).slice(0, 30)
+    return [{ id: item.id.slice(0, 80), name: item.name.trim().slice(0, 80) || 'قائمة تلاوة', surahNumbers, createdAt: typeof item.createdAt === 'string' ? item.createdAt.slice(0, 40) : new Date().toISOString() }]
+  }) : fallback.playlists ?? []
+  return { ...fallback, ...source, lastPosition: position, playlists }
+}
+
 function normalizeProgress(value: unknown, fallback: Record<string, number>): Record<string, number> {
   if (!isRecord(value)) return fallback
   const entries = Object.entries(value).filter(([id, count]) => /^[a-z]+-[1-9]$/.test(id) && typeof count === 'number' && Number.isFinite(count)).slice(0, 20)
@@ -434,7 +465,7 @@ function normalizeState(value: unknown): PersistedState | null {
     religious: {
       ...defaults.religious,
       ...religious,
-      quran: { ...defaults.religious.quran, ...(religious.quran ?? {}) },
+      quran: normalizeQuran(religious.quran, defaults.religious.quran),
       dhikr: {
         ...defaults.religious.dhikr,
         ...(religious.dhikr ?? {}),
@@ -707,6 +738,36 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         const target = Math.max(1, current.quran.memorizationTarget ?? 10)
         const completed = Math.min(target, Math.max(0, (current.quran.memorizationCompleted ?? 0) + Math.max(0, Math.round(ayahs))))
         const next = { ...current, quran: { ...current.quran, memorizationTarget: target, memorizationCompleted: completed } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    saveQuranPosition: (position) => {
+      setReligious((current) => {
+        const next = { ...current, quran: { ...current.quran, lastPosition: { ...position, updatedAt: new Date().toISOString() } } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    createQuranPlaylist: (name, surahNumber) => {
+      const normalizedName = name.trim().slice(0, 80)
+      if (!normalizedName) return
+      setReligious((current) => {
+        const playlist = { id: `quran-playlist-${Date.now()}`, name: normalizedName, surahNumbers: surahNumber ? [Math.max(1, Math.min(114, Math.round(surahNumber)))] : [], createdAt: new Date().toISOString() }
+        const next = { ...current, quran: { ...current.quran, playlists: [...(current.quran.playlists ?? []), playlist].slice(-12) } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    toggleQuranPlaylistSurah: (playlistId, surahNumber) => {
+      setReligious((current) => {
+        const safeSurah = Math.max(1, Math.min(114, Math.round(surahNumber)))
+        const playlists = (current.quran.playlists ?? []).map((playlist) => {
+          if (playlist.id !== playlistId) return playlist
+          const surahNumbers = playlist.surahNumbers.includes(safeSurah) ? playlist.surahNumbers.filter((number) => number !== safeSurah) : [...playlist.surahNumbers, safeSurah].slice(0, 30)
+          return { ...playlist, surahNumbers }
+        })
+        const next = { ...current, quran: { ...current.quran, playlists } }
         void updateRemoteReligious(next)
         return next
       })

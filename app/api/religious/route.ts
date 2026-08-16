@@ -10,7 +10,7 @@ const defaults = {
   calculationMethod: 'مخصص',
   prayerLogs: [],
   prayerHistory: [],
-  quranProgress: { reference: 'ورد اليوم', targetMinutes: 20, completedMinutes: 0, memorizationTarget: 10, memorizationCompleted: 0 },
+  quranProgress: { reference: 'ورد اليوم', targetMinutes: 20, completedMinutes: 0, memorizationTarget: 10, memorizationCompleted: 0, playlists: [] },
   dhikrSessions: { morning: false, evening: false, morningCount: 0, eveningCount: 0 },
 }
 
@@ -57,13 +57,17 @@ function safeQuranProgress(value: unknown) {
   const completedMinutes = Math.max(0, Math.min(targetMinutes, Number(progress.completedMinutes) || 0))
   const memorizationTarget = Math.max(1, Math.min(1000, Math.round(Number(progress.memorizationTarget) || 10)))
   const memorizationCompleted = Math.max(0, Math.min(memorizationTarget, Math.round(Number(progress.memorizationCompleted) || 0)))
-  return {
-    reference: stringValue(progress.reference, 'ورد اليوم', 160),
-    targetMinutes,
-    completedMinutes,
-    memorizationTarget,
-    memorizationCompleted,
-  }
+  const rawPosition = progress.lastPosition && typeof progress.lastPosition === 'object' ? progress.lastPosition as Record<string, unknown> : null
+  const lastPosition = rawPosition && Number.isFinite(Number(rawPosition.surahNumber))
+    ? { surahNumber: Math.max(1, Math.min(114, Math.round(Number(rawPosition.surahNumber)))), positionSeconds: Math.max(0, Math.min(86400, Math.round(Number(rawPosition.positionSeconds) || 0))), ...(Number.isFinite(Number(rawPosition.ayahNumber)) ? { ayahNumber: Math.max(1, Math.min(1000, Math.round(Number(rawPosition.ayahNumber)))) } : {}), ...(Number.isFinite(Number(rawPosition.reciterId)) ? { reciterId: Math.max(1, Math.round(Number(rawPosition.reciterId))) } : {}), updatedAt: stringValue(rawPosition.updatedAt, new Date().toISOString(), 40) }
+    : undefined
+  const playlists = Array.isArray(progress.playlists) ? progress.playlists.slice(0, 12).flatMap((item) => {
+    const playlist = item && typeof item === 'object' ? item as Record<string, unknown> : null
+    if (!playlist) return []
+    const surahNumbers = Array.isArray(playlist.surahNumbers) ? playlist.surahNumbers.filter((number): number is number => typeof number === 'number' && Number.isFinite(number)).map((number) => Math.max(1, Math.min(114, Math.round(number)))).filter((number, index, numbers) => numbers.indexOf(number) === index).slice(0, 30) : []
+    return [{ id: stringValue(playlist.id, `quran-playlist-${Date.now()}`, 80), name: stringValue(playlist.name, 'قائمة تلاوة', 80), surahNumbers, createdAt: stringValue(playlist.createdAt, new Date().toISOString(), 40) }]
+  }) : []
+  return { reference: stringValue(progress.reference, 'ورد اليوم', 160), targetMinutes, completedMinutes, memorizationTarget, memorizationCompleted, playlists, ...(lastPosition ? { lastPosition } : {}) }
 }
 
 function safeDhikrProgress(value: unknown) {
