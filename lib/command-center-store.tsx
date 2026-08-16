@@ -470,6 +470,7 @@ function normalizeState(value: unknown): PersistedState | null {
   const source = value.app === 'personal-command-center' && isRecord(value.data)
     ? value.data
     : value
+  if (!Array.isArray(source.journal) && Array.isArray(source.journalEntries)) source.journal = source.journalEntries
   const requiredArrays = ['tasks', 'notes', 'habits', 'planItems', 'goals', 'projects', 'financeEntries', 'reminders', 'entertainment', 'journal']
   if (!isRecord(source.profile) || !isRecord(source.budget) || !isRecord(source.religious) || !isRecord(source.weeklyReview)) return null
   if (requiredArrays.some((key) => !Array.isArray(source[key]))) return null

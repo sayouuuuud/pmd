@@ -42,7 +42,7 @@ export async function GET(request: Request) {
       version: 1,
       exportedAt: new Date().toISOString(),
       user: accountUser ?? { id: currentUser.id, name: currentUser.name, email: currentUser.email },
-      data: { profile: profile[0] ?? null, religious: religious[0] ?? null, budget: budgetRow[0] ?? null, goals, projects, tasks, subtasks, notes, habits, habitLogs, planItems, weeklyReviews: reviews, financeEntries, reminders, journalEntries, entertainment },
+      data: { profile: profile[0] ?? null, religious: religious[0] ?? null, budget: budgetRow[0] ?? null, goals, projects, tasks, subtasks, notes, habits, habitLogs, planItems, weeklyReviews: reviews, financeEntries, reminders, journal: journalEntries, entertainment },
     })
   } catch {
     return backendUnavailable()
