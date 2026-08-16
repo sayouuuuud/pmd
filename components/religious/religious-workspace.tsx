@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, Forward, Heart, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Rewind, Sparkles, Sunrise, SunMedium, Trash2, Volume2 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
-import { isPrayerCompletedStatus, type MemorizationSurahStatus, type PrayerStatus, useCommandCenter } from '@/lib/command-center-store'
+import { isPrayerCompletedStatus, type MemorizationSurahStatus, type PrayerStatus, type QuranWirdMode, useCommandCenter } from '@/lib/command-center-store'
 import { formatPrayerCountdown, getNextPrayerCountdown } from '@/lib/prayer-countdown'
 
 const prayerIcons: Record<string, typeof Sunrise> = {
@@ -54,6 +54,13 @@ const calculationMethods: Record<string, string> = {
   'الهيئة المصرية العامة للمساحة': '5',
   'رابطة العالم الإسلامي': '3',
 }
+
+const wirdModeOptions: Array<{ value: QuranWirdMode; label: string; unit: string; targets: Array<{ value: number; label: string }>; smallStep: number; largeStep: number }> = [
+  { value: 'minutes', label: 'بالدقائق', unit: 'دقيقة', targets: [{ value: 10, label: '10 دقائق' }, { value: 20, label: '20 دقيقة' }, { value: 30, label: '30 دقيقة' }, { value: 45, label: '45 دقيقة' }, { value: 60, label: 'ساعة' }], smallStep: 5, largeStep: 10 },
+  { value: 'pages', label: 'بالصفحات', unit: 'صفحة', targets: [{ value: 1, label: 'صفحة واحدة' }, { value: 2, label: 'صفحتان' }, { value: 5, label: '5 صفحات' }, { value: 10, label: '10 صفحات' }], smallStep: 1, largeStep: 5 },
+  { value: 'half-juz', label: 'نصف جزء', unit: 'صفحة', targets: [{ value: 10, label: 'نصف جزء · 10 صفحات' }], smallStep: 1, largeStep: 5 },
+  { value: 'juz', label: 'جزء كامل', unit: 'صفحة', targets: [{ value: 20, label: 'جزء · 20 صفحة' }], smallStep: 1, largeStep: 5 },
+]
 
 const dhikrTarget = 3
 const dhikrGroups = {
@@ -119,7 +126,11 @@ export function ReligiousWorkspace() {
   const [duaInput, setDuaInput] = useState('')
   const completedPrayers = religious.prayerLogs.filter((prayer) => isPrayerCompletedStatus(prayer.status)).length
   const prayerPercent = Math.round((completedPrayers / Math.max(religious.prayerLogs.length, 1)) * 100)
-  const wirdPercent = Math.round((religious.quran.completedMinutes / Math.max(religious.quran.targetMinutes, 1)) * 100)
+  const wirdMode = religious.quran.wirdMode ?? 'minutes'
+  const wirdModeConfig = wirdModeOptions.find((option) => option.value === wirdMode) ?? wirdModeOptions[0]
+  const wirdCompleted = wirdMode === 'minutes' ? religious.quran.completedMinutes : (religious.quran.completedPages ?? 0)
+  const wirdTarget = wirdMode === 'minutes' ? religious.quran.targetMinutes : (religious.quran.targetPages ?? wirdModeConfig.targets[0].value)
+  const wirdPercent = Math.round((wirdCompleted / Math.max(wirdTarget, 1)) * 100)
   const memorizationTarget = religious.quran.memorizationTarget ?? 10
   const memorizationCompleted = religious.quran.memorizationCompleted ?? 0
   const memorizationPercent = Math.round((memorizationCompleted / Math.max(memorizationTarget, 1)) * 100)
@@ -349,10 +360,10 @@ export function ReligiousWorkspace() {
 
         <div id="quran-progress" className="scroll-mt-24 lg:col-span-2">
           <ContentCard className="h-full" title="الورد اليومي" description="التقدم محفوظ دون تخزين النص الخارجي.">
-          <div className="flex items-center gap-4"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><BookOpen className="h-6 w-6" /></span><div><p className="text-sm font-semibold">{religious.quran.reference}</p><p className="mt-1 text-xs text-muted-foreground">{religious.quran.completedMinutes} من {religious.quran.targetMinutes} دقيقة</p></div></div>
+          <div className="flex items-center gap-4"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><BookOpen className="h-6 w-6" /></span><div><p className="text-sm font-semibold">{religious.quran.reference}</p><p className="mt-1 text-xs text-muted-foreground">{wirdCompleted} من {wirdTarget} {wirdModeConfig.unit}</p></div></div>
           <div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, wirdPercent)}%` }} /></div>
-          <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground"><span>{wirdPercent}% مكتمل</span><span>المتبقي {Math.max(0, religious.quran.targetMinutes - religious.quran.completedMinutes)} د</span></div>
-          <div className="mt-5 flex flex-wrap items-center gap-2"><Button size="sm" variant="outline" onClick={() => addWirdProgress(5)}>+ 5 دقائق</Button><Button size="sm" onClick={() => addWirdProgress(10)}>أنجزت 10 دقائق</Button><label className="ms-auto flex items-center gap-2 text-xs text-muted-foreground"><span>هدف الورد</span><select aria-label="هدف الورد اليومي بالدقائق" value={religious.quran.targetMinutes} onChange={(event) => setWirdTarget(Number(event.currentTarget.value))} className="rounded-xl border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"><option value={10}>10 دقائق</option><option value={20}>20 دقيقة</option><option value={30}>30 دقيقة</option><option value={45}>45 دقيقة</option><option value={60}>ساعة</option></select></label><Link href="/daily-plan#plan-item-plan-4" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح في خطة اليوم</Link><Link href="/habits#habit-1" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح عادة القرآن</Link></div>
+          <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground"><span>{Math.min(100, wirdPercent)}% مكتمل</span><span>المتبقي {Math.max(0, wirdTarget - wirdCompleted)} {wirdModeConfig.unit}</span></div>
+          <div className="mt-5 space-y-3"><div className="flex flex-wrap items-center gap-2"><Button size="sm" variant="outline" onClick={() => addWirdProgress(wirdModeConfig.smallStep)}>+ {wirdModeConfig.smallStep} {wirdModeConfig.unit}</Button><Button size="sm" onClick={() => addWirdProgress(wirdModeConfig.largeStep)}>أنجزت {wirdModeConfig.largeStep} {wirdModeConfig.unit}</Button></div><div className="flex flex-wrap items-center gap-2"><label className="flex items-center gap-2 text-xs text-muted-foreground"><span>نوع الورد</span><select aria-label="نوع الورد اليومي" value={wirdMode} onChange={(event) => { const nextMode = event.currentTarget.value as QuranWirdMode; const nextConfig = wirdModeOptions.find((option) => option.value === nextMode) ?? wirdModeOptions[0]; setWirdTarget(nextConfig.targets[0].value, nextMode) }} className="rounded-xl border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">{wirdModeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label className="flex items-center gap-2 text-xs text-muted-foreground"><span>الهدف</span><select aria-label="هدف الورد اليومي" value={wirdTarget} onChange={(event) => setWirdTarget(Number(event.currentTarget.value), wirdMode)} className="rounded-xl border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">{wirdModeConfig.targets.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><Link href="/daily-plan#plan-item-plan-4" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح في خطة اليوم</Link><Link href="/habits#habit-1" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح عادة القرآن</Link></div></div>
           </ContentCard>
         </div>
       </div>

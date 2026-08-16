@@ -77,6 +77,9 @@ function safeQuranProgress(value: unknown) {
   const progress = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
   const targetMinutes = Math.max(5, Math.min(240, Number(progress.targetMinutes) || 20))
   const completedMinutes = Math.max(0, Math.min(targetMinutes, Number(progress.completedMinutes) || 0))
+  const wirdMode = progress.wirdMode === 'pages' || progress.wirdMode === 'half-juz' || progress.wirdMode === 'juz' ? progress.wirdMode : 'minutes'
+  const targetPages = Math.max(1, Math.min(60, Math.round(Number(progress.targetPages) || 2)))
+  const completedPages = Math.max(0, Math.min(targetPages, Math.round(Number(progress.completedPages) || 0)))
   const memorizationTarget = Math.max(1, Math.min(1000, Math.round(Number(progress.memorizationTarget) || 10)))
   const memorizationCompleted = Math.max(0, Math.min(memorizationTarget, Math.round(Number(progress.memorizationCompleted) || 0)))
   const rawPosition = progress.lastPosition && typeof progress.lastPosition === 'object' ? progress.lastPosition as Record<string, unknown> : null
@@ -103,7 +106,7 @@ function safeQuranProgress(value: unknown) {
     if (!Number.isInteger(surahNumber) || surahNumber < 1 || surahNumber > 114 || !Number.isInteger(ayahNumber) || ayahNumber < 1 || ayahNumber > 1000) return []
     return [{ id: stringValue(favorite.id, `favorite-ayah-${surahNumber}-${ayahNumber}`, 100), surahNumber, ayahNumber, reflection: stringValue(favorite.reflection, '', 500), createdAt: stringValue(favorite.createdAt, new Date().toISOString(), 40) }]
   }) : []
-  return { reference: stringValue(progress.reference, 'ورد اليوم', 160), targetMinutes, completedMinutes, memorizationTarget, memorizationCompleted, memorizationSurahStatus, playlists, favoriteAyahs, listenLater, listenedSurahNumbers, ...(lastPosition ? { lastPosition } : {}) }
+  return { reference: stringValue(progress.reference, 'ورد اليوم', 160), targetMinutes, completedMinutes, wirdMode, targetPages, completedPages, memorizationTarget, memorizationCompleted, memorizationSurahStatus, playlists, favoriteAyahs, listenLater, listenedSurahNumbers, ...(lastPosition ? { lastPosition } : {}) }
 }
 
 function safeDhikrProgress(value: unknown) {

@@ -150,13 +150,14 @@ export type QuranFavoriteAyah = {
 
 export type SunnahKey = 'duha' | 'witr' | 'rawatib' | 'sadaqah'
 export type MemorizationSurahStatus = 'memorized' | 'reviewing' | 'learning'
+export type QuranWirdMode = 'minutes' | 'pages' | 'half-juz' | 'juz'
 
 export type ReligiousState = {
   city: string
   calculationMethod: string
   prayerLogs: PrayerLog[]
   prayerHistory?: PrayerHistoryDay[]
-  quran: { reference: string; targetMinutes: number; completedMinutes: number; memorizationTarget?: number; memorizationCompleted?: number; memorizationSurahStatus?: Record<number, MemorizationSurahStatus>; lastPosition?: QuranPosition; playlists?: QuranPlaylist[]; favoriteAyahs?: QuranFavoriteAyah[]; listenLater?: number[]; listenedSurahNumbers?: number[] }
+  quran: { reference: string; targetMinutes: number; completedMinutes: number; wirdMode?: QuranWirdMode; targetPages?: number; completedPages?: number; memorizationTarget?: number; memorizationCompleted?: number; memorizationSurahStatus?: Record<number, MemorizationSurahStatus>; lastPosition?: QuranPosition; playlists?: QuranPlaylist[]; favoriteAyahs?: QuranFavoriteAyah[]; listenLater?: number[]; listenedSurahNumbers?: number[] }
   dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; morningProgress?: Record<string, number>; eveningProgress?: Record<string, number>; lastSession?: string; tasbeehCount?: number; tasbeehTarget?: number; savedDuas?: string[]; sunnahChecks?: Record<SunnahKey, boolean> }
 }
 
@@ -278,8 +279,8 @@ type CommandCenterContextValue = {
   archiveFinanceEntry: (id: string) => void
   updateBudget: (monthlyLimit: number) => void
   togglePrayer: (id: string, status?: PrayerStatus) => void
-  addWirdProgress: (minutes: number) => void
-  setWirdTarget: (minutes: number) => void
+  addWirdProgress: (amount: number) => void
+  setWirdTarget: (target: number, mode?: QuranWirdMode) => void
   toggleDhikr: (session: 'morning' | 'evening') => void
   incrementDhikr: (session: 'morning' | 'evening', itemId: string, target?: number) => void
   addTasbeeh: (count?: number) => void
@@ -384,7 +385,7 @@ const initialReligious: ReligiousState = {
     { localDate: '2026-08-14', completed: 4, total: 5, statusCounts: { 'on-time': 2, qada: 2, missed: 1 }, missedByPrayer: { الظهر: 1 } },
     { localDate: '2026-08-15', completed: 1, total: 5, statusCounts: { 'on-time': 1, pending: 3, missed: 1 }, missedByPrayer: { العشاء: 1 } },
   ],
-  quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4, memorizationSurahStatus: { 1: 'memorized', 112: 'memorized', 67: 'reviewing', 18: 'learning' }, playlists: [], favoriteAyahs: [], listenLater: [], listenedSurahNumbers: [] },
+  quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, wirdMode: 'minutes', targetPages: 2, completedPages: 0, memorizationTarget: 10, memorizationCompleted: 4, memorizationSurahStatus: { 1: 'memorized', 112: 'memorized', 67: 'reviewing', 18: 'learning' }, playlists: [], favoriteAyahs: [], listenLater: [], listenedSurahNumbers: [] },
   dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, morningProgress: { 'morning-1': 2, 'morning-2': 2, 'morning-3': 2, 'morning-4': 2 }, eveningProgress: { 'evening-1': 2, 'evening-2': 2, 'evening-3': 1, 'evening-4': 1 }, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'], sunnahChecks: { duha: false, witr: false, rawatib: false, sadaqah: false } },
 }
 
@@ -505,7 +506,10 @@ function normalizeQuran(value: unknown, fallback: ReligiousState['quran']): Reli
   }) : fallback.favoriteAyahs ?? []
   const targetMinutes = Math.max(5, Math.min(240, Math.round(Number(source.targetMinutes) || fallback.targetMinutes || 20)))
   const completedMinutes = Math.min(targetMinutes, Math.max(0, Number(source.completedMinutes) || fallback.completedMinutes || 0))
-  return { ...fallback, ...source, targetMinutes, completedMinutes, memorizationSurahStatus, lastPosition: position, playlists, favoriteAyahs, listenLater, listenedSurahNumbers }
+  const wirdMode: QuranWirdMode = source.wirdMode === 'pages' || source.wirdMode === 'half-juz' || source.wirdMode === 'juz' ? source.wirdMode : 'minutes'
+  const targetPages = Math.max(1, Math.min(60, Math.round(Number(source.targetPages) || fallback.targetPages || 2)))
+  const completedPages = Math.min(targetPages, Math.max(0, Math.round(Number(source.completedPages) || fallback.completedPages || 0)))
+  return { ...fallback, ...source, targetMinutes, completedMinutes, wirdMode, targetPages, completedPages, memorizationSurahStatus, lastPosition: position, playlists, favoriteAyahs, listenLater, listenedSurahNumbers }
 }
 
 function normalizeProgress(value: unknown, fallback: Record<string, number>): Record<string, number> {
@@ -857,11 +861,13 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         return next
       })
     },
-    setWirdTarget: (minutes) => {
+    setWirdTarget: (target, mode = 'minutes') => {
       setReligious((current) => {
-        const targetMinutes = Math.max(5, Math.min(240, Math.round(Number(minutes) || 20)))
-        const completedMinutes = Math.min(targetMinutes, Math.max(0, current.quran.completedMinutes))
-        const next = { ...current, quran: { ...current.quran, targetMinutes, completedMinutes } }
+        const safeMode: QuranWirdMode = mode === 'pages' || mode === 'half-juz' || mode === 'juz' ? mode : 'minutes'
+        const nextQuran = safeMode === 'minutes'
+          ? { ...current.quran, wirdMode: safeMode, targetMinutes: Math.max(5, Math.min(240, Math.round(Number(target) || 20))), completedMinutes: Math.min(Math.max(5, Math.min(240, Math.round(Number(target) || 20))), Math.max(0, current.quran.completedMinutes)) }
+          : { ...current.quran, wirdMode: safeMode, targetPages: Math.max(1, Math.min(60, Math.round(Number(target) || 1))), completedPages: Math.min(Math.max(1, Math.min(60, Math.round(Number(target) || 1))), Math.max(0, current.quran.completedPages ?? 0)) }
+        const next = { ...current, quran: nextQuran }
         void updateRemoteReligious(next)
         return next
       })
@@ -948,9 +954,14 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         return next
       })
     },
-    addWirdProgress: (minutes) => {
+    addWirdProgress: (amount) => {
       setReligious((current) => {
-        const next = { ...current, quran: { ...current.quran, completedMinutes: Math.min(current.quran.targetMinutes, current.quran.completedMinutes + Math.max(0, minutes)) } }
+        const safeAmount = Math.max(0, Math.round(Number(amount) || 0))
+        const mode = current.quran.wirdMode ?? 'minutes'
+        const nextQuran = mode === 'minutes'
+          ? { ...current.quran, completedMinutes: Math.min(current.quran.targetMinutes, current.quran.completedMinutes + safeAmount) }
+          : { ...current.quran, completedPages: Math.min(current.quran.targetPages ?? 1, (current.quran.completedPages ?? 0) + safeAmount) }
+        const next = { ...current, quran: nextQuran }
         void updateRemoteReligious(next)
         return next
       })
