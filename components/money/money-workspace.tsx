@@ -18,19 +18,38 @@ function currentLocalDate() {
 export function MoneyWorkspace() {
   const { financeEntries, budget, projects, goals, addFinanceEntry, archiveFinanceEntry, updateBudget } = useCommandCenter()
   const [budgetDraft, setBudgetDraft] = useState(String(budget.monthlyLimit))
-  const month = currentLocalDate().slice(0, 7)
-  const monthEntries = financeEntries.filter((entry) => entry.localDate.startsWith(month))
+  const [selectedMonth, setSelectedMonth] = useState(currentLocalDate().slice(0, 7))
+  const monthEntries = financeEntries.filter((entry) => entry.localDate.startsWith(selectedMonth))
   const expenses = monthEntries.filter((entry) => entry.kind === 'expense')
   const income = monthEntries.filter((entry) => entry.kind === 'income')
   const totalExpenses = expenses.reduce((sum, entry) => sum + entry.amount, 0)
   const totalIncome = income.reduce((sum, entry) => sum + entry.amount, 0)
   const remaining = budget.monthlyLimit - totalExpenses
   const budgetProgress = budget.monthlyLimit ? Math.min(100, Math.round((totalExpenses / budget.monthlyLimit) * 100)) : 0
+  const monthOptions = useMemo(() => {
+    const today = new Date()
+    return Array.from({ length: 6 }, (_, offset) => {
+      const date = new Date(today.getFullYear(), today.getMonth() - offset, 15)
+      const key = date.toISOString().slice(0, 7)
+      return { key, label: new Intl.DateTimeFormat('ar-EG', { month: 'long', year: 'numeric' }).format(date) }
+    })
+  }, [])
   const categoryTotals = useMemo(() => {
     const totals = new Map<string, number>()
     expenses.forEach((entry) => totals.set(entry.category, (totals.get(entry.category) ?? 0) + entry.amount))
-    return [...totals.entries()].sort((a, b) => b[1] - a[1])
-  }, [expenses])
+    const colors = ['#2563eb', '#14b8a6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#0f766e', '#64748b']
+    return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([category, value], index) => ({ category, value, color: colors[index % colors.length], percentage: totalExpenses ? Math.round((value / totalExpenses) * 100) : 0 }))
+  }, [expenses, totalExpenses])
+  const monthlyComparison = useMemo(() => monthOptions.map(({ key, label }) => {
+    const entries = financeEntries.filter((entry) => entry.localDate.startsWith(key))
+    return { key, label, expense: entries.filter((entry) => entry.kind === 'expense').reduce((sum, entry) => sum + entry.amount, 0), income: entries.filter((entry) => entry.kind === 'income').reduce((sum, entry) => sum + entry.amount, 0) }
+  }), [financeEntries, monthOptions])
+  const maxMonthlyValue = Math.max(1, ...monthlyComparison.flatMap((month) => [month.expense, month.income]))
+  const selectedMonthLabel = monthOptions.find((month) => month.key === selectedMonth)?.label ?? selectedMonth
+  const previousMonthKey = monthOptions[1]?.key
+  const previousMonthExpenses = monthlyComparison.find((month) => month.key === previousMonthKey)?.expense ?? 0
+  const expenseDelta = totalExpenses - previousMonthExpenses
+  const donutBackground = categoryTotals.length ? `conic-gradient(${categoryTotals.map((item, index) => { const start = categoryTotals.slice(0, index).reduce((sum, current) => sum + current.percentage, 0); return `${item.color} ${start}% ${start + item.percentage}%` }).join(', ')})` : 'conic-gradient(hsl(var(--muted)) 0 100%)'
 
   function createEntry(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -61,8 +80,8 @@ export function MoneyWorkspace() {
 
   return <div className="space-y-4">
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <SummaryCard label="مصروفات الشهر" value={formatAmount(totalExpenses, budget.currency)} icon={ArrowDownLeft} tone="warning" />
-      <SummaryCard label="دخل الشهر" value={formatAmount(totalIncome, budget.currency)} icon={ArrowUpRight} tone="success" />
+      <SummaryCard label={`مصروفات ${selectedMonthLabel}`} value={formatAmount(totalExpenses, budget.currency)} icon={ArrowDownLeft} tone="warning" />
+      <SummaryCard label={`دخل ${selectedMonthLabel}`} value={formatAmount(totalIncome, budget.currency)} icon={ArrowUpRight} tone="success" />
       <SummaryCard label="المتبقي من الميزانية" value={formatAmount(remaining, budget.currency)} icon={Wallet} tone={remaining < 0 ? 'danger' : 'primary'} />
       <SummaryCard label="عدد العمليات" value={monthEntries.length} icon={Banknote} tone="accent" />
     </div>
@@ -70,6 +89,7 @@ export function MoneyWorkspace() {
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <ContentCard className="lg:col-span-8" title="ميزانية الشهر" description="شوف إنفاقك الحقيقي مقارنة بالحد الذي حددته لنفسك.">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <label className="space-y-1 text-sm"><span className="block text-xs text-muted-foreground">الشهر المحلل</span><select aria-label="الشهر المحلل" value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)} className="rounded-2xl border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring">{monthOptions.map((monthOption) => <option key={monthOption.key} value={monthOption.key}>{monthOption.label}</option>)}</select></label>
           <div>
             <p className="text-3xl font-semibold tracking-tight">{formatAmount(totalExpenses, budget.currency)}</p>
             <p className="mt-1 text-sm text-muted-foreground">من {formatAmount(budget.monthlyLimit, budget.currency)} — {budgetProgress}% مستخدم</p>
@@ -82,24 +102,41 @@ export function MoneyWorkspace() {
         <div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${remaining < 0 ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${budgetProgress}%` }} /></div>
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <MiniStat label="دخل - مصروف" value={formatAmount(totalIncome - totalExpenses, budget.currency)} />
-          <MiniStat label="أعلى تصنيف" value={categoryTotals[0]?.[0] ?? 'لا يوجد'} />
+          <MiniStat label="أعلى تصنيف" value={categoryTotals[0]?.category ?? 'لا يوجد'} />
           <MiniStat label="متوسط العملية" value={formatAmount(monthEntries.length ? Math.round((totalExpenses + totalIncome) / monthEntries.length) : 0, budget.currency)} />
         </div>
       </ContentCard>
 
       <ContentCard title="مصروف حسب التصنيف" description="اقرأ الاتجاه العام قبل ما تدخل في التفاصيل.">
-        <div className="space-y-3">
-          {categoryTotals.map(([category, value]) => {
-            const width = totalExpenses ? Math.round((value / totalExpenses) * 100) : 0
-            return <div key={category}>
-              <div className="mb-1 flex items-center justify-between text-sm"><span>{category}</span><span className="text-muted-foreground">{formatAmount(value, budget.currency)}</span></div>
-              <div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-accent-foreground/70" style={{ width: `${width}%` }} /></div>
-            </div>
-          })}
-          {categoryTotals.length === 0 && <div className="rounded-2xl bg-muted px-4 py-8 text-center text-sm text-muted-foreground">سجّل أول مصروف علشان يظهر التحليل.</div>}
+        <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+          <div className="relative flex h-36 w-36 shrink-0 items-center justify-center rounded-full" style={{ background: donutBackground }} aria-label="مخطط توزيع المصروفات حسب التصنيف" role="img">
+            <div className="flex h-20 w-20 flex-col items-center justify-center rounded-full bg-card text-center shadow-sm"><span className="text-xl font-semibold">{categoryTotals.length}</span><span className="text-[11px] text-muted-foreground">تصنيفات</span></div>
+          </div>
+          <div className="min-w-0 flex-1 space-y-3">
+            {categoryTotals.map((item) => <div key={item.category}>
+              <div className="mb-1 flex items-center justify-between gap-3 text-sm"><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />{item.category}</span><span className="text-muted-foreground">{item.percentage}% · {formatAmount(item.value, budget.currency)}</span></div>
+              <div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full" style={{ width: `${item.percentage}%`, backgroundColor: item.color }} /></div>
+            </div>)}
+            {categoryTotals.length === 0 && <div className="rounded-2xl bg-muted px-4 py-8 text-center text-sm text-muted-foreground">سجّل أول مصروف علشان يظهر التحليل.</div>}
+          </div>
         </div>
       </ContentCard>
     </div>
+
+    <ContentCard title="مقارنة آخر ستة أشهر" description="قارن الدخل والمصروف بسرعة، واكتشف هل الاتجاه يتحسن أم يحتاج تدخلًا.">
+      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm"><span className={`rounded-full px-3 py-1 ${expenseDelta > 0 ? 'bg-warning/15 text-warning-foreground' : 'bg-success/15 text-success'}`}>{expenseDelta > 0 ? 'المصروف أعلى من الشهر السابق' : 'المصروف أقل أو مساوي للشهر السابق'}</span><span className="text-muted-foreground">الفارق: {formatAmount(Math.abs(expenseDelta), budget.currency)}</span></div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {monthlyComparison.map((monthData) => <div key={monthData.key} className={`rounded-2xl border p-3 ${monthData.key === selectedMonth ? 'border-primary bg-primary/5' : 'border-border bg-muted/40'}`}>
+          <p className="truncate text-xs font-semibold">{monthData.label}</p>
+          <div className="mt-3 flex h-28 items-end justify-center gap-2" aria-label={`${monthData.label}: دخل ${formatAmount(monthData.income, budget.currency)}، مصروف ${formatAmount(monthData.expense, budget.currency)}`}>
+            <div className="w-3 rounded-t-full bg-success" style={{ height: `${Math.max(4, Math.round((monthData.income / maxMonthlyValue) * 100))}%` }} />
+            <div className="w-3 rounded-t-full bg-warning" style={{ height: `${Math.max(4, Math.round((monthData.expense / maxMonthlyValue) * 100))}%` }} />
+          </div>
+          <div className="mt-2 space-y-1 text-[11px] text-muted-foreground"><p>دخل {formatAmount(monthData.income, budget.currency)}</p><p>مصروف {formatAmount(monthData.expense, budget.currency)}</p></div>
+        </div>)}
+      </div>
+      <div className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground"><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-success" />الدخل</span><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-warning" />المصروف</span></div>
+    </ContentCard>
 
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <ContentCard className="lg:col-span-5" title="عملية مالية جديدة" description="خلي التسجيل سريعًا، واربطه بمشروع أو هدف لو كان له سياق.">
