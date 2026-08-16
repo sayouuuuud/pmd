@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Archive, CheckCircle2, ChevronLeft, Circle, ExternalLink, FolderKanban, GripVertical, Plus } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type Project, type ProjectStatus } from '@/lib/command-center-store'
 
 const columns: { id: ProjectStatus; label: string; tone: string }[] = [
@@ -90,7 +91,7 @@ export function ProjectsWorkspace() {
                   onMove={(status) => moveProject(project.id, status)}
                   onArchive={() => archiveProject(project.id)}
                 />)}
-                {columnProjects.length === 0 && <div className="rounded-2xl border border-dashed border-border px-3 py-8 text-center text-xs text-muted-foreground">اسحب مشروعًا هنا</div>}
+                {columnProjects.length === 0 && <EmptyState icon={FolderKanban} title="لا توجد مشاريع هنا" description="اسحب مشروعًا إلى هذه المرحلة، أو أضف مشروعًا جديدًا من النموذج المجاور." />}
               </div>
             </section>
           })}

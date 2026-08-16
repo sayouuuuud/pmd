@@ -3,6 +3,7 @@
 import { Archive, Check, Clapperboard, Download, Film, ListPlus, Play, Search, Sparkles, Star, Tv } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ContentCard } from '@/components/ui/content-card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type EntertainmentItem, type EntertainmentStatus, type EntertainmentType } from '@/lib/command-center-store'
 
 const columns: { id: EntertainmentStatus; title: string; description: string; icon: typeof Film }[] = [
@@ -149,7 +150,7 @@ export function EntertainmentWorkspace() {
         return <ContentCard key={column.id} title={column.title} description={column.description} action={<span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold">{items.length}</span>}>
           <div className="space-y-3">
             {items.map((item) => <EntertainmentCard key={item.id} item={item} onMove={(status) => moveEntertainment(item.id, status)} onUpdate={(patch) => updateEntertainment(item.id, patch)} onArchive={() => archiveEntertainment(item.id)} />)}
-            {items.length === 0 && <div className="rounded-2xl bg-muted px-4 py-10 text-center text-sm text-muted-foreground">لا توجد عناصر هنا حسب الفلاتر الحالية.</div>}
+            {items.length === 0 && <EmptyState icon={column.icon} title="لا توجد عناصر هنا" description="جرّب تغيير الفلاتر أو أضف عملًا جديدًا إلى رفّ الترفيه." />}
           </div>
         </ContentCard>
       })}

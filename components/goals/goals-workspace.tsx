@@ -3,6 +3,7 @@
 import { Archive, CalendarDays, CheckCircle2, ChevronDown, Circle, Pause, Pencil, Play, Plus, Save, Target } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ContentCard } from '@/components/ui/content-card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type Goal, type GoalHorizon, type Project, type Task } from '@/lib/command-center-store'
 
 const horizonLabels: Record<GoalHorizon, string> = {
@@ -47,7 +48,7 @@ export function GoalsWorkspace() {
             const summary = derivedProgress.find((item) => item.id === goal.id) ?? { progress: goal.progress, taskCount: 0, completedTasks: 0 }
             return <GoalCard key={goal.id} goal={goal} projects={goalProjects} tasks={tasks} progress={summary.progress} taskCount={summary.taskCount} completedTasks={summary.completedTasks} onPause={() => updateGoal(goal.id, { status: goal.status === 'paused' ? 'active' : 'paused' })} onArchive={() => archiveGoal(goal.id)} onUpdate={(patch) => updateGoal(goal.id, patch)} onToggleTask={toggleTask} onAddTask={(projectId, title) => addTask({ title, priority: 'medium', dueLabel: 'بدون موعد', category: 'هدف', projectId })} />
           })}
-          {activeGoals.length === 0 && <div className="rounded-2xl bg-muted px-4 py-12 text-center text-sm text-muted-foreground md:col-span-2">مفيش أهداف نشطة لسه. ابدأ بهدف واحد واضح.</div>}
+          {activeGoals.length === 0 && <div className="md:col-span-2"><EmptyState icon={Target} title="مفيش أهداف نشطة لسه" description="ابدأ بهدف واحد واضح، وبعدها اربطه بمشاريع تحمل التنفيذ اليومي." /></div>}
         </div>
       </ContentCard>
 
