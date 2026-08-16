@@ -220,28 +220,32 @@ export function ReligiousWorkspace() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-5">
-        <ContentCard className="lg:col-span-3" title="صلوات اليوم" description={`${completedPrayers} من ${religious.prayerLogs.length} صلوات مكتملة`} action={<span className="text-sm font-semibold text-primary">{prayerPercent}%</span>}>
-          <div className="mb-5 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${prayerPercent}%` }} /></div>
-          <div className="mb-3 flex justify-end"><Link href="/daily-plan#plan-3" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح الصلاة في خطة اليوم</Link></div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {religious.prayerLogs.map((prayer) => {
-              const Icon = prayerIcons[prayer.name] ?? Clock3
-              const done = prayer.status === 'done'
-              return <button key={prayer.id} type="button" onClick={() => togglePrayer(prayer.id)} className={`flex items-center gap-3 rounded-2xl border p-3 text-right transition-colors ${done ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}>
-                <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${done ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'}`}><Icon className="h-5 w-5" /></span>
-                <span className="flex-1"><span className="block text-sm font-semibold">صلاة {prayer.name}</span><span className="mt-1 block text-xs text-muted-foreground">{prayer.time}</span></span>
-                <span className={`flex h-7 w-7 items-center justify-center rounded-full border-2 ${done ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{done && <Check className="h-3.5 w-3.5" />}</span>
-              </button>
-            })}
-          </div>
-        </ContentCard>
+        <div id="prayer-tracker" className="scroll-mt-24 lg:col-span-3">
+          <ContentCard className="h-full" title="صلوات اليوم" description={`${completedPrayers} من ${religious.prayerLogs.length} صلوات مكتملة`} action={<span className="text-sm font-semibold text-primary">{prayerPercent}%</span>}>
+            <div className="mb-5 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${prayerPercent}%` }} /></div>
+            <div className="mb-3 flex justify-end"><Link href="/daily-plan#plan-item-plan-3" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح الصلاة في خطة اليوم</Link></div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {religious.prayerLogs.map((prayer) => {
+                const Icon = prayerIcons[prayer.name] ?? Clock3
+                const done = prayer.status === 'done'
+                return <button key={prayer.id} type="button" onClick={() => togglePrayer(prayer.id)} className={`flex items-center gap-3 rounded-2xl border p-3 text-right transition-colors ${done ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}>
+                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${done ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'}`}><Icon className="h-5 w-5" /></span>
+                  <span className="flex-1"><span className="block text-sm font-semibold">صلاة {prayer.name}</span><span className="mt-1 block text-xs text-muted-foreground">{prayer.time}</span></span>
+                  <span className={`flex h-7 w-7 items-center justify-center rounded-full border-2 ${done ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{done && <Check className="h-3.5 w-3.5" />}</span>
+                </button>
+              })}
+            </div>
+          </ContentCard>
+        </div>
 
-        <ContentCard className="lg:col-span-2" title="الورد اليومي" description="التقدم محفوظ دون تخزين النص الخارجي.">
+        <div id="quran-progress" className="scroll-mt-24 lg:col-span-2">
+          <ContentCard className="h-full" title="الورد اليومي" description="التقدم محفوظ دون تخزين النص الخارجي.">
           <div className="flex items-center gap-4"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><BookOpen className="h-6 w-6" /></span><div><p className="text-sm font-semibold">{religious.quran.reference}</p><p className="mt-1 text-xs text-muted-foreground">{religious.quran.completedMinutes} من {religious.quran.targetMinutes} دقيقة</p></div></div>
           <div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, wirdPercent)}%` }} /></div>
           <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground"><span>{wirdPercent}% مكتمل</span><span>المتبقي {Math.max(0, religious.quran.targetMinutes - religious.quran.completedMinutes)} د</span></div>
-          <div className="mt-5 flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => addWirdProgress(5)}>+ 5 دقائق</Button><Button size="sm" onClick={() => addWirdProgress(10)}>أنجزت 10 دقائق</Button><Link href="/daily-plan#plan-4" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح في خطة اليوم</Link><Link href="/habits#habit-1" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح عادة القرآن</Link></div>
-        </ContentCard>
+          <div className="mt-5 flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => addWirdProgress(5)}>+ 5 دقائق</Button><Button size="sm" onClick={() => addWirdProgress(10)}>أنجزت 10 دقائق</Button><Link href="/daily-plan#plan-item-plan-4" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح في خطة اليوم</Link><Link href="/habits#habit-1" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح عادة القرآن</Link></div>
+          </ContentCard>
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">

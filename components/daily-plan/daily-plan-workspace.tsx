@@ -1,13 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Clock3, FolderKanban, Moon, Pause, Play, Repeat, Sparkles, Target } from 'lucide-react'
+import { Check, Clock3, FolderKanban, Link2, Moon, Pause, Play, Repeat, Sparkles, Target } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter } from '@/lib/command-center-store'
 
 export function DailyPlanWorkspace() {
-  const { planItems, tasks, projects, goals, togglePlanItem, snoozePlanItem } = useCommandCenter()
+  const { planItems, tasks, habits, projects, goals, togglePlanItem, snoozePlanItem } = useCommandCenter()
   const completed = planItems.filter((item) => item.status === 'done').length
 
   return <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
@@ -21,7 +21,7 @@ export function DailyPlanWorkspace() {
             {item.status !== 'done' && item.status !== 'snoozed' && <button type="button" aria-label="تأجيل" onClick={() => snoozePlanItem(item.id)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><Pause className="h-4 w-4" /></button>}
             <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${item.status === 'done' ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{item.status === 'done' && <Check className="h-3.5 w-3.5" />}</span>
           </div>
-          <PlanContext item={item} tasks={tasks} projects={projects} goals={goals} />
+          <PlanContext item={item} tasks={tasks} habits={habits} projects={projects} goals={goals} />
         </div>)}
       </div>
     </ContentCard>
@@ -39,16 +39,25 @@ export function DailyPlanWorkspace() {
   </div>
 }
 
-function PlanContext({ item, tasks, projects, goals }: { item: { kind: string; sourceId?: string }; tasks: { id: string; projectId?: string }[]; projects: { id: string; title: string; goalId?: string }[]; goals: { id: string; title: string }[] }) {
-  if (item.kind !== 'task' || !item.sourceId) return null
-  const task = tasks.find((candidate) => candidate.id === item.sourceId)
-  const project = task?.projectId ? projects.find((candidate) => candidate.id === task.projectId) : undefined
-  const goal = project?.goalId ? goals.find((candidate) => candidate.id === project.goalId) : undefined
-  if (!project && !goal) return null
+function PlanContext({ item, tasks, habits, projects, goals }: { item: { kind: string; sourceId?: string }; tasks: { id: string; title: string; projectId?: string; goalId?: string }[]; habits: { id: string; title: string; projectId?: string; goalId?: string }[]; projects: { id: string; title: string; goalId?: string }[]; goals: { id: string; title: string }[] }) {
+  const task = item.kind === 'task' && item.sourceId ? tasks.find((candidate) => candidate.id === item.sourceId) : undefined
+  const habit = (item.kind === 'habit' || item.kind === 'quran') && item.sourceId ? habits.find((candidate) => candidate.id === item.sourceId) : undefined
+  const projectId = task?.projectId ?? habit?.projectId
+  const project = projectId ? projects.find((candidate) => candidate.id === projectId) : undefined
+  const goalId = task?.goalId ?? habit?.goalId ?? project?.goalId
+  const goal = goalId ? goals.find((candidate) => candidate.id === goalId) : undefined
+  const prayer = item.kind === 'prayer'
+  const quran = item.kind === 'quran'
+  if (!task && !habit && !project && !goal && !prayer && !quran) return null
 
   return <div className="mt-2 flex flex-wrap items-center gap-2 pr-[3.75rem] text-[11px] text-muted-foreground">
-    {project && <Link href={`/projects?project=${encodeURIComponent(project.id)}`} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"><FolderKanban className="h-3 w-3" /> مشروع: {project.title}</Link>}
-    {goal && <Link href="/goals" className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"><Target className="h-3 w-3" /> هدف: {goal.title}</Link>}
+    <span className="inline-flex items-center gap-1"><Link2 className="h-3 w-3 text-primary" />السياق</span>
+    {task && <Link href={`/tasks#task-${task.id}`} className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">مهمة: {task.title}</Link>}
+    {habit && <Link href={`/habits#${habit.id}`} className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">عادة: {habit.title}</Link>}
+    {prayer && <Link href="/religious#prayer-tracker" className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">المساحة الدينية: الصلاة</Link>}
+    {quran && <Link href="/religious#quran-progress" className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">المساحة الدينية: الورد</Link>}
+    {project && <Link href={`/projects#${project.id}`} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"><FolderKanban className="h-3 w-3" /> مشروع: {project.title}</Link>}
+    {goal && <Link href={`/goals#${goal.id}`} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"><Target className="h-3 w-3" /> هدف: {goal.title}</Link>}
   </div>
 }
 

@@ -374,7 +374,7 @@ const initialHabits: Habit[] = [
 const initialPlanItems: PlanItem[] = [
   { id: 'plan-1', time: '08:30', title: 'مراجعة تقرير الشغل الأسبوعي', kind: 'task', sourceId: 'task-1', status: 'done' },
   { id: 'plan-2', time: '10:00', title: 'تحضير عرض تقديمي للمشروع', kind: 'task', sourceId: 'task-3', status: 'pending' },
-  { id: 'plan-3', time: '12:15', title: 'صلاة الظهر', kind: 'prayer', status: 'pending' },
+  { id: 'plan-3', time: '12:15', title: 'صلاة الظهر', kind: 'prayer', sourceId: 'dhuhr', status: 'pending' },
   { id: 'plan-4', time: '13:00', title: 'ورد القرآن — 20 دقيقة', kind: 'quran', sourceId: 'habit-1', status: 'pending' },
   { id: 'plan-5', time: '15:30', title: 'رياضة', kind: 'habit', sourceId: 'habit-2', status: 'pending' },
   { id: 'plan-6', time: '17:00', title: 'فترة راحة بدون شاشة', kind: 'rest', status: 'pending' },
