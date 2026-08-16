@@ -1,6 +1,6 @@
 'use client'
 
-import { Archive, Check, Clapperboard, Download, Film, ListPlus, Play, Search, Star, Tv } from 'lucide-react'
+import { Archive, Check, Clapperboard, Download, Film, ListPlus, Play, Search, Sparkles, Star, Tv } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter, type EntertainmentItem, type EntertainmentStatus, type EntertainmentType } from '@/lib/command-center-store'
@@ -21,6 +21,7 @@ export function EntertainmentWorkspace() {
   const [showForm, setShowForm] = useState(false)
   const [onlyRecommended, setOnlyRecommended] = useState(false)
   const [onlyDownloads, setOnlyDownloads] = useState(false)
+  const [dismissedSuggestionId, setDismissedSuggestionId] = useState<string | undefined>()
 
   const filteredItems = useMemo(() => entertainment.filter((item) => {
     const matchesQuery = !query.trim() || `${item.title} ${item.genre} ${item.note ?? ''}`.toLocaleLowerCase('ar').includes(query.trim().toLocaleLowerCase('ar'))
@@ -37,6 +38,34 @@ export function EntertainmentWorkspace() {
   const averageRating = completed.filter((item) => item.rating).length
     ? (completed.reduce((sum, item) => sum + (item.rating ?? 0), 0) / completed.filter((item) => item.rating).length).toFixed(1)
     : '—'
+  const suggestion = useMemo(() => {
+    const ratedCompleted = completed.filter((item) => item.rating).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    const preferredGenre = ratedCompleted[0]?.genre
+    const candidates = entertainment
+      .filter((item) => item.status === 'want' && item.id !== dismissedSuggestionId)
+      .map((item) => ({ item, score: (item.recommend ? 3 : 0) + (preferredGenre && item.genre === preferredGenre ? 4 : 0) }))
+      .sort((a, b) => b.score - a.score)
+    const selected = candidates[0]?.item
+    if (!selected) return undefined
+    return { item: selected, preferredGenre }
+  }, [completed, dismissedSuggestionId, entertainment])
+  const monthlyStats = useMemo(() => {
+    const now = new Date()
+    const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const watchedThisMonth = completed.filter((item) => isEntertainmentInMonth(item.createdAt, monthKey))
+    const ratedThisMonth = watchedThisMonth.filter((item) => item.rating)
+    const genreCounts = watchedThisMonth.reduce<Record<string, number>>((counts, item) => {
+      counts[item.genre] = (counts[item.genre] ?? 0) + 1
+      return counts
+    }, {})
+    const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
+    return {
+      label: new Intl.DateTimeFormat('ar-EG', { month: 'long', year: 'numeric' }).format(now),
+      watchedCount: watchedThisMonth.length,
+      average: ratedThisMonth.length ? (ratedThisMonth.reduce((sum, item) => sum + (item.rating ?? 0), 0) / ratedThisMonth.length).toFixed(1) : '—',
+      topGenre: topGenre ?? 'لا يوجد بعد',
+    }
+  }, [completed])
 
   function createItem(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -65,6 +94,18 @@ export function EntertainmentWorkspace() {
       <SummaryCard label="بتفرج حاليًا" value={entertainment.filter((item) => item.status === 'watching').length} icon={Play} tone="accent" />
       <SummaryCard label="خلصت" value={completed.length} icon={Check} tone="success" />
       <SummaryCard label="متوسط التقييم" value={averageRating === '—' ? 'لا يوجد' : `${averageRating} / 5`} icon={Star} tone="warning" />
+    </div>
+
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <ContentCard title="اقتراحك القادم" description="اقتراح بسيط من قائمتك، مستند إلى الأعمال التي قيّمتها سابقًا.">
+        {suggestion ? <div className="flex flex-col gap-4 rounded-2xl bg-accent/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary"><Sparkles className="h-5 w-5" /></div><div className="min-w-0"><p className="truncate font-semibold">{suggestion.item.title}</p><p className="mt-1 text-xs text-muted-foreground">{suggestion.item.type === 'movie' ? 'فيلم' : 'مسلسل'} · {suggestion.item.genre}{suggestion.preferredGenre === suggestion.item.genre ? ' · قريب من ذوقك الأعلى تقييمًا' : suggestion.item.recommend ? ' · معلّم كترشيح' : ''}</p></div></div>
+          <div className="flex shrink-0 gap-2"><button type="button" onClick={() => { moveEntertainment(suggestion.item.id, 'watching'); setDismissedSuggestionId(suggestion.item.id) }} className="rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">ابدأ المشاهدة</button><button type="button" onClick={() => setDismissedSuggestionId(suggestion.item.id)} className="rounded-xl bg-muted px-3 py-2 text-xs font-medium">اقتراح آخر</button></div>
+        </div> : <div className="rounded-2xl bg-muted px-4 py-6 text-center text-sm text-muted-foreground">أضف عملاً إلى قائمة المشاهدة أو قيّم تجربة مكتملة ليظهر اقتراح مناسب.</div>}
+      </ContentCard>
+      <ContentCard title={`إحصائيات ${monthlyStats.label}`} description="صورة سريعة عن الأعمال التي أنهيتها خلال الشهر الحالي.">
+        <div className="grid grid-cols-3 gap-2"><MiniStat label="أعمال مكتملة" value={monthlyStats.watchedCount} /><MiniStat label="متوسط التقييم" value={monthlyStats.average === '—' ? '—' : `${monthlyStats.average}/5`} /><MiniStat label="التصنيف الأبرز" value={monthlyStats.topGenre} /></div>
+      </ContentCard>
     </div>
 
     <ContentCard title="رفّ الترفيه" description="خلي وقت الراحة مقصودًا: اختار ما ستشاهده، سجّل تجربتك، واحتفظ بالترشيحات المهمة.">
@@ -139,6 +180,19 @@ function EntertainmentCard({ item, onMove, onUpdate, onArchive }: { item: Entert
 function SummaryCard({ label, value, icon: Icon, tone }: { label: string; value: string | number; icon: typeof Film; tone: 'primary' | 'accent' | 'success' | 'warning' }) {
   const toneClass = { primary: 'bg-primary/15 text-primary', accent: 'bg-accent text-accent-foreground', success: 'bg-success/15 text-success', warning: 'bg-warning/15 text-warning-foreground' }[tone]
   return <div className="rounded-3xl border border-border bg-card p-4 shadow-sm"><div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">{label}</p><p className="mt-2 text-lg font-semibold">{value}</p></div><div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${toneClass}`}><Icon className="h-5 w-5" /></div></div></div>
+}
+
+function MiniStat({ label, value }: { label: string; value: string | number }) {
+  return <div className="rounded-2xl bg-muted p-3 text-center"><p className="text-[11px] text-muted-foreground">{label}</p><p className="mt-1 truncate text-sm font-semibold">{value}</p></div>
+}
+
+function isEntertainmentInMonth(createdAt: string, monthKey: string) {
+  const timestamp = Date.parse(createdAt)
+  if (!Number.isNaN(timestamp)) {
+    const date = new Date(timestamp)
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` === monthKey
+  }
+  return /الآن|اليوم|أمس|منذ/.test(createdAt)
 }
 
 function QuickList({ label, count, icon: Icon, active, onClick }: { label: string; count: number; icon: typeof Star; active: boolean; onClick: () => void }) {

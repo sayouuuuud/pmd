@@ -280,7 +280,7 @@ export function mapRemoteEntertainment(item: RemoteEntertainment): Entertainment
     impression: item.impression ?? undefined,
     recommend: Boolean(item.recommend),
     downloadWanted: Boolean(item.downloadWanted),
-    createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toLocaleDateString('ar-EG'),
+    createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toISOString(),
   }
 }
 
