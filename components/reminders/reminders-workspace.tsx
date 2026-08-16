@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Bell, CalendarClock, Check, Clock3, Plus, X } from 'lucide-react'
+import { EmptyState } from '@/components/ui/empty-state'
 import { ReminderKind, useCommandCenter } from '@/lib/command-center-store'
 
 const kindLabels: Record<ReminderKind, string> = {
@@ -68,7 +69,7 @@ export function RemindersWorkspace() {
           <div className="flex rounded-2xl bg-muted p-1 text-xs"><button type="button" onClick={() => setFilter('active')} className={`rounded-xl px-3 py-2 ${filter === 'active' ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>المفتوحة</button><button type="button" onClick={() => setFilter('all')} className={`rounded-xl px-3 py-2 ${filter === 'all' ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>الكل</button></div>
         </div>
         <div className="mt-5 space-y-2">
-          {visibleReminders.length === 0 && <div className="rounded-2xl border border-dashed border-border px-4 py-10 text-center"><p className="text-sm font-semibold">اليوم هادي</p><p className="mt-2 text-xs text-muted-foreground">مفيش تذكيرات مفتوحة حاليًا.</p></div>}
+          {visibleReminders.length === 0 && <EmptyState icon={Bell} title="اليوم هادي" description="مفيش تذكيرات مفتوحة حاليًا." />}
           {visibleReminders.map((reminder) => <article key={reminder.id} className={`flex flex-col gap-3 rounded-2xl border border-border p-4 transition-opacity sm:flex-row sm:items-center ${reminder.status === 'done' ? 'opacity-55' : ''}`}>
             <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${kindStyles[reminder.kind]}`}><Bell className="h-4 w-4" /></span>
             <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className={`text-sm font-semibold ${reminder.status === 'done' ? 'line-through' : ''}`}>{reminder.title}</h3><span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">{kindLabels[reminder.kind]}</span>{reminder.repeatLabel && <span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">{reminder.repeatLabel}</span>}</div><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock3 className="h-3.5 w-3.5" /> {reminder.dueAt}</p></div>
