@@ -9,3 +9,9 @@
 ## إعادة الاختبار بعد الإصلاح
 
 بعد جعل تاريخ TopNav client-only، أُعيد فتح الصفحة محليًا ولم تظهر أي رسائل hydration أو أخطاء runtime في console؛ بقيت رسائل React DevTools وHMR المعلوماتية فقط. الصفحة ما زالت RTL وتظهر البطاقات الجديدة بصورة سليمة.
+
+## الإنتاج
+
+تم دفع commit `2d86b96` إلى `main`. Vercel أعاد deployment production بحالة `READY` للـSHA `2d86b962a2fe149bd431a6b4913ae832dc989cee`، والرابط المعاين: `https://pmd-7tvfo1g4n-itz4kairo-5176s-projects.vercel.app`، مع بقاء الدومين الرئيسي `https://pmd-jet.vercel.app` يعمل.
+
+تم فتح `https://pmd-jet.vercel.app/religious` وظهرت المواقيت المحدثة من AlAdhan، وبطاقات الثبات والحفظ والسنن. الضغط على `آية` نقل التقدم من 4 إلى 5 آيات و50% على الإنتاج.
