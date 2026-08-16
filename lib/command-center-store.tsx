@@ -189,6 +189,7 @@ type CommandCenterContextValue = {
   addWirdProgress: (minutes: number) => void
   toggleDhikr: (session: 'morning' | 'evening') => void
   updateReligiousSettings: (patch: Pick<ReligiousState, 'city' | 'calculationMethod'>) => void
+  updatePrayerTimes: (times: Partial<Record<PrayerLog['name'], string>>) => void
   addReminder: (input: Pick<Reminder, 'title' | 'kind' | 'dueAt'> & Partial<Pick<Reminder, 'sourceId' | 'repeatLabel'>>) => void
   toggleReminder: (id: string) => void
   snoozeReminder: (id: string) => void
@@ -474,6 +475,16 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     updateReligiousSettings: (patch) => {
       setReligious((current) => {
         const next = { ...current, ...patch }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    updatePrayerTimes: (times) => {
+      setReligious((current) => {
+        const next = {
+          ...current,
+          prayerLogs: current.prayerLogs.map((prayer) => ({ ...prayer, time: times[prayer.name] ?? prayer.time })),
+        }
         void updateRemoteReligious(next)
         return next
       })
