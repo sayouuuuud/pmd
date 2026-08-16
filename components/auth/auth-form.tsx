@@ -14,9 +14,26 @@ export function AuthForm() {
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setLoading(true)
     setError('')
 
+    if (mode === 'signup' && !name.trim()) {
+      setError('اكتب اسمك أولًا.')
+      return
+    }
+    if (!email.trim()) {
+      setError('اكتب البريد الإلكتروني أولًا.')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('اكتب بريدًا إلكترونيًا صحيحًا.')
+      return
+    }
+    if (password.length < 8) {
+      setError('كلمة المرور يجب أن تكون ٨ أحرف على الأقل.')
+      return
+    }
+
+    setLoading(true)
     const requestedNext = new URLSearchParams(window.location.search).get('next')
     const destination = requestedNext && requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/'
     const result = mode === 'signin'
@@ -38,7 +55,7 @@ export function AuthForm() {
       <p className="mt-2 text-sm leading-6 text-muted-foreground">احفظ مهامك وملاحظاتك وخطة يومك بأمان بين أجهزتك.</p>
     </div>
 
-    <form className="space-y-4" onSubmit={submit}>
+    <form className="space-y-4" onSubmit={submit} noValidate>
       {mode === 'signup' && <label className="block"><span className="mb-2 block text-sm font-medium">الاسم</span><div className="relative"><UserRound className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input required value={name} onChange={(event) => setName(event.target.value)} className="h-12 w-full rounded-2xl border border-input bg-background pr-10 pl-4 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="اسمك" /></div></label>}
       <label className="block"><span className="mb-2 block text-sm font-medium">البريد الإلكتروني</span><div className="relative"><Mail className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-12 w-full rounded-2xl border border-input bg-background pr-10 pl-4 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="you@example.com" dir="ltr" /></div></label>
       <label className="block"><span className="mb-2 block text-sm font-medium">كلمة المرور</span><div className="relative"><LockKeyhole className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-12 w-full rounded-2xl border border-input bg-background pr-10 pl-4 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="٨ أحرف على الأقل" dir="ltr" /></div></label>
