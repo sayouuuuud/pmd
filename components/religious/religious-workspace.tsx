@@ -1,8 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, Forward, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Rewind, Sparkles, Sunrise, SunMedium, Trash2, Volume2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter } from '@/lib/command-center-store'
 
@@ -221,6 +222,7 @@ export function ReligiousWorkspace() {
       <div className="grid gap-5 lg:grid-cols-5">
         <ContentCard className="lg:col-span-3" title="صلوات اليوم" description={`${completedPrayers} من ${religious.prayerLogs.length} صلوات مكتملة`} action={<span className="text-sm font-semibold text-primary">{prayerPercent}%</span>}>
           <div className="mb-5 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${prayerPercent}%` }} /></div>
+          <div className="mb-3 flex justify-end"><Link href="/daily-plan#plan-3" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح الصلاة في خطة اليوم</Link></div>
           <div className="grid gap-2 sm:grid-cols-2">
             {religious.prayerLogs.map((prayer) => {
               const Icon = prayerIcons[prayer.name] ?? Clock3
@@ -238,7 +240,7 @@ export function ReligiousWorkspace() {
           <div className="flex items-center gap-4"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><BookOpen className="h-6 w-6" /></span><div><p className="text-sm font-semibold">{religious.quran.reference}</p><p className="mt-1 text-xs text-muted-foreground">{religious.quran.completedMinutes} من {religious.quran.targetMinutes} دقيقة</p></div></div>
           <div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, wirdPercent)}%` }} /></div>
           <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground"><span>{wirdPercent}% مكتمل</span><span>المتبقي {Math.max(0, religious.quran.targetMinutes - religious.quran.completedMinutes)} د</span></div>
-          <div className="mt-5 flex gap-2"><Button size="sm" variant="outline" onClick={() => addWirdProgress(5)}>+ 5 دقائق</Button><Button size="sm" onClick={() => addWirdProgress(10)}>أنجزت 10 دقائق</Button></div>
+          <div className="mt-5 flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => addWirdProgress(5)}>+ 5 دقائق</Button><Button size="sm" onClick={() => addWirdProgress(10)}>أنجزت 10 دقائق</Button><Link href="/daily-plan#plan-4" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح في خطة اليوم</Link><Link href="/habits#habit-1" className={buttonVariants({ size: 'sm', variant: 'ghost' })}>فتح عادة القرآن</Link></div>
         </ContentCard>
       </div>
 

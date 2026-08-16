@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Bell, CalendarClock, Check, Clock3, Plus, X } from 'lucide-react'
+import { Bell, CalendarClock, Check, Clock3, Plus, Sparkles, X } from 'lucide-react'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ReminderKind, useCommandCenter } from '@/lib/command-center-store'
 
@@ -21,6 +21,14 @@ const kindStyles: Record<ReminderKind, string> = {
   finance: 'bg-chart-4/15 text-chart-4',
 }
 
+type ReminderSuggestion = {
+  title: string
+  kind: ReminderKind
+  dueAt: string
+  sourceId: string
+  repeatLabel?: string
+}
+
 function sourceHref(sourceId?: string) {
   if (!sourceId) return undefined
   if (sourceId.startsWith('task-')) return `/tasks#task-${sourceId}`
@@ -31,20 +39,39 @@ function sourceHref(sourceId?: string) {
 }
 
 export function RemindersWorkspace() {
-  const { reminders, addReminder, toggleReminder, snoozeReminder, archiveReminder } = useCommandCenter()
+  const { reminders, planItems, habits, financeEntries, addReminder, toggleReminder, snoozeReminder, archiveReminder } = useCommandCenter()
   const [filter, setFilter] = useState<'active' | 'all'>('active')
   const [addOpen, setAddOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [dueAt, setDueAt] = useState('اليوم، ١٨:٠٠')
   const [kind, setKind] = useState<ReminderKind>('task')
   const [repeatLabel, setRepeatLabel] = useState('')
+  const [quietMode, setQuietMode] = useState(true)
 
   const visibleReminders = useMemo(() => {
     const items = filter === 'active' ? reminders.filter((reminder) => reminder.status !== 'done') : reminders
     return [...items].sort((first, second) => Number(first.status === 'done') - Number(second.status === 'done'))
   }, [filter, reminders])
 
+  const suggestions = useMemo<ReminderSuggestion[]>(() => {
+    const existingSources = new Set(reminders.map((reminder) => reminder.sourceId).filter(Boolean))
+    const planSuggestions: ReminderSuggestion[] = planItems
+      .filter((item) => item.status === 'pending' && !existingSources.has(item.id))
+      .map((item) => ({ title: `خطة اليوم: ${item.title}`, kind: item.kind === 'habit' ? 'habit' : item.kind === 'quran' ? 'quran' : item.kind === 'prayer' ? 'prayer' : 'task', dueAt: item.time, sourceId: item.id }))
+    const habitSuggestions = habits
+      .filter((habit) => !habit.doneToday && !existingSources.has(habit.id))
+      .map((habit) => ({ title: `عادة: ${habit.title}`, kind: 'habit' as const, dueAt: 'اليوم', sourceId: habit.id, repeatLabel: habit.frequency === 'weekly' ? 'أسبوعيًا' : 'يوميًا' }))
+    const financeSuggestions = financeEntries
+      .filter((entry) => entry.recurrence !== 'none' && !existingSources.has(entry.id))
+      .map((entry) => ({ title: `مالية: ${entry.title}`, kind: 'finance' as const, dueAt: 'موعد الاستحقاق القادم', sourceId: entry.id, repeatLabel: entry.recurrence === 'monthly' ? 'شهريًا' : 'أسبوعيًا' }))
+    return [...planSuggestions, ...habitSuggestions, ...financeSuggestions].slice(0, quietMode ? 3 : 6)
+  }, [financeEntries, habits, planItems, quietMode, reminders])
+
   const pendingCount = reminders.filter((reminder) => reminder.status === 'pending').length
+
+  function generateSuggestions() {
+    suggestions.forEach((suggestion) => addReminder(suggestion))
+  }
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -71,6 +98,14 @@ export function RemindersWorkspace() {
         <div className="rounded-3xl bg-card p-5"><div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">تم اليوم</span><Check className="h-4 w-4 text-chart-2" /></div><p className="mt-3 text-3xl font-semibold">{reminders.filter((reminder) => reminder.status === 'done').length}</p><p className="mt-1 text-xs text-muted-foreground">خطوات صغيرة اتقفلت</p></div>
         <div className="rounded-3xl bg-card p-5"><div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">التذكيرات المتكررة</span><CalendarClock className="h-4 w-4 text-chart-4" /></div><p className="mt-3 text-3xl font-semibold">{reminders.filter((reminder) => reminder.repeatLabel).length}</p><p className="mt-1 text-xs text-muted-foreground">تتراجع بشكل دوري</p></div>
       </div>
+
+      {suggestions.length > 0 && <div className="rounded-3xl border border-primary/15 bg-primary/5 p-5 sm:p-6">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div><div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /><h2 className="text-lg font-semibold">اقتراحات هادئة من يومك</h2></div><p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">نحوّل العناصر المفتوحة إلى تذكيرات قابلة للتأجيل، من غير تكرار ما له تذكير موجود بالفعل. الوضع الهادئ يعرض حتى ثلاثة اقتراحات في المرة.</p></div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2"><button type="button" onClick={() => setQuietMode((value) => !value)} className={`rounded-full px-3 py-2 text-xs font-semibold ${quietMode ? 'bg-card text-primary shadow-sm' : 'bg-muted text-muted-foreground'}`}>{quietMode ? 'الوضع الهادئ مفعّل' : 'عرض اقتراحات أكثر'}</button><button type="button" onClick={generateSuggestions} className="rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground">إضافة الاقتراحات</button></div>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">{suggestions.map((suggestion) => <span key={suggestion.sourceId} className="rounded-full bg-card px-3 py-2 text-xs text-foreground shadow-sm">{suggestion.title}</span>)}</div>
+      </div>}
 
       <div className="rounded-3xl bg-card p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
