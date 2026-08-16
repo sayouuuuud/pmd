@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Archive, CheckCircle2, ChevronLeft, Circle, ExternalLink, FolderKanban, GripVertical, Plus } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter, type Project, type ProjectStatus } from '@/lib/command-center-store'
@@ -12,12 +13,21 @@ const columns: { id: ProjectStatus; label: string; tone: string }[] = [
 ]
 
 export function ProjectsWorkspace() {
+  const searchParams = useSearchParams()
   const { projects, goals, tasks, notes, addProject, addTask, updateProject, toggleTask, archiveProject } = useCommandCenter()
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null
+
+  useEffect(() => {
+    const requestedProjectId = searchParams.get('project')
+    if (requestedProjectId && projects.some((project) => project.id === requestedProjectId)) {
+      setSelectedProjectId(requestedProjectId)
+    }
+  }, [projects, searchParams])
+
   const linkedTasks = (projectId: string) => tasks.filter((task) => task.projectId === projectId)
   const linkedNotes = (projectId: string) => {
     const taskIds = new Set(linkedTasks(projectId).map((task) => task.id))

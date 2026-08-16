@@ -1,7 +1,8 @@
 'use client'
 
+import { useSearchParams } from 'next/navigation'
 import { AlertCircle, ArrowDownLeft, ArrowUpRight, Archive, Banknote, CalendarDays, ChartNoAxesColumn, Plus, RotateCcw, Wallet } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type FinanceKind, type FinanceRecurrence } from '@/lib/command-center-store'
@@ -17,9 +18,17 @@ function currentLocalDate() {
 }
 
 export function MoneyWorkspace() {
+  const searchParams = useSearchParams()
   const { financeEntries, budget, projects, goals, addFinanceEntry, archiveFinanceEntry, updateBudget } = useCommandCenter()
   const [budgetDraft, setBudgetDraft] = useState(String(budget.monthlyLimit))
   const [selectedMonth, setSelectedMonth] = useState(currentLocalDate().slice(0, 7))
+
+  useEffect(() => {
+    const requestedMonth = searchParams.get('month')
+    if (requestedMonth && /^\d{4}-\d{2}$/.test(requestedMonth)) {
+      setSelectedMonth(requestedMonth)
+    }
+  }, [searchParams])
   const monthEntries = financeEntries.filter((entry) => entry.localDate.startsWith(selectedMonth))
   const recurringEntries = financeEntries.filter((entry) => entry.kind === 'expense' && entry.recurrence !== 'none')
   const expenses = monthEntries.filter((entry) => entry.kind === 'expense')

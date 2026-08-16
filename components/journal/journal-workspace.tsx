@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { BookOpenText, CalendarDays, Check, Clock3, Feather, Save, Smile, Trash2 } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { JournalEntry, useCommandCenter } from '@/lib/command-center-store'
@@ -34,6 +35,7 @@ function formatShortDate(value: string) {
 }
 
 export function JournalWorkspace() {
+  const searchParams = useSearchParams()
   const { journal, saveJournalEntry, updateJournalEntry, archiveJournalEntry } = useCommandCenter()
   const today = localDateValue(new Date())
   const [selectedDate, setSelectedDate] = useState(today)
@@ -44,6 +46,13 @@ export function JournalWorkspace() {
 
   const entries = useMemo(() => [...journal].sort((a, b) => b.localDate.localeCompare(a.localDate) || b.updatedAt.localeCompare(a.updatedAt)), [journal])
   const selectedEntry = journal.find((entry) => entry.localDate === selectedDate)
+
+  useEffect(() => {
+    const requestedDate = searchParams.get('date')
+    if (requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
+      setSelectedDate(requestedDate)
+    }
+  }, [searchParams])
 
   const calendarDays = useMemo(() => {
     const selected = parseDate(selectedDate)
