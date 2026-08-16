@@ -136,7 +136,7 @@ export type ReligiousState = {
   calculationMethod: string
   prayerLogs: PrayerLog[]
   prayerHistory?: PrayerHistoryDay[]
-  quran: { reference: string; targetMinutes: number; completedMinutes: number; memorizationTarget?: number; memorizationCompleted?: number; lastPosition?: QuranPosition; playlists?: QuranPlaylist[] }
+  quran: { reference: string; targetMinutes: number; completedMinutes: number; memorizationTarget?: number; memorizationCompleted?: number; lastPosition?: QuranPosition; playlists?: QuranPlaylist[]; listenLater?: number[]; listenedSurahNumbers?: number[] }
   dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; morningProgress?: Record<string, number>; eveningProgress?: Record<string, number>; lastSession?: string; tasbeehCount?: number; tasbeehTarget?: number; savedDuas?: string[] }
 }
 
@@ -268,6 +268,8 @@ type CommandCenterContextValue = {
   saveQuranPosition: (position: Omit<QuranPosition, 'updatedAt'>) => void
   createQuranPlaylist: (name: string, surahNumber?: number) => void
   toggleQuranPlaylistSurah: (playlistId: string, surahNumber: number) => void
+  toggleQuranListenLater: (surahNumber: number) => void
+  toggleQuranListened: (surahNumber: number) => void
   addReminder: (input: Pick<Reminder, 'title' | 'kind' | 'dueAt'> & Partial<Pick<Reminder, 'sourceId' | 'repeatLabel'>>) => void
   toggleReminder: (id: string) => void
   snoozeReminder: (id: string) => void
@@ -348,7 +350,7 @@ const initialReligious: ReligiousState = {
     { localDate: '2026-08-14', completed: 4, total: 5 },
     { localDate: '2026-08-15', completed: 1, total: 5 },
   ],
-  quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4, playlists: [] },
+  quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4, playlists: [], listenLater: [], listenedSurahNumbers: [] },
   dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, morningProgress: { 'morning-1': 2, 'morning-2': 2, 'morning-3': 2, 'morning-4': 2 }, eveningProgress: { 'evening-1': 2, 'evening-2': 2, 'evening-3': 1, 'evening-4': 1 }, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'] },
 }
 
@@ -428,7 +430,10 @@ function normalizeQuran(value: unknown, fallback: ReligiousState['quran']): Reli
     const surahNumbers = item.surahNumbers.filter((number): number is number => typeof number === 'number' && Number.isFinite(number)).map((number) => Math.max(1, Math.min(114, Math.round(number)))).filter((number, index, numbers) => numbers.indexOf(number) === index).slice(0, 30)
     return [{ id: item.id.slice(0, 80), name: item.name.trim().slice(0, 80) || 'قائمة تلاوة', surahNumbers, createdAt: typeof item.createdAt === 'string' ? item.createdAt.slice(0, 40) : new Date().toISOString() }]
   }) : fallback.playlists ?? []
-  return { ...fallback, ...source, lastPosition: position, playlists }
+  const normalizeSurahList = (value: unknown, fallbackList: number[]) => Array.isArray(value) ? value.filter((number): number is number => typeof number === 'number' && Number.isFinite(number)).map((number) => Math.max(1, Math.min(114, Math.round(number)))).filter((number, index, numbers) => numbers.indexOf(number) === index).slice(0, 114) : fallbackList
+  const listenLater = normalizeSurahList(source.listenLater, fallback.listenLater ?? [])
+  const listenedSurahNumbers = normalizeSurahList(source.listenedSurahNumbers, fallback.listenedSurahNumbers ?? [])
+  return { ...fallback, ...source, lastPosition: position, playlists, listenLater, listenedSurahNumbers }
 }
 
 function normalizeProgress(value: unknown, fallback: Record<string, number>): Record<string, number> {
@@ -770,6 +775,26 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
           return { ...playlist, surahNumbers }
         })
         const next = { ...current, quran: { ...current.quran, playlists } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    toggleQuranListenLater: (surahNumber) => {
+      setReligious((current) => {
+        const safeSurah = Math.max(1, Math.min(114, Math.round(surahNumber)))
+        const currentList = current.quran.listenLater ?? []
+        const listenLater = currentList.includes(safeSurah) ? currentList.filter((number) => number !== safeSurah) : [...currentList, safeSurah].slice(-114)
+        const next = { ...current, quran: { ...current.quran, listenLater } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    toggleQuranListened: (surahNumber) => {
+      setReligious((current) => {
+        const safeSurah = Math.max(1, Math.min(114, Math.round(surahNumber)))
+        const currentList = current.quran.listenedSurahNumbers ?? []
+        const listenedSurahNumbers = currentList.includes(safeSurah) ? currentList.filter((number) => number !== safeSurah) : [...currentList, safeSurah].slice(-114)
+        const next = { ...current, quran: { ...current.quran, listenedSurahNumbers } }
         void updateRemoteReligious(next)
         return next
       })
