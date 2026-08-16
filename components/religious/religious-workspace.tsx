@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Sparkles, Sunrise, SunMedium, Trash2, Volume2 } from 'lucide-react'
+import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, Forward, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Rewind, Sparkles, Sunrise, SunMedium, Trash2, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter } from '@/lib/command-center-store'
@@ -61,6 +61,7 @@ export function ReligiousWorkspace() {
   const [selectedReciter, setSelectedReciter] = useState<Reciter | null>(null)
   const [audioUrl, setAudioUrl] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
+  const [audioRate, setAudioRate] = useState(1)
   const [playlistName, setPlaylistName] = useState('')
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [sunnahChecks, setSunnahChecks] = useState<Record<string, boolean>>({ duha: false, witr: false, rawatib: false, sadaqah: false })
@@ -159,11 +160,21 @@ export function ReligiousWorkspace() {
     return () => audio.removeEventListener('loadedmetadata', restorePosition)
   }, [audioUrl, religious.quran.lastPosition, selectedSurah])
 
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.playbackRate = audioRate
+  }, [audioRate, audioUrl])
+
   function playSelectedSurah() {
     if (!selectedReciter?.server) return
     const url = `${selectedReciter.server}${String(selectedSurah).padStart(3, '0')}.mp3`
     setAudioUrl(url)
     setIsPlaying(true)
+  }
+
+  function seekAudio(offsetSeconds: number) {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.currentTime = Math.max(0, Math.min(audio.duration || Number.MAX_SAFE_INTEGER, audio.currentTime + offsetSeconds))
   }
 
   function saveCurrentAudioPosition() {
@@ -252,7 +263,7 @@ export function ReligiousWorkspace() {
           <label className="space-y-2 text-sm font-medium"><span>القارئ</span><select value={selectedReciter?.id ?? ''} onChange={(event) => setSelectedReciter(reciters.find((reciter) => reciter.id === Number(event.target.value)) ?? null)} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary" disabled={!reciters.length}><option value="">{reciters.length ? 'اختر قارئًا' : 'جاري تحميل القراء…'}</option>{reciters.map((reciter) => <option key={reciter.id} value={reciter.id}>{reciter.name}</option>)}</select></label>
           <div className="flex items-end"><Button onClick={playSelectedSurah} disabled={!selectedReciter || quranState === 'loading'}><Play className="ms-1 h-4 w-4" /> تشغيل السورة</Button></div>
         </div>
-        {audioUrl && <div className="mt-4 rounded-2xl border border-border bg-muted/40 p-3"><div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span className="flex items-center gap-2"><Volume2 className="h-4 w-4 text-primary" /> {selectedReciter?.name} · {isPlaying ? 'تعمل الآن' : 'متوقفة'}</span><Button type="button" size="sm" variant="ghost" onClick={saveCurrentAudioPosition}>حفظ الموضع الحالي</Button></div><audio ref={audioRef} controls autoPlay src={audioUrl} onPlay={() => setIsPlaying(true)} onPause={() => { setIsPlaying(false); saveCurrentAudioPosition() }} onEnded={() => { setIsPlaying(false); saveCurrentAudioPosition() }} className="w-full" /></div>}
+        {audioUrl && <div className="mt-4 rounded-2xl border border-border bg-muted/40 p-3"><div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span className="flex items-center gap-2"><Volume2 className="h-4 w-4 text-primary" /> {selectedReciter?.name} · {isPlaying ? 'تعمل الآن' : 'متوقفة'}</span><div className="flex flex-wrap items-center gap-2"><Button type="button" size="sm" variant="ghost" onClick={() => seekAudio(-15)} aria-label="رجوع 15 ثانية"><Rewind className="ms-1 h-3.5 w-3.5" /> 15 ثانية</Button><Button type="button" size="sm" variant="ghost" onClick={() => seekAudio(15)} aria-label="تقديم 15 ثانية"><Forward className="ms-1 h-3.5 w-3.5" /> 15 ثانية</Button><label className="flex items-center gap-1"><span>السرعة</span><select aria-label="سرعة التلاوة" value={audioRate} onChange={(event) => setAudioRate(Number(event.target.value))} className="rounded-lg border border-border bg-background px-2 py-1"><option value="0.75">0.75×</option><option value="1">1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select></label><Button type="button" size="sm" variant="ghost" onClick={saveCurrentAudioPosition}>حفظ الموضع الحالي</Button></div></div><audio ref={audioRef} controls autoPlay src={audioUrl} onPlay={() => setIsPlaying(true)} onPause={() => { setIsPlaying(false); saveCurrentAudioPosition() }} onEnded={() => { setIsPlaying(false); saveCurrentAudioPosition() }} className="w-full" /></div>}
         {religious.quran.lastPosition && <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground"><span>موضع محفوظ: السورة {religious.quran.lastPosition.surahNumber} · {formatAudioTime(religious.quran.lastPosition.positionSeconds)}</span><Button type="button" size="sm" variant="outline" onClick={playSelectedSurah}>استئناف التلاوة</Button></div>}
         <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_1.2fr]"><form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); createQuranPlaylist(playlistName, selectedSurah); setPlaylistName('') }}><input value={playlistName} onChange={(event) => setPlaylistName(event.target.value)} placeholder="اسم قائمة جديدة" aria-label="اسم قائمة تلاوة جديدة" className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" /><Button type="submit" size="sm" disabled={!playlistName.trim()}><Plus className="ms-1 h-3.5 w-3.5" /> إنشاء قائمة</Button></form><div className="space-y-2">{(religious.quran.playlists ?? []).length === 0 ? <p className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">أنشئ قائمة واحفظ فيها السورة الحالية للعودة إليها لاحقًا.</p> : (religious.quran.playlists ?? []).map((playlist) => <div key={playlist.id} className="rounded-xl border border-border p-3"><div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{playlist.name}</p><span className="text-xs text-muted-foreground">{playlist.surahNumbers.length} سور</span></div><div className="mt-2 flex flex-wrap gap-2">{playlist.surahNumbers.map((surahNumber) => <Button key={surahNumber} type="button" size="sm" variant={surahNumber === selectedSurah ? 'secondary' : 'outline'} onClick={() => toggleQuranPlaylistSurah(playlist.id, surahNumber)} aria-pressed={surahNumber === selectedSurah}>السورة {surahNumber}</Button>)}<Button type="button" size="sm" variant="ghost" onClick={() => toggleQuranPlaylistSurah(playlist.id, selectedSurah)}>{playlist.surahNumbers.includes(selectedSurah) ? 'إزالة الحالية' : 'إضافة الحالية'}</Button></div></div>)}</div></div>
         <div className="mt-4 max-h-80 overflow-y-auto rounded-2xl border border-border bg-background p-4" dir="rtl">{quranState === 'loading' && <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin text-primary" /> جاري تحميل الآيات…</div>}{quranState === 'error' && <div className="py-6 text-sm text-destructive">{quranMessage}</div>}{quranState === 'success' && quran?.ayahs?.map((ayah) => <p key={ayah.number} className="border-b border-border/60 py-3 text-lg leading-9 last:border-0">{ayah.text} <span className="me-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-1 text-xs text-accent-foreground">{ayah.number}</span></p>)}</div>
