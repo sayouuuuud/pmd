@@ -1,6 +1,6 @@
-import { and, desc, eq, isNotNull } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
-import { entertainmentItem, financeEntry, goal, habit, journalEntry, note, project, reminder, task } from '@/server/db/schema'
+import { entertainmentItem, financeEntry, goal, habit, habitLog, journalEntry, note, project, reminder, task } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
 
 export const dynamic = 'force-dynamic'
@@ -12,6 +12,26 @@ function json(data: unknown, init?: ResponseInit) {
 function dateValue(value: Date | string | null) {
   if (!value) return new Date().toISOString()
   return value instanceof Date ? value.toISOString() : value
+}
+
+function cairoToday() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
+}
+
+function previousDate(date: string) {
+  const value = new Date(`${date}T12:00:00Z`)
+  value.setUTCDate(value.getUTCDate() - 1)
+  return value.toISOString().slice(0, 10)
+}
+
+function calculateStreak(history: Record<string, boolean>, date: string) {
+  let cursor = date
+  let streak = 0
+  while (history[cursor]) {
+    streak += 1
+    cursor = previousDate(cursor)
+  }
+  return streak
 }
 
 export async function GET(request: Request) {
@@ -32,11 +52,24 @@ export async function GET(request: Request) {
       db.select().from(journalEntry).where(and(eq(journalEntry.userId, userId), isNotNull(journalEntry.archivedAt))).orderBy(desc(journalEntry.archivedAt)).limit(200),
       db.select().from(entertainmentItem).where(and(eq(entertainmentItem.userId, userId), isNotNull(entertainmentItem.archivedAt))).orderBy(desc(entertainmentItem.archivedAt)).limit(200),
     ])
+    const archivedHabitIds = habits.map((item) => item.id)
+    const habitLogs = archivedHabitIds.length
+      ? await db.select({ habitId: habitLog.habitId, localDate: habitLog.localDate, status: habitLog.status }).from(habitLog).where(and(eq(habitLog.userId, userId), inArray(habitLog.habitId, archivedHabitIds))).limit(5000)
+      : []
+
+    const historyByHabit = new Map<string, Record<string, boolean>>()
+    for (const log of habitLogs) {
+      if (log.status !== 'done') continue
+      const history = historyByHabit.get(log.habitId) ?? {}
+      history[log.localDate] = true
+      historyByHabit.set(log.habitId, history)
+    }
+    const localDate = cairoToday()
 
     const items = [
       ...tasks.map((item) => ({ id: item.id, kind: 'task' as const, title: item.title, subtitle: `المهام · ${item.category}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, title: item.title, description: item.description ?? undefined, priority: item.priority === 'high' || item.priority === 'low' ? item.priority : 'medium', status: item.status === 'done' || item.status === 'in-progress' ? item.status : 'todo', dueLabel: item.dueLabel ?? 'بدون موعد', category: item.category, recurring: item.recurring, sourceNoteId: item.sourceNoteId ?? undefined, projectId: item.projectId ?? undefined } })),
       ...notes.map((item) => ({ id: item.id, kind: 'note' as const, title: item.title, subtitle: `الملاحظات · ${item.tag}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, title: item.title, body: item.body, tag: item.tag, pinned: item.pinned, createdAt: item.createdAt.toISOString(), sourceTaskId: item.sourceTaskId ?? undefined } })),
-      ...habits.map((item) => ({ id: item.id, kind: 'habit' as const, title: item.title, subtitle: `العادات · ${item.target}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, title: item.title, icon: item.icon, target: item.target, frequency: item.frequency === 'weekly' ? 'weekly' : 'daily', streak: 0, doneToday: false, history: {}, taskId: item.taskId ?? undefined, projectId: item.projectId ?? undefined, goalId: item.goalId ?? undefined } })),
+      ...habits.map((item) => { const history = historyByHabit.get(item.id) ?? {}; return { id: item.id, kind: 'habit' as const, title: item.title, subtitle: `العادات · ${item.target}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, title: item.title, icon: item.icon, target: item.target, frequency: item.frequency === 'weekly' ? 'weekly' : 'daily', streak: calculateStreak(history, localDate), doneToday: Boolean(history[localDate]), history, taskId: item.taskId ?? undefined, projectId: item.projectId ?? undefined, goalId: item.goalId ?? undefined } } }),
       ...goals.map((item) => ({ id: item.id, kind: 'goal' as const, title: item.title, subtitle: `الأهداف · ${item.targetLabel}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, title: item.title, description: item.description, horizon: item.horizon === 'year' || item.horizon === 'someday' ? item.horizon : 'quarter', status: item.status === 'paused' || item.status === 'completed' ? item.status : 'active', progress: Math.max(0, Math.min(100, item.progress)), targetLabel: item.targetLabel } })),
       ...projects.map((item) => ({ id: item.id, kind: 'project' as const, title: item.title, subtitle: `المشاريع · ${item.dueLabel}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, title: item.title, description: item.description, goalId: item.goalId ?? undefined, status: item.status === 'in-progress' || item.status === 'done' ? item.status : 'backlog', progress: Math.max(0, Math.min(100, item.progress)), dueLabel: item.dueLabel } })),
       ...finances.map((item) => ({ id: item.id, kind: 'finance' as const, title: item.title, subtitle: `الفلوس · ${item.category}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, title: item.title, amount: Math.max(0, item.amount), kind: item.kind === 'income' ? 'income' : 'expense', category: item.category, localDate: item.localDate, note: item.note ?? undefined, projectId: item.projectId ?? undefined, goalId: item.goalId ?? undefined } })),
