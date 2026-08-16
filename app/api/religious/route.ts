@@ -73,6 +73,9 @@ function safeDhikrSessions(value: unknown) {
     evening: sessions.evening === true,
     morningCount: Math.max(0, Math.min(10000, Math.round(Number(sessions.morningCount) || 0))),
     eveningCount: Math.max(0, Math.min(10000, Math.round(Number(sessions.eveningCount) || 0))),
+    tasbeehCount: Math.max(0, Math.min(100000, Math.round(Number(sessions.tasbeehCount) || 0))),
+    tasbeehTarget: Math.max(1, Math.min(100000, Math.round(Number(sessions.tasbeehTarget) || 100))),
+    savedDuas: Array.isArray(sessions.savedDuas) ? sessions.savedDuas.filter((dua): dua is string => typeof dua === 'string' && dua.trim().length > 0).map((dua) => dua.trim().slice(0, 240)).slice(-20) : [],
     ...(typeof sessions.lastSession === 'string' ? { lastSession: sessions.lastSession.slice(0, 40) } : {}),
   }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Sparkles, Sunrise, SunMedium, Volume2 } from 'lucide-react'
+import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, LoaderCircle, MapPin, Moon, Play, Plus, RefreshCw, Sparkles, Sunrise, SunMedium, Trash2, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter } from '@/lib/command-center-store'
@@ -42,7 +42,7 @@ type Reciter = { id: number; name: string; read?: string; server: string; surahT
 type RecitersResponse = { source: string; reciters?: Reciter[]; error?: string }
 
 export function ReligiousWorkspace() {
-  const { religious, togglePrayer, addWirdProgress, addMemorizationProgress, toggleDhikr, updateReligiousSettings, updatePrayerTimes } = useCommandCenter()
+  const { religious, togglePrayer, addWirdProgress, addMemorizationProgress, toggleDhikr, addTasbeeh, addSavedDua, removeSavedDua, updateReligiousSettings, updatePrayerTimes } = useCommandCenter()
   const [timingState, setTimingState] = useState<TimingState>('idle')
   const [timingMessage, setTimingMessage] = useState('')
   const [timingDate, setTimingDate] = useState<string | null>(null)
@@ -56,6 +56,7 @@ export function ReligiousWorkspace() {
   const [audioUrl, setAudioUrl] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
   const [sunnahChecks, setSunnahChecks] = useState<Record<string, boolean>>({ duha: false, witr: false, rawatib: false, sadaqah: false })
+  const [duaInput, setDuaInput] = useState('')
   const completedPrayers = religious.prayerLogs.filter((prayer) => prayer.status === 'done').length
   const prayerPercent = Math.round((completedPrayers / Math.max(religious.prayerLogs.length, 1)) * 100)
   const wirdPercent = Math.round((religious.quran.completedMinutes / Math.max(religious.quran.targetMinutes, 1)) * 100)
@@ -67,6 +68,9 @@ export function ReligiousWorkspace() {
   const monthlyCompleted = prayerHistory.reduce((sum, day) => sum + day.completed, 0)
   const monthlyTotal = prayerHistory.reduce((sum, day) => sum + day.total, 0)
   const monthlyRate = Math.round((monthlyCompleted / Math.max(monthlyTotal, 1)) * 100)
+  const tasbeehCount = religious.dhikr.tasbeehCount ?? 0
+  const tasbeehTarget = religious.dhikr.tasbeehTarget ?? 100
+  const tasbeehPercent = Math.round((tasbeehCount / Math.max(tasbeehTarget, 1)) * 100)
 
   async function refreshPrayerTimes() {
     setTimingState('loading')
@@ -195,6 +199,17 @@ export function ReligiousWorkspace() {
           <div className="flex items-center justify-between text-sm"><span>الإنجاز الحالي</span><strong>{memorizationCompleted} من {memorizationTarget} آيات</strong></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, memorizationPercent)}%` }} /></div><div className="mt-2 flex items-center justify-between text-xs text-muted-foreground"><span>{memorizationPercent}% مكتمل</span><span>المتبقي {Math.max(0, memorizationTarget - memorizationCompleted)}</span></div><div className="mt-4 flex gap-2"><Button size="sm" variant="outline" onClick={() => addMemorizationProgress(1)}><Plus className="ms-1 h-3.5 w-3.5" /> آية</Button><Button size="sm" onClick={() => addMemorizationProgress(3)}>أنجزت 3 آيات</Button></div>
         </ContentCard>
         <ContentCard title="السنن والنوافل" description="قائمة تذكير يومية محلية قابلة للتعديل من هاتفك." action={<Sparkles className="h-5 w-5 text-primary" />}><div className="grid gap-2">{[['duha', 'صلاة الضحى'], ['witr', 'الوتر'], ['rawatib', 'السنن الرواتب'], ['sadaqah', 'صدقة أو إحسان']].map(([id, label]) => <button key={id} type="button" onClick={() => setSunnahChecks((current) => ({ ...current, [id]: !current[id] }))} className={`flex items-center gap-3 rounded-2xl border p-3 text-right text-sm transition-colors ${sunnahChecks[id] ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}><span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${sunnahChecks[id] ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{sunnahChecks[id] && <Check className="h-3 w-3" />}</span><span className="flex-1">{label}</span></button>)}</div></ContentCard>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <ContentCard title="السبحة الإلكترونية" description="عداد محلي بسيط للذكر، يُحفظ تقدمُه ضمن إعداداتك الشخصية." action={<span className="text-sm font-semibold text-primary">{tasbeehCount} / {tasbeehTarget}</span>}>
+          <div className="flex items-center gap-4"><div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-primary/20 bg-accent text-2xl font-bold text-primary">{tasbeehCount % 100}</div><div className="flex-1"><p className="text-sm font-semibold">ورد التسبيح الحالي</p><p className="mt-1 text-xs text-muted-foreground">{Math.min(100, tasbeehPercent)}% من الهدف المحدد</p><div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, tasbeehPercent)}%` }} /></div></div></div>
+          <div className="mt-4 flex flex-wrap gap-2"><Button size="sm" onClick={() => addTasbeeh(1)}>تسبيحة واحدة</Button><Button size="sm" variant="outline" onClick={() => addTasbeeh(10)}>+ 10</Button><Button size="sm" variant="ghost" onClick={() => addTasbeeh(33)}>+ 33</Button></div>
+        </ContentCard>
+        <ContentCard title="أدعية محفوظة" description="مساحة قصيرة لحفظ الأدعية التي تريد العودة إليها، دون جلب نصوص خارجية تلقائيًا." action={<span className="text-xs text-muted-foreground">{religious.dhikr.savedDuas?.length ?? 0} محفوظ</span>}>
+          <form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); addSavedDua(duaInput); setDuaInput('') }}><input value={duaInput} onChange={(event) => setDuaInput(event.target.value)} placeholder="اكتب دعاءً قصيرًا" aria-label="دعاء جديد" className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" /><Button type="submit" size="sm" disabled={!duaInput.trim()}>حفظ</Button></form>
+          <div className="mt-3 space-y-2">{(religious.dhikr.savedDuas ?? []).map((dua, index) => <div key={`${dua}-${index}`} className="flex items-start gap-2 rounded-xl bg-muted/50 p-3 text-sm"><span className="flex-1 leading-6">{dua}</span><Button type="button" size="icon" variant="ghost" aria-label="حذف الدعاء" onClick={() => removeSavedDua(index)}><Trash2 className="h-4 w-4" /></Button></div>)}</div>
+        </ContentCard>
       </div>
 
       <ContentCard title="المصحف والتلاوة" description={quran?.surah?.name ? `${quran.surah.name} · ${quran.surah.numberOfAyahs ?? 0} آية` : 'النص والتلاوة يجلبان عند الطلب من مصادر خارجية موثوقة.'} action={<span className="text-xs text-muted-foreground">{quranMessage}</span>}>

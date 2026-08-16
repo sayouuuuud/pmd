@@ -122,7 +122,7 @@ export type ReligiousState = {
   prayerLogs: PrayerLog[]
   prayerHistory?: PrayerHistoryDay[]
   quran: { reference: string; targetMinutes: number; completedMinutes: number; memorizationTarget?: number; memorizationCompleted?: number }
-  dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; lastSession?: string }
+  dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; lastSession?: string; tasbeehCount?: number; tasbeehTarget?: number; savedDuas?: string[] }
 }
 
 export type Note = {
@@ -226,6 +226,9 @@ type CommandCenterContextValue = {
   togglePrayer: (id: string) => void
   addWirdProgress: (minutes: number) => void
   toggleDhikr: (session: 'morning' | 'evening') => void
+  addTasbeeh: (count?: number) => void
+  addSavedDua: (text: string) => void
+  removeSavedDua: (index: number) => void
   updateReligiousSettings: (patch: Pick<ReligiousState, 'city' | 'calculationMethod'>) => void
   updatePrayerTimes: (times: Partial<Record<PrayerLog['name'], string>>) => void
   addMemorizationProgress: (ayahs: number) => void
@@ -308,7 +311,7 @@ const initialReligious: ReligiousState = {
     { localDate: '2026-08-15', completed: 1, total: 5 },
   ],
   quran: { reference: 'ورد اليوم — قراءة من موضعك المحفوظ', targetMinutes: 20, completedMinutes: 8, memorizationTarget: 10, memorizationCompleted: 4 },
-  dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6 },
+  dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'] },
 }
 
 const initialNotes: Note[] = [
@@ -391,7 +394,18 @@ function normalizeState(value: unknown): PersistedState | null {
     projects: arrayOr(source.projects, defaults.projects),
     financeEntries: arrayOr(source.financeEntries, defaults.financeEntries).map((entry) => ({ ...entry, recurrence: entry.recurrence === 'weekly' || entry.recurrence === 'monthly' ? entry.recurrence : 'none' })),
     budget: { ...defaults.budget, ...budget },
-    religious: { ...defaults.religious, ...religious },
+    religious: {
+      ...defaults.religious,
+      ...religious,
+      quran: { ...defaults.religious.quran, ...(religious.quran ?? {}) },
+      dhikr: {
+        ...defaults.religious.dhikr,
+        ...(religious.dhikr ?? {}),
+        tasbeehCount: Math.max(0, Math.min(100000, Math.round(Number(religious.dhikr?.tasbeehCount) || defaults.religious.dhikr.tasbeehCount || 0))),
+        tasbeehTarget: Math.max(1, Math.min(100000, Math.round(Number(religious.dhikr?.tasbeehTarget) || defaults.religious.dhikr.tasbeehTarget || 100))),
+        savedDuas: Array.isArray(religious.dhikr?.savedDuas) ? religious.dhikr.savedDuas.filter((dua): dua is string => typeof dua === 'string' && dua.trim().length > 0).map((dua) => dua.trim().slice(0, 240)).slice(0, 20) : defaults.religious.dhikr.savedDuas,
+      },
+    },
     reminders: arrayOr(source.reminders, defaults.reminders),
     entertainment: arrayOr(source.entertainment, defaults.entertainment),
     journal: arrayOr(source.journal, defaults.journal),
@@ -669,6 +683,32 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setReligious((current) => {
         const nextValue = !current.dhikr[session]
         const next = { ...current, dhikr: { ...current.dhikr, [session]: nextValue, [`${session}Count`]: (current.dhikr[`${session}Count` as 'morningCount' | 'eveningCount'] ?? 0) + (nextValue ? 1 : 0), lastSession: new Date().toISOString() } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    addTasbeeh: (count = 1) => {
+      setReligious((current) => {
+        const target = Math.max(1, current.dhikr.tasbeehTarget ?? 100)
+        const next = { ...current, dhikr: { ...current.dhikr, tasbeehTarget: target, tasbeehCount: Math.min(100000, Math.max(0, (current.dhikr.tasbeehCount ?? 0) + Math.max(1, Math.round(count)))) } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    addSavedDua: (text) => {
+      const normalized = text.trim().slice(0, 240)
+      if (!normalized) return
+      setReligious((current) => {
+        const savedDuas = Array.from(new Set([...(current.dhikr.savedDuas ?? []), normalized])).slice(-20)
+        const next = { ...current, dhikr: { ...current.dhikr, savedDuas } }
+        void updateRemoteReligious(next)
+        return next
+      })
+    },
+    removeSavedDua: (index) => {
+      setReligious((current) => {
+        const savedDuas = (current.dhikr.savedDuas ?? []).filter((_, itemIndex) => itemIndex !== index)
+        const next = { ...current, dhikr: { ...current.dhikr, savedDuas } }
         void updateRemoteReligious(next)
         return next
       })
