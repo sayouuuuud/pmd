@@ -112,7 +112,7 @@
 - [ ] بناء المكونات المشتركة الملتزمة بالتصميم والتي ستُستخدم في كل الأقسام:
   - كارت إحصائية (Stat Card) بنفس شكل كروت الـ Dashboard في التصميم
   - كارت محتوى عام (Content Card)
-  - [x] Modal / Dialog موحد للإضافة والتعديل، مع ترحيل Quick Add إليه؛ تبقى النوافذ الفعلية الأخرى للترحيل التدريجي.
+  - [x] Modal / Dialog موحد للإضافة والتعديل، مع ترحيل Quick Add ونافذة «تذكير جديد» إليه؛ تبقى النوافذ الفعلية الأخرى للترحيل التدريجي.
   - Inputs / Select / Textarea / Checkbox موحدة
   - Badge للأولويات والحالات
   - Empty State موحد (عندما يكون القسم فارغاً)
@@ -651,4 +651,8 @@
 ## سجل دفعة — تنظيف ألوان Design System — 2026-08-16
 استُبدل استخدام `text-white/60` و`text-white/70` في رأس صفحة `/design-system` بتوكن `surface-dark-foreground` مع الحفاظ على درجات الشفافية نفسها. أُعيد مسح كود التطبيق عن أنماط `bg-white` و`text-white` و`border-white` والألوان المباشرة الشائعة، ولم تظهر نتائج.
 اختُبرت صفحة مرجع نظام التصميم بصريًا، وفُتحت نافذة Dialog التجريبية ثم أُغلقت عبر `Escape` بنجاح. التفاصيل في `verification/design-system-semantic-color-cleanup-browser.md` و`verification/interaction-smoke-tests.md`.
+نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.
+## سجل دفعة — ترحيل نافذة التذكيرات إلى Dialog — 2026-08-16
+رُحّلت نافذة «تذكير جديد» في `components/reminders/reminders-workspace.tsx` إلى `components/ui/dialog.tsx` المشترك. بقيت الحقول العربية والنوع والموعد والتكرار، وربط زر الحفظ بالنموذج عبر `form`، مع الحفاظ على مسح التكرار عند الإلغاء وسلوك الحفظ المحلي/البعيد.
+اختُبرت `/reminders` بصريًا وتفاعليًا: ظهرت النافذة والحقول، ثم أُغلقت عبر `Escape` دون حفظ بيانات تجريبية أو تغيير العدادات. التفاصيل في `verification/reminders-dialog-browser.md` و`verification/interaction-smoke-tests.md`.
 نجحت بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة، ولم تُضف secrets أو migrations.

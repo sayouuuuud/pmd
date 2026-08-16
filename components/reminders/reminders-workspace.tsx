@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Bell, CalendarClock, Check, Clock3, Plus, Sparkles, X } from 'lucide-react'
+import { Dialog } from '@/components/ui/dialog'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ReminderKind, useCommandCenter } from '@/lib/command-center-store'
 
@@ -147,7 +148,56 @@ export function RemindersWorkspace() {
         </div>
       </div>
 
-      {addOpen && <div className="fixed inset-0 z-50 flex items-start justify-center bg-foreground/30 p-4 pt-24 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="إضافة تذكير"><form onSubmit={submit} className="w-full max-w-lg rounded-3xl bg-card p-5 shadow-2xl"><div className="flex items-center justify-between"><div><h2 className="text-lg font-semibold">تذكير جديد</h2><p className="mt-1 text-xs text-muted-foreground">خليه واضح وقابل للتنفيذ.</p></div><button type="button" aria-label="إغلاق" onClick={() => setAddOpen(false)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button></div><label htmlFor="reminder-title" className="mt-5 block text-sm font-medium">عنوان التذكير</label><input id="reminder-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="مثال: دفع الاشتراك" /><div className="mt-4 grid gap-3 sm:grid-cols-2"><label className="text-sm font-medium">النوع<select value={kind} onChange={(event) => setKind(event.target.value as ReminderKind)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none"><option value="task">مهمة</option><option value="habit">عادة</option><option value="prayer">صلاة</option><option value="quran">ورد</option><option value="finance">مالية</option></select></label><label className="text-sm font-medium">الموعد<input value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none" placeholder="اليوم، ١٨:٠٠" /></label></div><label className="mt-4 block text-sm font-medium">التكرار<select value={repeatLabel} onChange={(event) => setRepeatLabel(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none"><option value="">بدون تكرار</option><option value="يوميًا">يوميًا</option><option value="أسبوعيًا">أسبوعيًا</option><option value="شهريًا">شهريًا</option></select></label><div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => { setAddOpen(false); setRepeatLabel('') }} className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</button><button type="submit" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">حفظ التذكير</button></div></form></div>}
+      <Dialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        title="تذكير جديد"
+        description="خليه واضح وقابل للتنفيذ."
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setAddOpen(false)
+                setRepeatLabel('')
+              }}
+              className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted"
+            >
+              إلغاء
+            </button>
+            <button type="submit" form="new-reminder-form" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
+              حفظ التذكير
+            </button>
+          </>
+        }
+      >
+        <form id="new-reminder-form" onSubmit={submit}>
+          <label htmlFor="reminder-title" className="block text-sm font-medium">عنوان التذكير</label>
+          <input id="reminder-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="مثال: دفع الاشتراك" />
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <label className="text-sm font-medium">النوع
+              <select value={kind} onChange={(event) => setKind(event.target.value as ReminderKind)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none">
+                <option value="task">مهمة</option>
+                <option value="habit">عادة</option>
+                <option value="prayer">صلاة</option>
+                <option value="quran">ورد</option>
+                <option value="finance">مالية</option>
+              </select>
+            </label>
+            <label className="text-sm font-medium">الموعد
+              <input value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none" placeholder="اليوم، ١٨:٠٠" />
+            </label>
+          </div>
+          <label className="mt-4 block text-sm font-medium">التكرار
+            <select value={repeatLabel} onChange={(event) => setRepeatLabel(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none">
+              <option value="">بدون تكرار</option>
+              <option value="يوميًا">يوميًا</option>
+              <option value="أسبوعيًا">أسبوعيًا</option>
+              <option value="شهريًا">شهريًا</option>
+            </select>
+          </label>
+        </form>
+      </Dialog>
     </section>
   )
 }
