@@ -63,7 +63,7 @@ const quickAddTypes: { value: QuickAddKind; label: string }[] = [
 function previewLabel(parsed: ParsedQuickAdd) {
   if (parsed.kind === 'task') return `مهمة · ${parsed.dueLabel}`
   if (parsed.kind === 'note') return 'ملاحظة سريعة'
-  if (parsed.kind === 'finance') return `${parsed.financeKind === 'income' ? 'دخل' : 'مصروف'} · ${parsed.amount} جنيه`
+  if (parsed.kind === 'finance') return `${parsed.financeKind === 'income' ? 'دخل' : 'مصروف'} · ${parsed.amount} جنيه${parsed.recurrence === 'monthly' ? ' · شهري' : parsed.recurrence === 'weekly' ? ' · أسبوعي' : ''}`
   return parsed.entertainmentType === 'series' ? 'مسلسل · عايز أتفرج' : 'فيلم · عايز أتفرج'
 }
 
@@ -161,6 +161,7 @@ export function TopNav() {
         localDate: new Date().toISOString().slice(0, 10),
         projectId: projectId || undefined,
         goalId: goalId || undefined,
+        recurrence: preview.recurrence ?? 'none',
       })
     } else {
       addEntertainment({
@@ -205,7 +206,7 @@ export function TopNav() {
               <Bell className="h-4 w-4" />
               {reminders.some((reminder) => reminder.status === 'pending') && <span className="absolute top-2.5 left-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">{Math.min(9, reminders.filter((reminder) => reminder.status === 'pending').length)}</span>}
             </button>
-            {session && <button type="button" onClick={() => void authClient.signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login' } } })} className="hidden rounded-full bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted sm:block">خروج</button>}
+            {session && <button type="button" onClick={() => void authClient.signOut({ fetchOptions: { onSuccess: () => { router.push('/login') } } })} className="hidden rounded-full bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted sm:block">خروج</button>}
             <button aria-label="القائمة" className="flex h-11 w-11 items-center justify-center rounded-full bg-card">
               <AlignJustify className="h-4 w-4" />
             </button>
@@ -307,6 +308,7 @@ export function TopNav() {
                 {preview.body && <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{preview.body}</p>}
                 <p className="mt-3 text-xs text-muted-foreground">{previewLabel(preview)}</p>
                 {preview.category && <p className="mt-1 text-xs text-muted-foreground">التصنيف: {preview.category}</p>}
+                {preview.recurrence && preview.recurrence !== 'none' && <p className="mt-1 text-xs text-muted-foreground">التكرار: {preview.recurrence === 'monthly' ? 'شهري' : 'أسبوعي'}</p>}
                 {(projectId || goalId) && <p className="mt-1 text-xs text-muted-foreground">{projectId ? `المشروع: ${projects.find((project) => project.id === projectId)?.title ?? 'مرتبط'}` : ''}{projectId && goalId ? ' · ' : ''}{goalId ? `الهدف: ${goals.find((goal) => goal.id === goalId)?.title ?? 'مرتبط'}` : ''}</p>}
                 <div className="mt-5 flex justify-end gap-2">
                   <button type="button" onClick={() => setPreview(null)} className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">تعديل</button>

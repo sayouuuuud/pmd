@@ -8,6 +8,7 @@ export type ParsedQuickAdd = {
   amount?: number
   financeKind?: 'expense' | 'income'
   category?: string
+  recurrence?: 'none' | 'monthly' | 'weekly'
   entertainmentType?: 'movie' | 'series'
   genre?: string
 }
@@ -76,10 +77,12 @@ export function parseQuickAdd(kind: QuickAddKind, input: string): ParsedQuickAdd
     const amountData = parseAmount(text)
     if (!amountData) return null
     const financeKind = /(?:دخل|راتب|قبض|استلمت)/u.test(text) ? 'income' : 'expense'
+    const recurrence = /(?:كل\s*شهر|شهري|شهريًا|شهريا)/u.test(text) ? 'monthly' : /(?:كل\s*أسبوع|أسبوعي|أسبوعيًا|اسبوعي|اسبوعيًا)/u.test(text) ? 'weekly' : 'none'
     const title = clean(text
       .replace(/(?:سجل|ضيف|أضف|اضف|مصروف|دخل|راتب|قبض|استلمت)/gu, '')
+      .replace(/(?:كل\s*شهر|شهري|شهريًا|شهريا|كل\s*أسبوع|أسبوعي|أسبوعيًا|اسبوعي|اسبوعيًا)/gu, '')
       .replace(amountData.source, '')) || (financeKind === 'income' ? 'دخل' : 'مصروف')
-    return { kind, title, amount: amountData.amount, financeKind, category: categoryFor(title) }
+    return { kind, title, amount: amountData.amount, financeKind, category: categoryFor(title), recurrence }
   }
 
   if (kind === 'entertainment') {
