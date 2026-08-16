@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { journalEntry } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     const requestedDate = url.searchParams.get('date')
     const db = getDb()
     const entries = await db.select().from(journalEntry)
-      .where(requestedDate ? and(eq(journalEntry.userId, currentUser.id), eq(journalEntry.localDate, dateValue(requestedDate))) : eq(journalEntry.userId, currentUser.id))
+      .where(requestedDate ? and(eq(journalEntry.userId, currentUser.id), eq(journalEntry.localDate, dateValue(requestedDate)), isNull(journalEntry.archivedAt)) : and(eq(journalEntry.userId, currentUser.id), isNull(journalEntry.archivedAt)))
       .orderBy(desc(journalEntry.localDate), desc(journalEntry.updatedAt))
       .limit(200)
     return json({ entries })
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       updatedAt: new Date(),
     }).onConflictDoUpdate({
       target: [journalEntry.userId, journalEntry.localDate],
-      set: { title: textValue(body.title, 'يومياتي', 160), body: textValue(body.body, '', 12000), mood: textValue(body.mood, 'محايد', 40), updatedAt: new Date() },
+      set: { title: textValue(body.title, 'يومياتي', 160), body: textValue(body.body, '', 12000), mood: textValue(body.mood, 'محايد', 40), archivedAt: null, updatedAt: new Date() },
     }).returning()
     return json({ entry }, { status: 201 })
   } catch {

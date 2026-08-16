@@ -1,4 +1,4 @@
-import type { EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, Note, PlanItem, PrayerLog, Profile, Project, Reminder, ReligiousState, Task, WeeklyReview } from './command-center-store'
+import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, Note, PlanItem, PrayerLog, Profile, Project, Reminder, ReligiousState, Task, WeeklyReview } from './command-center-store'
 
 type RemoteProfile = {
   city: string
@@ -120,6 +120,15 @@ type RemoteReminder = {
   status: string
   sourceId: string | null
   repeatLabel: string | null
+}
+
+type RemoteArchive = {
+  id: string
+  kind: ArchiveKind
+  title: string
+  subtitle: string
+  archivedAt: string | Date
+  payload: ArchivedItem['payload']
 }
 
 type RemoteReligious = {
@@ -308,7 +317,7 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
 }
 
 export async function hydrateRemoteData() {
-  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse, reminders, entertainment, journal, reviewResponse] = await Promise.all([
+  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse, reminders, entertainment, journal, reviewResponse, archive] = await Promise.all([
     request<{ items: RemoteTask[] }>('/api/tasks'),
     request<{ items: RemoteNote[] }>('/api/notes'),
     request<{ items: RemoteHabit[] }>('/api/habits'),
@@ -323,6 +332,7 @@ export async function hydrateRemoteData() {
     request<{ items: RemoteEntertainment[] }>('/api/entertainment'),
     request<{ entries: RemoteJournal[] }>('/api/journal'),
     request<{ review: RemoteWeeklyReview }>('/api/review'),
+    request<{ items: RemoteArchive[] }>('/api/archive'),
   ])
   return {
     tasks: tasks?.items?.map(mapRemoteTask) ?? null,
@@ -348,6 +358,7 @@ export async function hydrateRemoteData() {
     entertainment: entertainment?.items?.map(mapRemoteEntertainment) ?? null,
     journal: journal?.entries?.map(mapRemoteJournal) ?? null,
     weeklyReview: reviewResponse?.review ? mapRemoteWeeklyReview(reviewResponse.review) : null,
+    archive: archive?.items?.map((item) => ({ ...item, archivedAt: typeof item.archivedAt === 'string' ? item.archivedAt : new Date(item.archivedAt).toISOString() })) ?? null,
   }
 }
 
@@ -361,6 +372,10 @@ export function updateRemoteJournal(id: string, patch: Partial<Pick<JournalEntry
 
 export function archiveRemoteJournal(id: string) {
   return request<{ ok: boolean }>(`/api/journal/${id}`, { method: 'DELETE' })
+}
+
+export function restoreRemoteArchive(kind: ArchiveKind, id: string) {
+  return request<{ item: unknown }>(`/api/archive/${kind}/${id}`, { method: 'PATCH' })
 }
 
 export function createRemoteEntertainment(input: Omit<EntertainmentItem, 'id' | 'createdAt'>) {

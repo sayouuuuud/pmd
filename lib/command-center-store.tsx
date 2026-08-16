@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteTask, updateRemoteWeeklyReview } from './backend-sync'
+import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 
 type Priority = 'high' | 'medium' | 'low'
 type TaskStatus = 'todo' | 'in-progress' | 'done'
@@ -165,6 +165,17 @@ export type JournalEntry = {
   updatedAt: string
 }
 
+export type ArchiveKind = 'task' | 'note' | 'habit' | 'goal' | 'project' | 'finance' | 'reminder' | 'entertainment' | 'journal'
+export type ArchivedPayload = Task | Note | Habit | Goal | Project | FinanceEntry | Reminder | EntertainmentItem | JournalEntry
+export type ArchivedItem = {
+  id: string
+  kind: ArchiveKind
+  title: string
+  subtitle: string
+  archivedAt: string
+  payload: ArchivedPayload
+}
+
 type CommandCenterContextValue = {
   exportData: () => string
   importData: (raw: string) => { ok: boolean; message: string }
@@ -183,6 +194,7 @@ type CommandCenterContextValue = {
   entertainment: EntertainmentItem[]
   journal: JournalEntry[]
   weeklyReview: WeeklyReview
+  archive: ArchivedItem[]
   updateProfile: (patch: Partial<Profile>) => void
   completeOnboarding: (profile: Omit<Profile, 'onboardingComplete'>) => void
   toggleTask: (id: string) => void
@@ -215,6 +227,8 @@ type CommandCenterContextValue = {
   saveJournalEntry: (input: Pick<JournalEntry, 'localDate' | 'title' | 'body' | 'mood'> & Partial<Pick<JournalEntry, 'id'>>) => void
   updateJournalEntry: (id: string, patch: Partial<Pick<JournalEntry, 'localDate' | 'title' | 'body' | 'mood'>>) => void
   archiveJournalEntry: (id: string) => void
+  archiveHabit: (id: string) => void
+  restoreArchivedItem: (id: string) => void
   saveWeeklyReview: (patch: Pick<WeeklyReview, 'wentWell' | 'blockers' | 'nextGoal'> & Partial<Pick<WeeklyReview, 'status'>>) => void
   addNote: (input: Pick<Note, 'title' | 'body' | 'tag'>) => void
   toggleNotePin: (id: string) => void
@@ -319,10 +333,10 @@ const initialJournal: JournalEntry[] = [
 
 const STORAGE_KEY = 'personal-command-center-state-v2'
 const initialWeeklyReview: WeeklyReview = { id: 'weekly-review-current', weekStart: '2026-08-10', weekEnd: '2026-08-16', wentWell: '', blockers: '', nextGoal: '', status: 'draft', updatedAt: 'لم تُحفظ بعد' }
-type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview }
+type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview; archive: ArchivedItem[] }
 
 function getDefaultState(): PersistedState {
-  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview }
+  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview, archive: [] }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -360,6 +374,7 @@ function normalizeState(value: unknown): PersistedState | null {
     entertainment: arrayOr(source.entertainment, defaults.entertainment),
     journal: arrayOr(source.journal, defaults.journal),
     weeklyReview: { ...defaults.weeklyReview, ...weeklyReview },
+    archive: arrayOr(source.archive, defaults.archive),
   }
 }
 
@@ -393,16 +408,17 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [entertainment, setEntertainment] = useState<EntertainmentItem[]>(initial.entertainment)
   const [journal, setJournal] = useState<JournalEntry[]>(initial.journal)
   const [weeklyReview, setWeeklyReview] = useState<WeeklyReview>(initial.weeklyReview ?? initialWeeklyReview)
+  const [archive, setArchive] = useState<ArchivedItem[]>(initial.archive ?? [])
   const remoteHydrated = useRef(false)
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview }))
-  }, [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview])
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive }))
+  }, [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
 
   useEffect(() => {
     if (remoteHydrated.current) return
     remoteHydrated.current = true
-    void hydrateRemoteData().then(({ tasks: remoteTasks, notes: remoteNotes, habits: remoteHabits, planItems: remotePlanItems, goals: remoteGoals, projects: remoteProjects, financeEntries: remoteFinanceEntries, budget: remoteBudget, profile: remoteProfile, religious: remoteReligious, reminders: remoteReminders, entertainment: remoteEntertainment, journal: remoteJournal, weeklyReview: remoteWeeklyReview }) => {
+    void hydrateRemoteData().then(({ tasks: remoteTasks, notes: remoteNotes, habits: remoteHabits, planItems: remotePlanItems, goals: remoteGoals, projects: remoteProjects, financeEntries: remoteFinanceEntries, budget: remoteBudget, profile: remoteProfile, religious: remoteReligious, reminders: remoteReminders, entertainment: remoteEntertainment, journal: remoteJournal, weeklyReview: remoteWeeklyReview, archive: remoteArchive }) => {
       if (remoteTasks) setTasks(remoteTasks)
       if (remoteNotes) setNotes(remoteNotes)
       if (remoteHabits) setHabits(remoteHabits)
@@ -417,13 +433,18 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       if (remoteEntertainment) setEntertainment(remoteEntertainment)
       if (remoteJournal) setJournal(remoteJournal)
       if (remoteWeeklyReview) setWeeklyReview(remoteWeeklyReview)
+      if (remoteArchive) setArchive(remoteArchive)
     })
   }, [])
+
+  const addArchivedItem = (kind: ArchiveKind, payload: ArchivedPayload, subtitle: string) => {
+    setArchive((items) => [{ id: payload.id, kind, title: payload.title, subtitle, archivedAt: new Date().toISOString(), payload }, ...items.filter((item) => item.id !== payload.id || item.kind !== kind)])
+  }
 
   const value = useMemo<CommandCenterContextValue>(() => ({
     profile,
     tasks,
-    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 1, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview } }, null, 2),
+    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 2, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive } }, null, 2),
     importData: (raw) => {
       try {
         const next = normalizeState(JSON.parse(raw))
@@ -442,6 +463,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         setEntertainment(next.entertainment)
         setJournal(next.journal)
         setWeeklyReview(next.weeklyReview)
+        setArchive(next.archive)
         return { ok: true, message: 'تمت استعادة النسخة الاحتياطية محليًا.' }
       } catch {
         return { ok: false, message: 'تعذر قراءة ملف النسخة الاحتياطية.' }
@@ -464,6 +486,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setEntertainment(defaults.entertainment)
       setJournal(defaults.journal)
       setWeeklyReview(defaults.weeklyReview)
+      setArchive(defaults.archive)
     },
     notes,
     habits,
@@ -477,6 +500,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     entertainment,
     journal,
     weeklyReview,
+    archive,
     updateProfile: (patch) => {
       setProfile((current) => ({ ...current, ...patch }))
       void updateRemoteProfile(patch)
@@ -509,6 +533,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void updateRemoteTask(id, patch)
     },
     archiveTask: (id) => {
+      const item = tasks.find((task) => task.id === id)
+      if (!item) return
+      addArchivedItem('task', item, `المهام · ${item.category}`)
       setTasks((items) => items.filter((task) => task.id !== id))
       void archiveRemoteTask(id)
     },
@@ -522,6 +549,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void updateRemoteGoal(id, patch)
     },
     archiveGoal: (id) => {
+      const item = goals.find((goal) => goal.id === id)
+      if (!item) return
+      addArchivedItem('goal', item, `الأهداف · ${item.targetLabel}`)
       setGoals((items) => items.filter((goal) => goal.id !== id))
       setProjects((items) => items.map((project) => project.goalId === id ? { ...project, goalId: undefined } : project))
       void archiveRemoteGoal(id)
@@ -536,6 +566,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void updateRemoteProject(id, patch)
     },
     archiveProject: (id) => {
+      const item = projects.find((project) => project.id === id)
+      if (!item) return
+      addArchivedItem('project', item, `المشاريع · ${item.dueLabel}`)
       setProjects((items) => items.filter((project) => project.id !== id))
       void archiveRemoteProject(id)
     },
@@ -549,6 +582,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void updateRemoteFinanceEntry(id, patch)
     },
     archiveFinanceEntry: (id) => {
+      const item = financeEntries.find((entry) => entry.id === id)
+      if (!item) return
+      addArchivedItem('finance', item, `الفلوس · ${item.category}`)
       setFinanceEntries((items) => items.filter((entry) => entry.id !== id))
       void archiveRemoteFinanceEntry(id)
     },
@@ -617,6 +653,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       }))
     },
     archiveReminder: (id) => {
+      const item = reminders.find((reminder) => reminder.id === id)
+      if (!item) return
+      addArchivedItem('reminder', item, `التذكيرات · ${item.dueAt}`)
       setReminders((items) => items.filter((reminder) => reminder.id !== id))
       void archiveRemoteReminder(id)
     },
@@ -647,7 +686,10 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void updateRemoteEntertainment(id, { status })
     },
     archiveEntertainment: (id) => {
-      setEntertainment((items) => items.filter((item) => item.id !== id))
+      const item = entertainment.find((entry) => entry.id === id)
+      if (!item) return
+      addArchivedItem('entertainment', item, `الترفيه · ${item.type === 'movie' ? 'فيلم' : 'مسلسل'}`)
+      setEntertainment((items) => items.filter((entry) => entry.id !== id))
       void archiveRemoteEntertainment(id)
     },
     saveJournalEntry: (input) => {
@@ -669,6 +711,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void updateRemoteJournal(id, patch)
     },
     archiveJournalEntry: (id) => {
+      const item = journal.find((entry) => entry.id === id)
+      if (!item) return
+      addArchivedItem('journal', item, `اليوميات · ${item.localDate}`)
       setJournal((items) => items.filter((entry) => entry.id !== id))
       void archiveRemoteJournal(id)
     },
@@ -692,8 +737,35 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       }))
     },
     archiveNote: (id) => {
+      const item = notes.find((note) => note.id === id)
+      if (!item) return
+      addArchivedItem('note', item, `الملاحظات · ${item.tag}`)
       setNotes((items) => items.filter((note) => note.id !== id))
       void archiveRemoteNote(id)
+    },
+    archiveHabit: (id) => {
+      const item = habits.find((habit) => habit.id === id)
+      if (!item) return
+      addArchivedItem('habit', item, `العادات · ${item.target}`)
+      setHabits((items) => items.filter((habit) => habit.id !== id))
+      void fetch(`/api/habits/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => null)
+    },
+    restoreArchivedItem: (id) => {
+      const item = archive.find((entry) => entry.id === id)
+      if (!item) return
+      setArchive((items) => items.filter((entry) => !(entry.id === id && entry.kind === item.kind)))
+      switch (item.kind) {
+        case 'task': setTasks((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Task, ...items]); break
+        case 'note': setNotes((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Note, ...items]); break
+        case 'habit': setHabits((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Habit, ...items]); break
+        case 'goal': setGoals((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Goal, ...items]); break
+        case 'project': setProjects((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Project, ...items]); break
+        case 'finance': setFinanceEntries((items) => items.some((entry) => entry.id === id) ? items : [item.payload as FinanceEntry, ...items]); break
+        case 'reminder': setReminders((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Reminder, ...items]); break
+        case 'entertainment': setEntertainment((items) => items.some((entry) => entry.id === id) ? items : [item.payload as EntertainmentItem, ...items]); break
+        case 'journal': setJournal((items) => items.some((entry) => entry.id === id) ? items : [item.payload as JournalEntry, ...items]); break
+      }
+      void restoreRemoteArchive(item.kind, id)
     },
     toggleHabit: (id) => {
       setHabits((items) => items.map((habit) => {
@@ -716,7 +788,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'snoozed' } : item))
       void updateRemotePlanItem(id, { status: 'snoozed' })
     },
-  }), [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview])
+  }), [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

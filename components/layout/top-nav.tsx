@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
   AlignJustify,
+  Archive,
   Bell,
   BookHeart,
   CalendarCheck2,
@@ -40,6 +41,7 @@ const navItems = [
   { href: '/money', label: 'الفلوس', icon: Wallet },
   { href: '/entertainment', label: 'الترفيه', icon: Clapperboard },
   { href: '/religious', label: 'الديني', icon: Moon },
+  { href: '/archive', label: 'الأرشيف', icon: Archive },
   { href: '/account', label: 'حسابي', icon: Settings },
 ]
 

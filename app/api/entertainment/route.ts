@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { entertainmentItem } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   try {
     const db = getDb()
     const items = await db.select().from(entertainmentItem)
-      .where(eq(entertainmentItem.userId, currentUser.id))
+      .where(and(eq(entertainmentItem.userId, currentUser.id), isNull(entertainmentItem.archivedAt)))
       .orderBy(desc(entertainmentItem.updatedAt))
       .limit(500)
     return json({ items })
@@ -58,6 +58,7 @@ export async function POST(request: Request) {
       impression: textValue(body.impression, '', 4000) || null,
       recommend: booleanValue(body.recommend),
       downloadWanted: booleanValue(body.downloadWanted),
+      archivedAt: null,
       updatedAt: new Date(),
     }).returning()
     return json({ item }, { status: 201 })
