@@ -3,6 +3,7 @@
 import { AlertCircle, ArrowDownLeft, ArrowUpRight, Archive, Banknote, CalendarDays, ChartNoAxesColumn, Plus, RotateCcw, Wallet } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ContentCard } from '@/components/ui/content-card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type FinanceKind, type FinanceRecurrence } from '@/lib/command-center-store'
 
 const categoryOptions = ['بيت', 'أكل', 'تنقل', 'شغل', 'صحة', 'ترفيه', 'دخل', 'عام']
@@ -145,7 +146,7 @@ export function MoneyWorkspace() {
               <div className="mb-1 flex items-center justify-between gap-3 text-sm"><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />{item.category}</span><span className="text-muted-foreground">{item.percentage}% · {formatAmount(item.value, budget.currency)}</span></div>
               <div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full" style={{ width: `${item.percentage}%`, backgroundColor: item.color }} /></div>
             </div>)}
-            {categoryTotals.length === 0 && <div className="rounded-2xl bg-muted px-4 py-8 text-center text-sm text-muted-foreground">سجّل أول مصروف علشان يظهر التحليل.</div>}
+            {categoryTotals.length === 0 && <EmptyState icon={ChartNoAxesColumn} title="لسه مفيش تحليل" description="سجّل أول مصروف علشان يظهر توزيع إنفاقك حسب التصنيف." />}
           </div>
         </div>
       </ContentCard>
@@ -177,7 +178,7 @@ export function MoneyWorkspace() {
             <button type="button" onClick={() => recordRecurring(entry)} className="rounded-2xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">سجّل اليوم</button>
           </article>
         })}
-        {recurringEntries.length === 0 && <div className="rounded-2xl bg-muted px-4 py-8 text-center text-sm text-muted-foreground">لا توجد مصروفات متكررة. فعّل التكرار أثناء تسجيل الإيجار أو الاشتراك.</div>}
+        {recurringEntries.length === 0 && <EmptyState icon={RotateCcw} title="لا توجد مصروفات متكررة" description="فعّل التكرار أثناء تسجيل الإيجار أو الاشتراك لتظهر العمليات هنا." />}
       </div>
     </ContentCard>
 
@@ -216,7 +217,7 @@ export function MoneyWorkspace() {
             <span className={`text-sm font-semibold ${entry.kind === 'income' ? 'text-success' : 'text-foreground'}`}>{entry.kind === 'income' ? '+' : '-'}{formatAmount(entry.amount, budget.currency)}</span>
             <button type="button" onClick={() => archiveFinanceEntry(entry.id)} aria-label="أرشفة العملية" className="rounded-full p-2 text-muted-foreground hover:bg-warning"><Archive className="h-4 w-4" /></button>
           </article>)}
-          {monthEntries.length === 0 && <div className="rounded-2xl bg-muted px-4 py-10 text-center text-sm text-muted-foreground">لا توجد عمليات لهذا الشهر حتى الآن.</div>}
+          {monthEntries.length === 0 && <EmptyState icon={Wallet} title="لا توجد عمليات هذا الشهر" description="سجّل أول دخل أو مصروف علشان تتابع حركة الشهر." />}
         </div>
       </ContentCard>
     </div>
