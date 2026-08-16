@@ -49,6 +49,12 @@ const memorizationStatusOptions: Array<{ value: MemorizationSurahStatus; label: 
   { value: 'memorized', label: 'حفظتها' },
 ]
 
+const memorizationReviewGuidance: Record<MemorizationSurahStatus, { nextReview: string; guidance: string }> = {
+  learning: { nextReview: 'اليوم', guidance: 'جلسة حفظ جديدة' },
+  reviewing: { nextReview: 'غدًا', guidance: 'مراجعة قريبة' },
+  memorized: { nextReview: 'بعد 7 أيام', guidance: 'مراجعة تثبيت' },
+}
+
 const calculationMethods: Record<string, string> = {
   مخصص: '5',
   'الهيئة المصرية العامة للمساحة': '5',
@@ -136,6 +142,11 @@ export function ReligiousWorkspace() {
   const memorizationPercent = Math.round((memorizationCompleted / Math.max(memorizationTarget, 1)) * 100)
   const memorizationSurahStatus = religious.quran.memorizationSurahStatus ?? {}
   const memorizedSurahCount = memorizationSurahOptions.filter(({ number }) => memorizationSurahStatus[number] === 'memorized').length
+  const memorizationReviewRows = memorizationSurahOptions.map((surah) => {
+    const status = memorizationSurahStatus[surah.number] ?? 'learning'
+    const statusLabel = memorizationStatusOptions.find((option) => option.value === status)?.label ?? 'بحفظها'
+    return { ...surah, status, statusLabel, ...memorizationReviewGuidance[status] }
+  })
   const prayerHistory = religious.prayerHistory ?? []
   const orderedPrayerHistory = prayerHistory.slice().sort((left, right) => left.localDate.localeCompare(right.localDate))
   const prayerHistoryByDate = new Map(orderedPrayerHistory.map((day) => [day.localDate, day]))
@@ -378,6 +389,7 @@ export function ReligiousWorkspace() {
         <ContentCard title="خطة الحفظ" description="تقدم تقريبي تحفظه أنت؛ لا يتم تخزين نص الآيات." action={<BookOpen className="h-5 w-5 text-primary" />}>
           <div className="flex items-center justify-between text-sm"><span>الإنجاز الحالي</span><strong>{memorizationCompleted} من {memorizationTarget} آيات</strong></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, memorizationPercent)}%` }} /></div><div className="mt-2 flex items-center justify-between text-xs text-muted-foreground"><span>{memorizationPercent}% مكتمل</span><span>المتبقي {Math.max(0, memorizationTarget - memorizationCompleted)}</span></div>          <div className="mt-4 flex gap-2"><Button size="sm" variant="outline" onClick={() => addMemorizationProgress(1)}><Plus className="ms-1 h-3.5 w-3.5" /> آية</Button><Button size="sm" onClick={() => addMemorizationProgress(3)}>أنجزت 3 آيات</Button></div>
           <div className="mt-5 rounded-2xl border border-border bg-background/70 p-3"><div className="flex items-center justify-between gap-3"><span className="text-xs font-semibold text-muted-foreground">حالة السور</span><span className="text-[11px] text-muted-foreground">{memorizedSurahCount} من {memorizationSurahOptions.length} محفوظة</span></div><div className="mt-3 grid gap-2 sm:grid-cols-2">{memorizationSurahOptions.map(({ number, name }) => { const status = memorizationSurahStatus[number] ?? 'learning'; return <label key={number} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs"><span className="min-w-0 font-medium">{number} — {name}</span><select aria-label={`حالة حفظ سورة ${name}`} value={status} onChange={(event) => setMemorizationSurahStatus(number, event.currentTarget.value as MemorizationSurahStatus)} className="min-w-0 rounded-lg border border-border bg-background px-2 py-1.5 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">{memorizationStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label> })}</div></div>
+          <div className="mt-4 rounded-2xl border border-border bg-background/70 p-3"><div className="flex items-center justify-between gap-3"><span className="text-xs font-semibold text-muted-foreground">جدول المراجعة المقترح</span><span className="text-[11px] text-muted-foreground">يتغير حسب حالة كل سورة</span></div><div className="mt-3 space-y-2" role="table" aria-label="جدول مراجعة السور المقترح"><div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2 px-2 text-[11px] text-muted-foreground" role="row"><span role="columnheader">السورة</span><span role="columnheader">المراجعة</span><span role="columnheader">الخطة</span></div>{memorizationReviewRows.map((row) => <div key={row.number} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-xl bg-muted/40 px-2 py-2 text-xs" role="row"><span className="min-w-0 font-medium" role="cell">{row.number} — {row.name}<span className="mt-0.5 block text-[10px] text-muted-foreground">{row.statusLabel}</span></span><span className="whitespace-nowrap text-muted-foreground" role="cell">{row.nextReview}</span><span className="whitespace-nowrap rounded-lg bg-accent px-2 py-1 text-[10px] text-accent-foreground" role="cell">{row.guidance}</span></div>)}</div><p className="mt-3 text-[11px] text-muted-foreground">هذا اقتراح تنظيمي قابل للتعديل، وليس تذكيرًا تلقائيًا أو حكمًا دينيًا.</p></div>
         </ContentCard>
         <ContentCard title="السنن والنوافل" description="قائمة تذكير يومية محلية قابلة للتعديل من هاتفك." action={<Sparkles className="h-5 w-5 text-primary" />}><div className="grid gap-2">{[['duha', 'صلاة الضحى'], ['witr', 'الوتر'], ['rawatib', 'السنن الرواتب'], ['sadaqah', 'صدقة أو إحسان']].map(([id, label]) => <button key={id} type="button" onClick={() => toggleSunnah(id as 'duha' | 'witr' | 'rawatib' | 'sadaqah')} className={`flex items-center gap-3 rounded-2xl border p-3 text-right text-sm transition-colors ${religious.dhikr.sunnahChecks?.[id as 'duha' | 'witr' | 'rawatib' | 'sadaqah'] ? 'border-primary/30 bg-primary/8' : 'border-border bg-background hover:bg-muted'}`}><span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${religious.dhikr.sunnahChecks?.[id as 'duha' | 'witr' | 'rawatib' | 'sadaqah'] ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{religious.dhikr.sunnahChecks?.[id as 'duha' | 'witr' | 'rawatib' | 'sadaqah'] && <Check className="h-3 w-3" />}</span><span className="flex-1">{label}</span></button>)}</div></ContentCard>
       </div>
