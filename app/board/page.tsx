@@ -1,5 +1,5 @@
 import { LayoutPanelLeft } from 'lucide-react'
-import { BoardWorkspace } from '@/components/board/board-workspace'
+import { BoardWorkspaceLazy } from '@/components/board/board-workspace-lazy'
 import { PageShell } from '@/components/layout/page-shell'
 
 export default function BoardPage() {
@@ -9,7 +9,7 @@ export default function BoardPage() {
       description="مساحة حرة تحط فيها Sticky Notes وترتب أفكارك بصريًا"
       icon={LayoutPanelLeft}
     >
-      <BoardWorkspace />
+      <BoardWorkspaceLazy />
     </PageShell>
   )
 }

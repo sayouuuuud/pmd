@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Cairo } from 'next/font/google'
 import './globals.css'
 import { CommandCenterProvider } from '@/lib/command-center-store'
+import { PwaRegister } from '@/components/pwa/pwa-register'
 
 const _cairo = Cairo({ subsets: ['arabic', 'latin'] })
 
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
   title: 'المساحة الشخصية | لوحة التحكم',
   description: 'لوحة تحكم شخصية شاملة لتنظيم المهام والملاحظات والعادات والحياة اليومية',
   generator: 'v0.app',
+  manifest: '/manifest.json',
   icons: {
     icon: [
       {
@@ -43,6 +45,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className="bg-background">
       <body className="font-sans antialiased">
+        <PwaRegister />
         <CommandCenterProvider>
           {children}
         </CommandCenterProvider>

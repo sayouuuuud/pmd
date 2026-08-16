@@ -1,6 +1,6 @@
 import { Moon } from 'lucide-react'
 import { PageShell } from '@/components/layout/page-shell'
-import { ReligiousWorkspace } from '@/components/religious/religious-workspace'
+import { ReligiousWorkspaceLazy } from '@/components/religious/religious-workspace-lazy'
 
 export const metadata = {
   title: 'القسم الديني | مركز القيادة الشخصي',
@@ -10,7 +10,7 @@ export const metadata = {
 export default function ReligiousPage() {
   return (
     <PageShell title="القسم الديني" description="تتبع الصلوات، الورد، والأذكار بهدوء واستمرارية." icon={Moon}>
-      <ReligiousWorkspace />
+      <ReligiousWorkspaceLazy />
     </PageShell>
   )
 }

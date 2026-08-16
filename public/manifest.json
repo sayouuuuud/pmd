@@ -1,0 +1,26 @@
+{
+  "name": "المساحة الشخصية | مركز القيادة",
+  "short_name": "مساحتي",
+  "description": "نظام تشغيل شخصي عربي لتنظيم اليوم والمهام والعادات والحياة.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ededf0",
+  "theme_color": "#ededf0",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
