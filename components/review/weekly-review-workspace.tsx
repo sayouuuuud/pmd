@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, CircleAlert, ClipboardCheck, Clapperboard, Flame, HeartPulse, Landmark, Save, Target, WalletCards } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, CircleAlert, ClipboardCheck, Clapperboard, Flame, HeartPulse, Landmark, Link2, Save, Target, WalletCards } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter } from '@/lib/command-center-store'
 
@@ -38,6 +38,12 @@ export function WeeklyReviewWorkspace() {
     return { doneTasks, openTasks, doneHabits, prayerCount, prayerRate, fullPrayerDays, completedEntertainment, income, expenses, goalProgress, activeProjects }
   }, [tasks, habits, religious.prayerLogs, religious.prayerHistory, entertainment, financeEntries, goals, projects, weeklyReview.weekStart, weeklyReview.weekEnd])
 
+  const context = useMemo(() => ({
+    openTask: tasks.find((task) => task.status !== 'done'),
+    focusHabit: habits.find((habit) => !habit.doneToday) ?? habits[0],
+    activeProject: projects.find((project) => project.status !== 'done'),
+    activeGoal: goals.find((goal) => goal.status === 'active'),
+  }), [tasks, habits, projects, goals])
   const currency = (amount: number) => `${amount.toLocaleString('ar-EG')} ${'جنيه'}`
   const hasReflection = Boolean(wentWell.trim() || blockers.trim() || nextGoal.trim())
   const isDirty = wentWell !== weeklyReview.wentWell || blockers !== weeklyReview.blockers || nextGoal !== weeklyReview.nextGoal
@@ -89,6 +95,16 @@ export function WeeklyReviewWorkspace() {
           </div>
         </ContentCard>
 
+        <ContentCard className="lg:col-span-12" title="ارجع إلى السياق" description="المراجعة لا تعيش منفصلة عن يومك؛ افتح العنصر الذي يحتاج قرارًا وعدّل ما يلزم.">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {context.openTask && <ContextShortcut href={`/tasks#task-${context.openTask.id}`} label="المهمة المفتوحة" value={context.openTask.title} />}
+            {context.focusHabit && <ContextShortcut href={`/habits#${context.focusHabit.id}`} label="العادة التالية" value={context.focusHabit.title} />}
+            {context.activeProject && <ContextShortcut href={`/projects#${context.activeProject.id}`} label="المشروع النشط" value={context.activeProject.title} />}
+            {context.activeGoal && <ContextShortcut href={`/goals#${context.activeGoal.id}`} label="الهدف النشط" value={context.activeGoal.title} />}
+          </div>
+          {!context.openTask && !context.focusHabit && !context.activeProject && !context.activeGoal && <p className="rounded-2xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">لا توجد عناصر مرتبطة تحتاج قرارًا الآن. يمكنك البدء من خطة اليوم.</p>}
+        </ContentCard>
+
         <ContentCard className="lg:col-span-12" title="مراجعتك المكتوبة" description={`الأسبوع من ${weeklyReview.weekStart} إلى ${weeklyReview.weekEnd}. اكتب بصدق وباختصار؛ المراجعة لك أنت.`}>
           <div className="grid gap-4 lg:grid-cols-3">
             <ReflectionField label="ما الذي سار جيدًا؟" value={wentWell} onChange={setWentWell} placeholder="إنجاز أو عادة أو لحظة تستحق التقدير..." />
@@ -122,6 +138,10 @@ function ReviewMetric({ icon: Icon, label, value, tone }: { icon: typeof CheckCi
 
 function DomainMetric({ icon: Icon, label, value }: { icon: typeof WalletCards; label: string; value: string | number }) {
   return <div className="rounded-2xl bg-muted/70 p-3"><Icon className="h-4 w-4 text-primary" /><p className="mt-3 text-[11px] text-muted-foreground">{label}</p><p className="mt-1 text-sm font-semibold">{value}</p></div>
+}
+
+function ContextShortcut({ href, label, value }: { href: string; label: string; value: string }) {
+  return <Link href={href} className="group rounded-2xl border border-border/70 bg-muted/70 p-3 transition-colors hover:border-primary/40 hover:bg-card"><span className="flex items-center gap-2 text-[11px] text-muted-foreground"><Link2 className="h-3.5 w-3.5 text-primary" />{label}</span><span className="mt-2 block truncate text-sm font-semibold group-hover:text-primary">{value}</span><span className="mt-1 block text-[10px] text-muted-foreground">فتح السياق</span></Link>
 }
 
 function ReflectionField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
