@@ -499,3 +499,8 @@
 - **التحقق:** TypeScript وESLint و`git diff --check` و`next build` ناجحة. اختبار المتصفح أثبت الحفظ، الإلغاء، إعادة التحميل، RTL، واختفاء hydration Issue.
 - **التفاصيل:** `verification/notes-inline-edit-browser.md`.
 - **الحالة:** مكتمل محليًا، وجاهز للـcommit والدفع بعد مراجعة diff النهائية.
+
+
+## 2026-08-17 — عداد الصلاة في Dashboard
+
+أضيفت بطاقة عداد الصلاة القادمة إلى `/` باستخدام utility مشتركة في `lib/prayer-countdown.ts` بدل تكرار منطق الحساب بين Dashboard و`/religious`. تبدأ ساعة Dashboard بعد hydration وتُحدّث كل ثانية، وتعرض اسم الصلاة وموعدها ووسم «غدًا» عند الانتقال لليوم التالي، مع fallback آمن يعرض الصلاة pending قبل جاهزية الساعة. اختُبرت الصفحة بصريًا وقرئت قيمة العداد من DOM؛ انتقلت من `7س 36د 11ث` إلى `7س 36د 10ث` بعد 1.5 ثانية. نجحت TypeScript وESLint و`git diff --check` و`next build`. التفاصيل في `verification/dashboard-prayer-countdown-browser.md`.

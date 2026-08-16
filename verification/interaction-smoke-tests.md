@@ -244,3 +244,8 @@
 ## 2026-08-17 — تحرير الملاحظات inline وإصلاح hydration
 
 فُتحت `/notes` واختُبر زر `تعديل الملاحظة` على الملاحظة الأولى. غُيّر العنوان والمحتوى والتصنيف إلى «تطوير»، ثم حُفظت القيم وانعكست مباشرة في البطاقة. فُتح تحرير الملاحظة الثانية ثم أُلغي، فعادت إلى وضع العرض دون تغيير. بعد إعادة تحميل الصفحة بقي التعديل محفوظًا عبر localStorage fallback. أثناء الاختبار الأول ظهر React hydration Issue لأن المتجر كان يقرأ localStorage أثناء render؛ عولجت التهيئة بتحميل defaults أثناء SSR وlocalStorage داخل effect، ثم اختفى Issue بعد إعادة الفتح. وحدة التحكم بعد الإصلاح أظهرت React DevTools وHMR فقط دون أخطاء JavaScript أو hydration أو runtime. نجحت بوابات TypeScript وESLint و`git diff --check` و`next build`. التفاصيل في `verification/notes-inline-edit-browser.md`.
+
+
+## 2026-08-17 — عداد الصلاة في Dashboard
+
+فُتحت الصفحة الرئيسية `/` وتحققت بصريًا من بطاقة «الصلوات» وظهور الصلاة القادمة وموعدها ووسم «غدًا» عند الانتقال لليوم التالي. قُرئت قيمة العداد من عنصر `aria-label`؛ انتقلت من `7س 36د 11ث` إلى `7س 36د 10ث` بعد 1.5 ثانية، ما يثبت التحديث كل ثانية. بقيت أزرار الصلوات وروابط متابعة الصلاة ظاهرة ضمن RTL، ولم تظهر أخطاء JavaScript أو hydration. نُقل منطق الحساب إلى utility مشتركة تستخدمها Dashboard و`/religious`. التفاصيل في `verification/dashboard-prayer-countdown-browser.md`.

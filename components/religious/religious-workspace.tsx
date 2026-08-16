@@ -6,6 +6,7 @@ import { BarChart3, BookOpen, Check, Clock3, Compass, Flame, Forward, Heart, Loa
 import { Button, buttonVariants } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { isPrayerCompletedStatus, type MemorizationSurahStatus, type PrayerStatus, useCommandCenter } from '@/lib/command-center-store'
+import { formatPrayerCountdown, getNextPrayerCountdown } from '@/lib/prayer-countdown'
 
 const prayerIcons: Record<string, typeof Sunrise> = {
   الفجر: Sunrise,
@@ -72,39 +73,6 @@ function shiftDateKey(localDate: string, offset: number) {
   const date = new Date(`${localDate}T00:00:00Z`)
   date.setUTCDate(date.getUTCDate() + offset)
   return date.toISOString().slice(0, 10)
-}
-
-function parsePrayerTimestamp(time: string, baseDate: Date) {
-  const match = time.match(/^(\d{1,2}):(\d{2})/)
-  if (!match) return null
-  const date = new Date(baseDate)
-  date.setHours(Number(match[1]), Number(match[2]), 0, 0)
-  return date.getTime()
-}
-
-function getNextPrayerCountdown(prayers: Array<{ name: string; time: string }>, nowMs: number) {
-  if (!nowMs) return null
-  const now = new Date(nowMs)
-  const todayCandidates = prayers
-    .map((prayer) => ({ ...prayer, timestamp: parsePrayerTimestamp(prayer.time, now) }))
-    .filter((prayer): prayer is { name: string; time: string; timestamp: number } => prayer.timestamp !== null && prayer.timestamp > nowMs)
-    .sort((left, right) => left.timestamp - right.timestamp)
-  if (todayCandidates[0]) return { ...todayCandidates[0], remainingMs: todayCandidates[0].timestamp - nowMs, tomorrow: false }
-  const tomorrow = new Date(now)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowCandidate = prayers
-    .map((prayer) => ({ ...prayer, timestamp: parsePrayerTimestamp(prayer.time, tomorrow) }))
-    .filter((prayer): prayer is { name: string; time: string; timestamp: number } => prayer.timestamp !== null)
-    .sort((left, right) => left.timestamp - right.timestamp)[0]
-  return tomorrowCandidate ? { ...tomorrowCandidate, remainingMs: tomorrowCandidate.timestamp - nowMs, tomorrow: true } : null
-}
-
-function formatPrayerCountdown(milliseconds: number) {
-  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000))
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
-  return `${hours}س ${String(minutes).padStart(2, '0')}د ${String(seconds).padStart(2, '0')}ث`
 }
 
 type TimingState = 'idle' | 'loading' | 'success' | 'error'

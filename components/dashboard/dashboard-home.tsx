@@ -1,11 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, BookHeart, CalendarCheck2, Check, CircleDot, Clock3, Flame, ListPlus, NotebookPen, Repeat, Sparkles, WalletCards, X } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { TopNav } from '@/components/layout/top-nav'
 import { isPrayerCompletedStatus, type PrayerStatus, useCommandCenter } from '@/lib/command-center-store'
+import { formatPrayerCountdown, getNextPrayerCountdown } from '@/lib/prayer-countdown'
 
 function formatDate() {
   return new Intl.DateTimeFormat('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', calendar: 'gregory' }).format(new Date())
@@ -21,6 +22,12 @@ export function DashboardHome() {
   const [suggestionDecisions, setSuggestionDecisions] = useState<Record<string, 'accepted' | 'edited'>>({})
   const [editingSuggestion, setEditingSuggestion] = useState<string | null>(null)
   const [suggestionEdits, setSuggestionEdits] = useState<Record<string, string>>({})
+  const [clockMs, setClockMs] = useState(0)
+  useEffect(() => {
+    setClockMs(Date.now())
+    const interval = window.setInterval(() => setClockMs(Date.now()), 1000)
+    return () => window.clearInterval(interval)
+  }, [])
   const doneTasks = tasks.filter((task) => task.status === 'done').length
   const doneHabits = habits.filter((habit) => habit.doneToday).length
   const completedPlan = planItems.filter((item) => item.status === 'done').length
@@ -30,7 +37,8 @@ export function DashboardHome() {
   const maxStreak = habits.length > 0 ? Math.max(...habits.map((habit) => habit.streak)) : 0
   const completedPrayers = religious.prayerLogs.filter((prayer) => isPrayerCompletedStatus(prayer.status)).length
   const prayerPercent = Math.round((completedPrayers / Math.max(religious.prayerLogs.length, 1)) * 100)
-  const nextPrayer = religious.prayerLogs.find((prayer) => prayer.status === 'pending')
+  const nextPendingPrayer = religious.prayerLogs.find((prayer) => prayer.status === 'pending')
+  const nextPrayer = getNextPrayerCountdown(religious.prayerLogs, clockMs)
   const prayerStatusLabels: Record<PrayerStatus, string> = { pending: 'لم تُسجّل', done: 'في وقتها', 'on-time': 'في وقتها', congregation: 'جماعة', qada: 'قضاء', missed: 'فائتة' }
   const wirdPercent = Math.min(100, Math.round((religious.quran.completedMinutes / Math.max(religious.quran.targetMinutes, 1)) * 100))
   const overdueTasks = tasks.filter((task) => task.status !== 'done' && /متأخر|أمس|أول أمس/.test(task.dueLabel))
@@ -84,7 +92,7 @@ export function DashboardHome() {
         <ContentCard className="lg:col-span-4 bg-surface-dark text-surface-dark-foreground" title="اقتراح اليوم" description="اقتراح بسيط قابل للتعديل"><div className="flex items-start gap-3"><Sparkles className="mt-1 h-5 w-5 text-primary" /><p className="text-sm leading-7 text-surface-dark-foreground/80">ابدأ بالمهمة التي تحتاج تركيزًا قبل فتح الإشعارات. لديك مساحة جيدة بين الخطة الحالية والصلاة القادمة.</p></div><div className="mt-5 flex items-center gap-2 text-xs text-surface-dark-foreground/60"><Clock3 className="h-4 w-4" /> اقتراح مبني على خطة اليوم</div></ContentCard>
 
         <ContentCard className="lg:col-span-6" title="الصلوات" description={`${completedPrayers} من ${religious.prayerLogs.length} صلوات مكتملة`} action={<Link href="/religious#prayer-tracker" className="text-xs font-semibold text-primary">{prayerPercent}%</Link>}>
-          <div className="rounded-2xl bg-accent px-3.5 py-3"><p className="text-xs text-accent-foreground">الصلاة القادمة</p><p className="mt-1 text-sm font-semibold text-accent-foreground">{nextPrayer ? `${nextPrayer.name} · ${nextPrayer.time}` : 'أكملت صلوات اليوم'}</p></div>
+          <div className="rounded-2xl bg-accent px-3.5 py-3"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-xs text-accent-foreground">الصلاة القادمة</p><p className="mt-1 text-sm font-semibold text-accent-foreground">{nextPrayer ? `${nextPrayer.name}${nextPrayer.tomorrow ? ' · غدًا' : ''} · ${nextPrayer.time}` : nextPendingPrayer ? `${nextPendingPrayer.name} · ${nextPendingPrayer.time}` : 'أكملت صلوات اليوم'}</p></div>{nextPrayer && <strong className="rounded-xl bg-primary px-3 py-2 text-xs text-primary-foreground" aria-label={`الوقت المتبقي لصلاة ${nextPrayer.name}`}>{formatPrayerCountdown(nextPrayer.remainingMs)}</strong>}</div></div>
           <div className="mt-4 grid grid-cols-5 gap-2">{religious.prayerLogs.map((prayer) => { const complete = isPrayerCompletedStatus(prayer.status); return <button key={prayer.id} type="button" aria-pressed={complete} title={prayerStatusLabels[prayer.status]} onClick={() => togglePrayer(prayer.id)} className="flex min-w-0 flex-col items-center gap-2 rounded-2xl px-1 py-2 text-center transition-colors hover:bg-muted"><span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${complete ? 'border-primary bg-primary text-primary-foreground' : prayer.status === 'missed' ? 'border-destructive text-destructive' : 'border-border text-muted-foreground'}`}>{complete ? <Check className="h-3.5 w-3.5" /> : <span className="text-[10px]">{prayer.time}</span>}</span><span className="truncate text-[10px] text-muted-foreground">{prayer.name}</span><span className="truncate text-[9px] text-muted-foreground">{prayerStatusLabels[prayer.status]}</span></button> })}</div>
           <Link href="/religious#prayer-tracker" className="mt-3 flex items-center justify-between rounded-2xl bg-muted px-3 py-3 text-xs font-semibold">فتح متابعة الصلاة <ArrowLeft className="h-4 w-4" /></Link>
         </ContentCard>
