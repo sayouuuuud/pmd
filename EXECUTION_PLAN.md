@@ -443,3 +443,8 @@
 أضيف هدف ورد يومي قابل للتخصيص داخل `religious.quranProgress.targetMinutes`، مع قائمة عربية بقيم 10 و20 و30 و45 و60 دقيقة في مساحة القسم الديني. أضيف setter موحّد يطبّع الهدف ضمن نطاق آمن ويقلّص `completedMinutes` عند الحاجة، مع استمرار الحفظ المحلي والمزامنة البعيدة. كما وُحّدت طبقات الحالة و`backend-sync` وRoute القسم الديني على نفس التطبيع، مع الحفاظ على القيم القديمة ضمن نطاق الواجهة.
 اختُبرت دورة اختيار 30 دقيقة من `/religious`: انعكس التقدم من 8/20 إلى 8/30 بنسبة 27%، ثم بقيت القيمة بعد إعادة تحميل الصفحة عبر localStorage fallback. فحص وحدة التحكم أظهر رسائل React DevTools وHMR فقط دون أخطاء تطبيقية. نجحت TypeScript وESLint و`git diff --check` و`next build`، والتفاصيل محفوظة في `verification/religious-wird-target-browser.md` و`verification/interaction-smoke-tests.md`.
 يبقى الاختبار الفعلي مع Neon وcredentials مفتوحًا ضمن البنود البيئية، كما تبقى مراجعة العلاقات الإنتاجية وملفات migrations المؤجلة مفتوحة.
+
+### سجل دفعة 2026-08-16 — تحرير المهام inline
+أضيف محرر مباشر داخل بطاقة المهمة في `/tasks` لتحرير العنوان والأولوية والموعد والتصنيف عبر `updateTask` من الحالة الموحدة. يحافظ النموذج على RTL والـsemantic tokens، ويظهر عند hover/focus دون تغيير تخطيط مساحة المهام، مع استمرار المزامنة البعيدة وlocalStorage fallback.
+اختُبرت دورة كاملة على `task-1`: فُتح النموذج، عُدّلت الحقول الأربع، حُفظت التغييرات وانعكست مباشرة في البطاقة، ثم أُعيدت القيم الأصلية وحُفظت الاستعادة. لم تظهر أخطاء JavaScript أو مزامنة في console؛ ظهرت رسائل React DevTools وHMR فقط. نجحت TypeScript وESLint و`git diff --check` و`next build`، والتفاصيل محفوظة في `verification/tasks-edit-browser.md` و`verification/interaction-smoke-tests.md`.
+يبقى الاختبار الفعلي مع Neon وcredentials مفتوحًا ضمن البنود البيئية، ولا توجد بيانات اختبارية متبقية في الحالة المحلية.
