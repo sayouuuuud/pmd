@@ -2,6 +2,7 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { reminder } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
+import { normalizeReminderRepeatLabel } from '@/lib/reminder-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,7 +26,7 @@ export async function PATCH(request: Request, context: Context) {
     if (typeof body.dueAt === 'string' && body.dueAt.trim()) patch.dueAt = body.dueAt.trim()
     if (typeof body.status === 'string' && statuses.has(body.status)) patch.status = body.status
     if (body.sourceId === null || (typeof body.sourceId === 'string' && body.sourceId.trim())) patch.sourceId = typeof body.sourceId === 'string' ? body.sourceId.trim() : null
-    if (body.repeatLabel === null || (typeof body.repeatLabel === 'string' && body.repeatLabel.trim())) patch.repeatLabel = typeof body.repeatLabel === 'string' ? body.repeatLabel.trim() : null
+    if (body.repeatLabel === null || (typeof body.repeatLabel === 'string' && body.repeatLabel.trim())) patch.repeatLabel = body.repeatLabel === null ? null : normalizeReminderRepeatLabel(typeof body.repeatLabel === 'string' ? body.repeatLabel : undefined) ?? null
     if (body.archived === true) patch.archivedAt = new Date()
     patch.updatedAt = new Date()
     const [updated] = await getDb().update(reminder).set(patch).where(and(eq(reminder.id, id), eq(reminder.userId, user.id), isNull(reminder.archivedAt))).returning()

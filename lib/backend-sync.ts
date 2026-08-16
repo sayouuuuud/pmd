@@ -1,4 +1,5 @@
 import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, Note, PlanItem, PrayerHistoryDay, PrayerLog, Profile, Project, QuranPlaylist, QuranPosition, Reminder, ReligiousState, Task, WeeklyReview } from './command-center-store'
+import { normalizeReminderRepeatLabel } from './reminder-utils'
 
 type RemoteProfile = {
   city: string
@@ -311,7 +312,7 @@ export function mapRemoteJournal(item: RemoteJournal): JournalEntry {
 }
 
 export function mapRemoteReminder(item: RemoteReminder): Reminder {
-  return { id: item.id, title: item.title, kind: asReminderKind(item.kind), dueAt: item.dueAt, status: asReminderStatus(item.status), sourceId: item.sourceId ?? undefined, repeatLabel: item.repeatLabel ?? undefined }
+  return { id: item.id, title: item.title, kind: asReminderKind(item.kind), dueAt: item.dueAt, status: asReminderStatus(item.status), sourceId: item.sourceId ?? undefined, repeatLabel: normalizeReminderRepeatLabel(item.repeatLabel) }
 }
 
 function asPrayerStatus(value: string): PrayerLog['status'] {
@@ -463,11 +464,13 @@ export function archiveRemoteEntertainment(id: string) {
 }
 
 export function createRemoteReminder(input: Pick<Reminder, 'title' | 'kind' | 'dueAt'> & Partial<Pick<Reminder, 'sourceId' | 'repeatLabel'>>) {
-  return request<{ item: RemoteReminder }>('/api/reminders', { method: 'POST', body: JSON.stringify(input) })
+  const payload = { ...input, repeatLabel: normalizeReminderRepeatLabel(input.repeatLabel) }
+  return request<{ item: RemoteReminder }>('/api/reminders', { method: 'POST', body: JSON.stringify(payload) })
 }
 
 export function updateRemoteReminder(id: string, patch: Partial<Reminder>) {
-  return request<{ item: RemoteReminder }>(`/api/reminders/${id}`, { method: 'PATCH', body: JSON.stringify(patch) })
+  const payload = patch.repeatLabel === undefined ? patch : { ...patch, repeatLabel: normalizeReminderRepeatLabel(patch.repeatLabel) }
+  return request<{ item: RemoteReminder }>(`/api/reminders/${id}`, { method: 'PATCH', body: JSON.stringify(payload) })
 }
 
 export function archiveRemoteReminder(id: string) {

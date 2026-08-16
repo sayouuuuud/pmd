@@ -2,6 +2,7 @@ import { and, desc, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { reminder } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
+import { normalizeReminderRepeatLabel } from '@/lib/reminder-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
       kind,
       status: 'pending',
       sourceId: typeof body.sourceId === 'string' && body.sourceId.trim() ? body.sourceId.trim() : null,
-      repeatLabel: typeof body.repeatLabel === 'string' && body.repeatLabel.trim() ? body.repeatLabel.trim() : null,
+      repeatLabel: normalizeReminderRepeatLabel(typeof body.repeatLabel === 'string' ? body.repeatLabel : undefined) ?? null,
     }).returning()
     return json({ item: created }, { status: 201 })
   } catch {

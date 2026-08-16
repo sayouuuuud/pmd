@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
+import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
 
 type Priority = 'high' | 'medium' | 'low'
 type TaskStatus = 'todo' | 'in-progress' | 'done'
@@ -392,7 +393,7 @@ const initialReminders: Reminder[] = [
   { id: 'reminder-1', title: 'إكمال تحضير العرض التقديمي', kind: 'task', dueAt: 'اليوم، ١١:٣٠', status: 'pending', sourceId: 'task-3' },
   { id: 'reminder-2', title: 'صلاة الظهر', kind: 'prayer', dueAt: 'اليوم، ١٢:١٥', status: 'pending', sourceId: 'plan-3' },
   { id: 'reminder-3', title: 'ورد القرآن — ٢٠ دقيقة', kind: 'quran', dueAt: 'اليوم، ١٣:٠٠', status: 'pending', sourceId: 'plan-4' },
-  { id: 'reminder-4', title: 'مراجعة الميزانية الشهرية', kind: 'finance', dueAt: 'غدًا، ١٨:٠٠', status: 'pending', repeatLabel: 'شهري' },
+  { id: 'reminder-4', title: 'مراجعة الميزانية الشهرية', kind: 'finance', dueAt: 'غدًا، ١٨:٠٠', status: 'pending', repeatLabel: 'شهريًا', },
 ]
 
 const initialEntertainment: EntertainmentItem[] = [
@@ -921,17 +922,17 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       })
     },
     addReminder: (input) => {
-      const reminder: Reminder = { id: `reminder-${Date.now()}`, status: 'pending', ...input }
+      const reminder: Reminder = { id: `reminder-${Date.now()}`, status: 'pending', ...input, repeatLabel: normalizeReminderRepeatLabel(input.repeatLabel) }
       setReminders((items) => [reminder, ...items])
-      void createRemoteReminder(input)
+      void createRemoteReminder({ ...input, repeatLabel: reminder.repeatLabel })
     },
     toggleReminder: (id) => {
       setReminders((items) => items.map((reminder) => {
         if (reminder.id !== id) return reminder
         if (reminder.status !== 'done' && reminder.repeatLabel) {
-          const nextDueAt = reminder.repeatLabel === 'يوميًا' ? 'غدًا' : reminder.repeatLabel === 'أسبوعيًا' ? 'الأسبوع القادم' : reminder.repeatLabel === 'شهريًا' ? 'الشهر القادم' : reminder.dueAt
-          void updateRemoteReminder(id, { status: 'pending', dueAt: nextDueAt })
-          return { ...reminder, status: 'pending', dueAt: nextDueAt }
+          const nextDueAt = nextReminderDueAt(reminder.repeatLabel, reminder.dueAt)
+          void updateRemoteReminder(id, { status: 'pending', dueAt: nextDueAt, repeatLabel: normalizeReminderRepeatLabel(reminder.repeatLabel) })
+          return { ...reminder, status: 'pending', dueAt: nextDueAt, repeatLabel: normalizeReminderRepeatLabel(reminder.repeatLabel) }
         }
         const status = reminder.status === 'done' ? 'pending' : 'done'
         void updateRemoteReminder(id, { status })
