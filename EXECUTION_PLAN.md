@@ -558,3 +558,10 @@
 - تم اختبار إدخال «مراجعة خطة المنتج» والتحويل، ثم إعادة التحميل؛ بقي الهدف محفوظًا، ووجد فحص localStorage مهمة واحدة فقط بالخصائص المتوقعة.
 - التوثيق: `verification/weekly-review-actionable-goal-browser.md` و`verification/interaction-smoke-tests.md`.
 - الحالة: اختبار المتصفح ناجح؛ بوابات TypeScript وESLint و`git diff --check` ناجحة، وتبقى إعادة تشغيل `next build` قبل commit.
+
+## 2026-08-17 — حفظ آخر آية مقروءة في المصحف
+- أضيف تفاعل «احفظ الموضع» بجوار كل آية في `/religious` مع تمييز الآية المحفوظة وإظهار موضع السورة والآية داخل بطاقة التلاوة.
+- أُعيد استخدام عقد `QuranPosition` و`saveQuranPosition` الحاليين، مع الحفاظ على `positionSeconds` و`reciterId` عند وجودهما ودون إضافة migration أو تخزين نص القرآن.
+- اختبار المتصفح: حُفظت الآية الثانية من سورة الفاتحة، فتحولت الشارة إلى «آخر موضع» وظهر `aria-pressed="true"`، ثم بقيت الحالة بعد إعادة تحميل الصفحة عبر localStorage.
+- نُظفت بيانات الاختبار المحلية بعد التحقق. التفاصيل في `verification/quran-last-read-ayah-browser.md` و`verification/interaction-smoke-tests.md`.
+- النتيجة الحالية: اختبار المتصفح وTypeScript وESLint و`git diff --check` ناجحة؛ يلزم تشغيل `next build` قبل commit.
