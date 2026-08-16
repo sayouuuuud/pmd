@@ -31,10 +31,11 @@ type ReminderSuggestion = {
 
 function sourceHref(sourceId?: string) {
   if (!sourceId) return undefined
-  if (sourceId.startsWith('task-')) return `/tasks#task-${sourceId}`
+  if (sourceId.startsWith('task-')) return `/tasks#${sourceId}`
   if (sourceId.startsWith('habit-')) return `/habits#${sourceId}`
   if (sourceId.startsWith('plan-')) return `/daily-plan#plan-item-${sourceId}`
-  if (sourceId.startsWith('finance-')) return `/money#finance-${sourceId}`
+  if (sourceId.startsWith('finance-')) return `/money#${sourceId}`
+  if (sourceId === 'prayer-tracker' || sourceId === 'quran-progress') return `/religious#${sourceId}`
   return undefined
 }
 
