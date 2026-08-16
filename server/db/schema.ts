@@ -233,6 +233,40 @@ export const reminder = pgTable('reminder', {
   reminderUserUpdatedIndex: uniqueIndex('reminder_user_updated_idx').on(table.userId, table.updatedAt),
 }))
 
+export const journalEntry = pgTable('journal_entry', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  localDate: text('local_date').notNull(),
+  title: text('title').notNull().default('يومياتي'),
+  body: text('body').notNull().default(''),
+  mood: text('mood').notNull().default('محايد'),
+  archivedAt: timestamp('archived_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  journalUserDateIndex: uniqueIndex('journal_entry_user_date_idx').on(table.userId, table.localDate),
+}))
+
+export const entertainmentItem = pgTable('entertainment_item', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  type: text('type').notNull().default('movie'),
+  genre: text('genre').notNull().default('عام'),
+  year: integer('year'),
+  note: text('note'),
+  status: text('status').notNull().default('want'),
+  rating: integer('rating'),
+  impression: text('impression'),
+  recommend: boolean('recommend').notNull().default(false),
+  downloadWanted: boolean('download_wanted').notNull().default(false),
+  archivedAt: timestamp('archived_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  entertainmentUserUpdatedIndex: uniqueIndex('entertainment_user_updated_idx').on(table.userId, table.updatedAt),
+}))
+
 export const weeklyReview = pgTable('weekly_review', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
@@ -266,6 +300,8 @@ export const schema = {
   financeEntry,
   budget,
   reminder,
+  journalEntry,
+  entertainmentItem,
 }
 
 export type GoalRecord = typeof goal.$inferSelect
@@ -276,3 +312,5 @@ export type UserProfileRecord = typeof userProfile.$inferSelect
 export type FinanceEntryRecord = typeof financeEntry.$inferSelect
 export type BudgetRecord = typeof budget.$inferSelect
 export type ReminderRecord = typeof reminder.$inferSelect
+export type JournalEntryRecord = typeof journalEntry.$inferSelect
+export type EntertainmentItemRecord = typeof entertainmentItem.$inferSelect

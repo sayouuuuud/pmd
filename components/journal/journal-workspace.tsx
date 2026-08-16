@@ -1,0 +1,139 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import { BookOpenText, CalendarDays, Check, Clock3, Feather, Save, Smile, Trash2 } from 'lucide-react'
+import { ContentCard } from '@/components/ui/content-card'
+import { JournalEntry, useCommandCenter } from '@/lib/command-center-store'
+
+const moods: JournalEntry['mood'][] = ['سعيد', 'هادئ', 'محايد', 'متعب', 'متوتر']
+
+const moodStyles: Record<JournalEntry['mood'], { icon: string; className: string }> = {
+  سعيد: { icon: '☀', className: 'border-positive/40 bg-positive/10 text-positive-foreground' },
+  هادئ: { icon: '◌', className: 'border-accent/50 bg-accent/40 text-accent-foreground' },
+  محايد: { icon: '—', className: 'border-border bg-muted text-muted-foreground' },
+  متعب: { icon: '◒', className: 'border-warning/40 bg-warning/10 text-warning-foreground' },
+  متوتر: { icon: '×', className: 'border-destructive/30 bg-destructive/10 text-destructive' },
+}
+
+function localDateValue(date: Date) {
+  const offset = date.getTimezoneOffset()
+  return new Date(date.getTime() - offset * 60 * 1000).toISOString().slice(0, 10)
+}
+
+function parseDate(value: string) {
+  const [year, month, day] = value.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
+function formatLongDate(value: string) {
+  return parseDate(value).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function formatShortDate(value: string) {
+  return parseDate(value).toLocaleDateString('ar-EG', { weekday: 'short', day: 'numeric' })
+}
+
+export function JournalWorkspace() {
+  const { journal, saveJournalEntry, updateJournalEntry, archiveJournalEntry } = useCommandCenter()
+  const today = localDateValue(new Date())
+  const [selectedDate, setSelectedDate] = useState(today)
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
+  const [mood, setMood] = useState<JournalEntry['mood']>('محايد')
+  const [notice, setNotice] = useState('')
+
+  const entries = useMemo(() => [...journal].sort((a, b) => b.localDate.localeCompare(a.localDate) || b.updatedAt.localeCompare(a.updatedAt)), [journal])
+  const selectedEntry = journal.find((entry) => entry.localDate === selectedDate)
+
+  const calendarDays = useMemo(() => {
+    const selected = parseDate(selectedDate)
+    return Array.from({ length: 7 }, (_, index) => {
+      const day = new Date(selected)
+      day.setDate(selected.getDate() - 3 + index)
+      return localDateValue(day)
+    })
+  }, [selectedDate])
+
+  useEffect(() => {
+    setTitle(selectedEntry?.title ?? '')
+    setBody(selectedEntry?.body ?? '')
+    setMood(selectedEntry?.mood ?? 'محايد')
+    setNotice('')
+  }, [selectedDate, selectedEntry?.id, selectedEntry?.updatedAt])
+
+  function selectDate(date: string) {
+    setSelectedDate(date)
+  }
+
+  function save() {
+    if (!title.trim() && !body.trim()) {
+      setNotice('اكتب عنوانًا أو سطرًا واحدًا على الأقل قبل الحفظ.')
+      return
+    }
+    if (selectedEntry) {
+      updateJournalEntry(selectedEntry.id, { localDate: selectedDate, title: title.trim() || 'يومياتي', body, mood })
+    } else {
+      saveJournalEntry({ localDate: selectedDate, title: title.trim() || 'يومياتي', body, mood })
+    }
+    setNotice('تم حفظ يومياتك محليًا، وستتم مزامنتها تلقائيًا عند توفر الحساب.')
+  }
+
+  function archive() {
+    if (!selectedEntry) return
+    archiveJournalEntry(selectedEntry.id)
+    setTitle('')
+    setBody('')
+    setMood('محايد')
+    setNotice('تم نقل التدوينة إلى الأرشيف.')
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <JournalMetric icon={BookOpenText} label="إجمالي التدوينات" value={entries.length} />
+        <JournalMetric icon={CalendarDays} label="أيام موثقة" value={new Set(entries.map((entry) => entry.localDate)).size} />
+        <JournalMetric icon={Feather} label="كلمات اليوم" value={body.trim() ? body.trim().split(/\s+/).length : 0} />
+        <JournalMetric icon={Clock3} label="آخر تدوينة" value={entries[0] ? formatShortDate(entries[0].localDate) : 'لا توجد'} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <ContentCard className="lg:col-span-8" title="مساحة اليوم" description={formatLongDate(selectedDate)}>
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-muted/60 px-3 py-2.5">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays className="h-4 w-4 text-primary" /><span>اختر اليوم الذي تريد الكتابة عنه</span></div>
+              <input aria-label="تاريخ التدوينة" type="date" value={selectedDate} onChange={(event) => selectDate(event.target.value)} className="rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none focus:border-primary" />
+            </div>
+
+            <div className="grid grid-cols-7 gap-1.5" aria-label="تقويم اليوميات">
+              {calendarDays.map((date) => {
+                const active = date === selectedDate
+                const hasEntry = journal.some((entry) => entry.localDate === date)
+                return <button key={date} type="button" onClick={() => selectDate(date)} className={`rounded-2xl border px-1 py-2 text-center transition ${active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background hover:border-primary/50'}`}><span className="block text-[10px] opacity-70">{parseDate(date).toLocaleDateString('ar-EG', { weekday: 'short' })}</span><span className="mt-1 block text-sm font-semibold">{parseDate(date).getDate()}</span><span className={`mx-auto mt-1 block h-1.5 w-1.5 rounded-full ${hasEntry ? active ? 'bg-primary-foreground' : 'bg-primary' : 'bg-transparent'}`} /></button>
+              })}
+            </div>
+
+            <label className="block space-y-2"><span className="text-sm font-semibold">عنوان اليوم</span><input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder="ما العنوان الذي يلخص يومك؟" className="w-full rounded-2xl border border-border bg-background px-3 py-3 text-sm outline-none transition focus:border-primary" /></label>
+            <label className="block space-y-2"><span className="text-sm font-semibold">مساحة حرة</span><textarea value={body} onChange={(event) => setBody(event.target.value)} maxLength={6000} rows={10} placeholder="اكتب ما يدور في بالك… لا تحتاج أن تكون مثاليًا أو مرتبًا." className="w-full resize-y rounded-2xl border border-border bg-background px-3 py-3 text-sm leading-8 outline-none transition focus:border-primary" /></label>
+
+            <div className="space-y-2"><span className="text-sm font-semibold">كيف كان مزاجك؟</span><div className="grid grid-cols-2 gap-2 sm:grid-cols-5">{moods.map((option) => <button key={option} type="button" onClick={() => setMood(option)} className={`rounded-2xl border px-2 py-2.5 text-xs font-semibold transition ${mood === option ? moodStyles[option].className : 'border-border bg-background text-muted-foreground hover:border-primary/40'}`}><span className="mb-1 block text-base">{moodStyles[option].icon}</span>{option}</button>)}</div></div>
+
+            <div className="flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between"><p aria-live="polite" className="text-xs text-muted-foreground">{notice || (selectedEntry ? `آخر تحديث: ${selectedEntry.updatedAt}` : 'هذه المساحة تخص هذا التاريخ فقط.')}</p><div className="flex gap-2"><button type="button" onClick={archive} disabled={!selectedEntry} className="flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-semibold hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"><Trash2 className="h-4 w-4" /> أرشفة</button><button type="button" onClick={save} className="flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground"><Save className="h-4 w-4" /> حفظ التدوينة</button></div></div>
+          </div>
+        </ContentCard>
+
+        <ContentCard className="lg:col-span-4" title="دفتر الأيام" description="ارجع إلى ما كتبته عندما تحتاج إلى صورة أهدأ عن نفسك.">
+          {entries.length === 0 ? <EmptyJournal /> : <div className="space-y-2">{entries.map((entry) => <button key={entry.id} type="button" onClick={() => selectDate(entry.localDate)} className={`w-full rounded-2xl border p-3 text-right transition ${selectedDate === entry.localDate ? 'border-primary bg-primary/5' : 'border-border bg-background hover:border-primary/40'}`}><div className="flex items-start justify-between gap-2"><span className="text-xs text-muted-foreground">{formatShortDate(entry.localDate)}</span><span className={`rounded-full px-2 py-1 text-[10px] ${moodStyles[entry.mood].className}`}>{entry.mood}</span></div><p className="mt-2 line-clamp-1 text-sm font-semibold">{entry.title || 'يوميات بلا عنوان'}</p><p className="mt-1 line-clamp-2 text-xs leading-6 text-muted-foreground">{entry.body || 'لا يوجد نص إضافي.'}</p></button>)}</div>}
+          <div className="mt-4 rounded-2xl bg-surface-dark p-4 text-surface-dark-foreground"><div className="flex items-center gap-2 text-sm font-semibold"><Smile className="h-4 w-4 text-primary" /> تذكير لطيف</div><p className="mt-2 text-xs leading-6 text-surface-dark-foreground/65">لا تبحث عن يوم مثالي لتكتب عنه. سطر صادق في يوم عادي قد يكون أكثر ما تحتاجه لاحقًا.</p></div>
+        </ContentCard>
+      </div>
+    </div>
+  )
+}
+
+function JournalMetric({ icon: Icon, label, value }: { icon: typeof BookOpenText; label: string; value: number | string }) {
+  return <div className="rounded-3xl bg-card p-4"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-accent-foreground"><Icon className="h-4 w-4" /></span><p className="mt-4 text-xs text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-semibold">{value}</p></div>
+}
+
+function EmptyJournal() {
+  return <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-center"><span className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Check className="h-5 w-5" /></span><p className="mt-3 text-sm font-semibold">دفترك ما زال مفتوحًا</p><p className="mt-1 text-xs leading-6 text-muted-foreground">ابدأ بتدوينة قصيرة، وستظهر هنا لتعود إليها لاحقًا.</p></div>
+}

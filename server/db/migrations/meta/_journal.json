@@ -43,6 +43,13 @@
       "when": 1786831598144,
       "tag": "0005_strange_enchantress",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786884178024,
+      "tag": "0006_add_journal_entertainment",
+      "breakpoints": true
     }
   ]
 }

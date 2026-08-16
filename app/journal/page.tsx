@@ -1,4 +1,5 @@
 import { BookHeart } from 'lucide-react'
+import { JournalWorkspace } from '@/components/journal/journal-workspace'
 import { PageShell } from '@/components/layout/page-shell'
 
 export default function JournalPage() {
@@ -7,6 +8,8 @@ export default function JournalPage() {
       title="اليوميات"
       description="دوّن يومك ومزاجك، وارجع لأي يوم فات وقتما تحب"
       icon={BookHeart}
-    />
+    >
+      <JournalWorkspace />
+    </PageShell>
   )
 }

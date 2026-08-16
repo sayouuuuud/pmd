@@ -20,7 +20,7 @@ type GlobalSearchDialogProps = {
 
 export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
   const router = useRouter()
-  const { tasks, notes, goals, projects, financeEntries, planItems, reminders } = useCommandCenter()
+  const { tasks, notes, goals, projects, financeEntries, planItems, reminders, entertainment, journal, habits, religious } = useCommandCenter()
   const [query, setQuery] = useState('')
 
   const results = useMemo<SearchResult[]>(() => {
@@ -36,8 +36,12 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
       ...financeEntries.filter((item) => matches(item.title) || matches(item.category) || matches(item.note ?? '')).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.category} · ${item.amount.toLocaleString('ar-EG')} جنيه`, section: 'الفلوس', href: '/money' })),
       ...planItems.filter((item) => item.status !== 'done' && matches(item.title)).map((item) => ({ id: item.id, title: item.title, subtitle: `خطة اليوم · ${item.time}`, section: 'خطة اليوم', href: '/daily-plan' })),
       ...reminders.filter((item) => item.status !== 'done' && (matches(item.title) || matches(item.dueAt))).map((item) => ({ id: item.id, title: item.title, subtitle: `تذكير · ${item.dueAt}`, section: 'التذكيرات', href: '/reminders' })),
-    ].slice(0, 12)
-  }, [financeEntries, goals, notes, planItems, projects, query, reminders, tasks])
+      ...entertainment.filter((item) => matches(item.title) || matches(item.genre) || matches(item.note ?? '')).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.type === 'movie' ? 'فيلم' : 'مسلسل'} · ${item.genre}`, section: 'الترفيه', href: '/entertainment' })),
+      ...journal.filter((item) => matches(item.title) || matches(item.body) || matches(item.mood) || matches(item.localDate)).map((item) => ({ id: item.id, title: item.title || 'يوميات بلا عنوان', subtitle: `اليوميات · ${item.localDate} · ${item.mood}`, section: 'اليوميات', href: '/journal' })),
+      ...habits.filter((item) => matches(item.title) || matches(item.target)).map((item) => ({ id: item.id, title: item.title, subtitle: `عادة · ${item.target}`, section: 'العادات', href: '/habits' })),
+      ...religious.prayerLogs.filter((item) => matches(item.name) || matches(item.localDate) || matches(item.time)).map((item) => ({ id: item.id, title: item.name, subtitle: `الصلاة · ${item.localDate} · ${item.time}`, section: 'الديني', href: '/religious' })),
+    ].slice(0, 16)
+  }, [entertainment, financeEntries, goals, habits, journal, notes, planItems, projects, query, reminders, religious.prayerLogs, tasks])
 
   if (!open) return null
 
@@ -61,7 +65,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
           <button type="button" aria-label="إغلاق البحث" onClick={close} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button>
         </div>
         <div className="max-h-[60vh] overflow-y-auto p-3">
-          {!query.trim() && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">دور على أي حاجة في مساحتك</p><p className="mt-2 text-xs text-muted-foreground">المهام، الملاحظات، المشاريع، الأهداف، الفلوس، وخطة اليوم.</p></div>}
+          {!query.trim() && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">دور على أي حاجة في مساحتك</p><p className="mt-2 text-xs text-muted-foreground">المهام، الملاحظات، المشاريع، الأهداف، اليوميات، الترفيه، والعادات.</p></div>}
           {query.trim() && results.length === 0 && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">مفيش نتائج مطابقة</p><p className="mt-2 text-xs text-muted-foreground">جرّب كلمة أقصر أو اسم القسم.</p></div>}
           {results.length > 0 && <div className="space-y-1">
             {results.map((result) => <button key={`${result.section}-${result.id}`} type="button" onClick={() => openResult(result)} className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-right transition-colors hover:bg-muted">

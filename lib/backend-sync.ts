@@ -1,4 +1,4 @@
-import type { FinanceEntry, Goal, Habit, Note, PlanItem, PrayerLog, Profile, Project, Reminder, ReligiousState, Task, WeeklyReview } from './command-center-store'
+import type { EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, Note, PlanItem, PrayerLog, Profile, Project, Reminder, ReligiousState, Task, WeeklyReview } from './command-center-store'
 
 type RemoteProfile = {
   city: string
@@ -84,6 +84,32 @@ type RemoteFinanceEntry = {
 type RemoteBudget = {
   monthlyLimit: number
   currency: string
+}
+
+type RemoteEntertainment = {
+  id: string
+  title: string
+  type: string
+  genre: string
+  year: number | null
+  note: string | null
+  status: string
+  rating: number | null
+  impression: string | null
+  recommend: boolean
+  downloadWanted: boolean
+  createdAt: string | Date
+}
+
+type RemoteJournal = {
+  id: string
+  localDate: string
+  title: string
+  body: string
+  mood: string
+  archivedAt: string | null
+  createdAt: string | Date
+  updatedAt: string | Date
 }
 
 type RemoteReminder = {
@@ -209,12 +235,45 @@ export function mapRemoteFinanceEntry(item: RemoteFinanceEntry): FinanceEntry {
   return { id: item.id, title: item.title, amount: Math.max(0, Number(item.amount) || 0), kind: asFinanceKind(item.kind), category: item.category || 'عام', localDate: item.localDate, note: item.note ?? undefined, projectId: item.projectId ?? undefined, goalId: item.goalId ?? undefined }
 }
 
+function asEntertainmentStatus(value: string): EntertainmentItem['status'] {
+  return value === 'watching' ? 'watching' : value === 'done' ? 'completed' : 'want'
+}
+
+function asEntertainmentType(value: string): EntertainmentItem['type'] {
+  return value === 'series' ? 'series' : 'movie'
+}
+
+export function mapRemoteEntertainment(item: RemoteEntertainment): EntertainmentItem {
+  return {
+    id: item.id,
+    title: item.title,
+    type: asEntertainmentType(item.type),
+    genre: item.genre || 'عام',
+    year: item.year ?? undefined,
+    note: item.note ?? undefined,
+    status: asEntertainmentStatus(item.status),
+    rating: item.rating ?? undefined,
+    impression: item.impression ?? undefined,
+    recommend: Boolean(item.recommend),
+    downloadWanted: Boolean(item.downloadWanted),
+    createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toLocaleDateString('ar-EG'),
+  }
+}
+
 function asReminderKind(value: string): Reminder['kind'] {
   return value === 'habit' || value === 'prayer' || value === 'quran' || value === 'finance' ? value : 'task'
 }
 
 function asReminderStatus(value: string): Reminder['status'] {
   return value === 'done' || value === 'snoozed' ? value : 'pending'
+}
+
+function asJournalMood(value: string): JournalEntry['mood'] {
+  return value === 'سعيد' || value === 'هادئ' || value === 'متعب' || value === 'متوتر' ? value : 'محايد'
+}
+
+export function mapRemoteJournal(item: RemoteJournal): JournalEntry {
+  return { id: item.id, localDate: item.localDate, title: item.title || 'يومياتي', body: item.body || '', mood: asJournalMood(item.mood), createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toLocaleDateString('ar-EG'), updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : new Date(item.updatedAt).toLocaleString('ar-EG') }
 }
 
 export function mapRemoteReminder(item: RemoteReminder): Reminder {
@@ -249,7 +308,7 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
 }
 
 export async function hydrateRemoteData() {
-  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse, reminders, reviewResponse] = await Promise.all([
+  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse, reminders, entertainment, journal, reviewResponse] = await Promise.all([
     request<{ items: RemoteTask[] }>('/api/tasks'),
     request<{ items: RemoteNote[] }>('/api/notes'),
     request<{ items: RemoteHabit[] }>('/api/habits'),
@@ -261,6 +320,8 @@ export async function hydrateRemoteData() {
     request<{ user: { name: string }; profile: RemoteProfile }>('/api/profile'),
     request<{ religious: RemoteReligious }>('/api/religious'),
     request<{ items: RemoteReminder[] }>('/api/reminders'),
+    request<{ items: RemoteEntertainment[] }>('/api/entertainment'),
+    request<{ entries: RemoteJournal[] }>('/api/journal'),
     request<{ review: RemoteWeeklyReview }>('/api/review'),
   ])
   return {
@@ -284,8 +345,35 @@ export async function hydrateRemoteData() {
       : null,
     religious: religiousResponse?.religious ? mapRemoteReligious(religiousResponse.religious) : null,
     reminders: reminders?.items?.map(mapRemoteReminder) ?? null,
+    entertainment: entertainment?.items?.map(mapRemoteEntertainment) ?? null,
+    journal: journal?.entries?.map(mapRemoteJournal) ?? null,
     weeklyReview: reviewResponse?.review ? mapRemoteWeeklyReview(reviewResponse.review) : null,
   }
+}
+
+export function createRemoteJournal(input: Pick<JournalEntry, 'localDate' | 'title' | 'body' | 'mood'> & Partial<Pick<JournalEntry, 'id'>>) {
+  return request<{ entry: RemoteJournal }>('/api/journal', { method: 'POST', body: JSON.stringify(input) })
+}
+
+export function updateRemoteJournal(id: string, patch: Partial<Pick<JournalEntry, 'localDate' | 'title' | 'body' | 'mood'>>) {
+  return request<{ entry: RemoteJournal }>(`/api/journal/${id}`, { method: 'PATCH', body: JSON.stringify(patch) })
+}
+
+export function archiveRemoteJournal(id: string) {
+  return request<{ ok: boolean }>(`/api/journal/${id}`, { method: 'DELETE' })
+}
+
+export function createRemoteEntertainment(input: Omit<EntertainmentItem, 'id' | 'createdAt'>) {
+  return request<{ item: RemoteEntertainment }>('/api/entertainment', { method: 'POST', body: JSON.stringify({ ...input, status: input.status === 'completed' ? 'done' : input.status }) })
+}
+
+export function updateRemoteEntertainment(id: string, patch: Partial<EntertainmentItem>) {
+  const nextPatch = { ...patch, ...(patch.status ? { status: patch.status === 'completed' ? 'done' : patch.status } : {}) }
+  return request<{ item: RemoteEntertainment }>(`/api/entertainment/${id}`, { method: 'PATCH', body: JSON.stringify(nextPatch) })
+}
+
+export function archiveRemoteEntertainment(id: string) {
+  return request<{ ok: boolean }>(`/api/entertainment/${id}`, { method: 'DELETE' })
 }
 
 export function createRemoteReminder(input: Pick<Reminder, 'title' | 'kind' | 'dueAt'> & Partial<Pick<Reminder, 'sourceId' | 'repeatLabel'>>) {
