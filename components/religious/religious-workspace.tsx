@@ -74,6 +74,39 @@ function shiftDateKey(localDate: string, offset: number) {
   return date.toISOString().slice(0, 10)
 }
 
+function parsePrayerTimestamp(time: string, baseDate: Date) {
+  const match = time.match(/^(\d{1,2}):(\d{2})/)
+  if (!match) return null
+  const date = new Date(baseDate)
+  date.setHours(Number(match[1]), Number(match[2]), 0, 0)
+  return date.getTime()
+}
+
+function getNextPrayerCountdown(prayers: Array<{ name: string; time: string }>, nowMs: number) {
+  if (!nowMs) return null
+  const now = new Date(nowMs)
+  const todayCandidates = prayers
+    .map((prayer) => ({ ...prayer, timestamp: parsePrayerTimestamp(prayer.time, now) }))
+    .filter((prayer): prayer is { name: string; time: string; timestamp: number } => prayer.timestamp !== null && prayer.timestamp > nowMs)
+    .sort((left, right) => left.timestamp - right.timestamp)
+  if (todayCandidates[0]) return { ...todayCandidates[0], remainingMs: todayCandidates[0].timestamp - nowMs, tomorrow: false }
+  const tomorrow = new Date(now)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowCandidate = prayers
+    .map((prayer) => ({ ...prayer, timestamp: parsePrayerTimestamp(prayer.time, tomorrow) }))
+    .filter((prayer): prayer is { name: string; time: string; timestamp: number } => prayer.timestamp !== null)
+    .sort((left, right) => left.timestamp - right.timestamp)[0]
+  return tomorrowCandidate ? { ...tomorrowCandidate, remainingMs: tomorrowCandidate.timestamp - nowMs, tomorrow: true } : null
+}
+
+function formatPrayerCountdown(milliseconds: number) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000))
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  return `${hours}س ${String(minutes).padStart(2, '0')}د ${String(seconds).padStart(2, '0')}ث`
+}
+
 type TimingState = 'idle' | 'loading' | 'success' | 'error'
 
 type TimingsResponse = {
@@ -101,6 +134,7 @@ export function ReligiousWorkspace() {
   const [timingMessage, setTimingMessage] = useState('')
   const [timingDate, setTimingDate] = useState<string | null>(null)
   const [hijriDate, setHijriDate] = useState<string | null>(null)
+  const [clockMs, setClockMs] = useState(0)
   const [selectedSurah, setSelectedSurah] = useState(1)
   const [quranState, setQuranState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [quranMessage, setQuranMessage] = useState('')
@@ -186,6 +220,13 @@ export function ReligiousWorkspace() {
   }, [refreshPrayerTimes])
 
   useEffect(() => {
+    const updateClock = () => setClockMs(Date.now())
+    updateClock()
+    const timer = window.setInterval(updateClock, 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
     let active = true
     setQuranState('loading')
     setQuranMessage('جاري جلب نص السورة من المصدر الخارجي…')
@@ -265,6 +306,8 @@ export function ReligiousWorkspace() {
     return `${Math.floor(safeSeconds / 60)}:${String(safeSeconds % 60).padStart(2, '0')}`
   }
 
+  const nextPrayer = getNextPrayerCountdown(religious.prayerLogs, clockMs)
+
   return (
     <div className="space-y-5">
       <ContentCard className="bg-surface-dark text-surface-dark-foreground" title="رفقًا بنفسك، خطوة ثابتة تكفي" description="مساحة هادئة لمتابعة عبادتك اليومية دون ضغط أو أحكام تلقائية.">
@@ -276,6 +319,7 @@ export function ReligiousWorkspace() {
           <span>يتم حفظ تقدمك وإعداداتك فقط. نصوص القرآن والأذكار الخارجية لا تُخزّن محليًا كنص موثوق.</span>
           {timingDate && <span>التاريخ: {timingDate}{hijriDate ? ` · هجري: ${hijriDate}` : ''}</span>}
         </div>
+        {nextPrayer && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/25 bg-primary/10 px-3 py-3"><div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-primary" /><div><p className="text-xs font-semibold text-surface-dark-foreground">الصلاة القادمة: {nextPrayer.name}{nextPrayer.tomorrow ? ' · غدًا' : ''}</p><p className="mt-1 text-xs text-surface-dark-foreground/70">موعدها {nextPrayer.time}</p></div></div><strong className="rounded-xl bg-primary px-3 py-2 text-sm text-primary-foreground" aria-label={`الوقت المتبقي لصلاة ${nextPrayer.name}`}>{formatPrayerCountdown(nextPrayer.remainingMs)}</strong></div>}
       </ContentCard>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm">
