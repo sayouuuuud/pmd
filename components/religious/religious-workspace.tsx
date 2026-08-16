@@ -100,8 +100,10 @@ type TimingsResponse = {
 
 type QuranResponse = {
   source: string
+  mode?: 'surah' | 'juz'
   surah?: { number?: number; name?: string; numberOfAyahs?: number }
-  ayahs?: Array<{ number?: number; text?: string }>
+  juz?: { number?: number; name?: string; englishName?: string }
+  ayahs?: Array<{ number?: number; text?: string; surahNumber?: number; surahName?: string }>
   error?: string
 }
 
@@ -117,6 +119,8 @@ export function ReligiousWorkspace() {
   const [hijriDate, setHijriDate] = useState<string | null>(null)
   const [clockMs, setClockMs] = useState(0)
   const [selectedSurah, setSelectedSurah] = useState(1)
+  const [quranMode, setQuranMode] = useState<'surah' | 'juz'>('surah')
+  const [selectedJuz, setSelectedJuz] = useState(1)
   const [quranState, setQuranState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [quranMessage, setQuranMessage] = useState('')
   const [quran, setQuran] = useState<QuranResponse | null>(null)
@@ -220,8 +224,9 @@ export function ReligiousWorkspace() {
   useEffect(() => {
     let active = true
     setQuranState('loading')
-    setQuranMessage('جاري جلب نص السورة من المصدر الخارجي…')
-    fetch(`/api/religious/quran?surah=${selectedSurah}`, { cache: 'no-store' })
+    setQuranMessage(quranMode === 'juz' ? 'جاري جلب آيات الجزء من المصدر الخارجي…' : 'جاري جلب نص السورة من المصدر الخارجي…')
+    const query = quranMode === 'juz' ? `juz=${selectedJuz}` : `surah=${selectedSurah}`
+    fetch(`/api/religious/quran?${query}`, { cache: 'no-store' })
       .then(async (response) => {
         const payload = await response.json() as QuranResponse
         if (!response.ok) throw new Error(payload.error || 'تعذر جلب السورة.')
@@ -238,7 +243,7 @@ export function ReligiousWorkspace() {
         }
       })
     return () => { active = false }
-  }, [quranRetryToken, selectedSurah])
+  }, [quranMode, quranRetryToken, selectedJuz, selectedSurah])
 
   useEffect(() => {
     let active = true
@@ -274,12 +279,12 @@ export function ReligiousWorkspace() {
   }, [audioRate, audioUrl])
 
   useEffect(() => {
-    if (quranState !== 'success' || !currentSurahLastPosition?.ayahNumber) return
+    if (quranMode !== 'surah' || quranState !== 'success' || !currentSurahLastPosition?.ayahNumber) return
     const frame = window.requestAnimationFrame(() => {
       document.getElementById(`quran-ayah-${selectedSurah}-${currentSurahLastPosition.ayahNumber}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     })
     return () => window.cancelAnimationFrame(frame)
-  }, [currentSurahLastPosition?.ayahNumber, quranState, selectedSurah])
+  }, [currentSurahLastPosition?.ayahNumber, quranMode, quranState, selectedSurah])
 
   function playSelectedSurah(surahNumber = selectedSurah) {
     if (!selectedReciter?.server) return
@@ -291,6 +296,7 @@ export function ReligiousWorkspace() {
   function resumeSavedQuranPosition() {
     const saved = religious.quran.lastPosition
     if (!saved) return
+    setQuranMode('surah')
     setSelectedSurah(saved.surahNumber)
     playSelectedSurah(saved.surahNumber)
   }
@@ -405,9 +411,10 @@ export function ReligiousWorkspace() {
         </ContentCard>
       </div>
 
-      <ContentCard title="المصحف والتلاوة" description={quran?.surah?.name ? `${quran.surah.name} · ${quran.surah.numberOfAyahs ?? 0} آية` : 'النص والتلاوة يجلبان عند الطلب من مصادر خارجية موثوقة.'} action={<span className="text-xs text-muted-foreground">{quranMessage}</span>}>
-        <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-          <label className="space-y-2 text-sm font-medium"><span>السورة</span><select value={selectedSurah} onChange={(event) => setSelectedSurah(Number(event.target.value))} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary"><option value={1}>1 — الفاتحة</option><option value={2}>2 — البقرة</option><option value={18}>18 — الكهف</option><option value={36}>36 — يس</option><option value={55}>55 — الرحمن</option><option value={67}>67 — الملك</option><option value={112}>112 — الإخلاص</option></select></label>
+      <ContentCard title="المصحف والتلاوة" description={quran?.mode === 'juz' && quran.juz?.name ? `${quran.juz.name} · ${quran.ayahs?.length ?? 0} آية` : quran?.surah?.name ? `${quran.surah.name} · ${quran.surah.numberOfAyahs ?? 0} آية` : 'النص والتلاوة يجلبان عند الطلب من مصادر خارجية موثوقة.'} action={<span className="text-xs text-muted-foreground">{quranMessage}</span>}>
+        <div className="grid gap-3 md:grid-cols-[auto_1fr_1fr_auto]">
+          <label className="space-y-2 text-sm font-medium"><span>طريقة التصفح</span><select aria-label="طريقة تصفح المصحف" value={quranMode} onChange={(event) => setQuranMode(event.currentTarget.value as 'surah' | 'juz')} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary"><option value="surah">سورة</option><option value="juz">جزء</option></select></label>
+          {quranMode === 'juz' ? <label className="space-y-2 text-sm font-medium"><span>الجزء</span><select aria-label="الجزء" value={selectedJuz} onChange={(event) => setSelectedJuz(Number(event.currentTarget.value))} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary">{Array.from({ length: 30 }, (_, index) => index + 1).map((juz) => <option key={juz} value={juz}>الجزء {juz}</option>)}</select></label> : <label className="space-y-2 text-sm font-medium"><span>السورة</span><select aria-label="السورة" value={selectedSurah} onChange={(event) => setSelectedSurah(Number(event.currentTarget.value))} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary"><option value={1}>1 — الفاتحة</option><option value={2}>2 — البقرة</option><option value={18}>18 — الكهف</option><option value={36}>36 — يس</option><option value={55}>55 — الرحمن</option><option value={67}>67 — الملك</option><option value={112}>112 — الإخلاص</option></select></label>}
           <label className="space-y-2 text-sm font-medium"><span>القارئ</span><select value={selectedReciter?.id ?? ''} onChange={(event) => setSelectedReciter(reciters.find((reciter) => reciter.id === Number(event.target.value)) ?? null)} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary" disabled={!reciters.length}><option value="">{reciters.length ? 'اختر قارئًا' : 'جاري تحميل القراء…'}</option>{reciters.map((reciter) => <option key={reciter.id} value={reciter.id}>{reciter.name}</option>)}</select></label>
           <div className="flex items-end"><Button onClick={() => playSelectedSurah()} disabled={!selectedReciter || quranState === 'loading'}><Play className="ms-1 h-4 w-4" /> تشغيل السورة</Button></div>
         </div>
@@ -416,7 +423,7 @@ export function ReligiousWorkspace() {
         <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_1.2fr]"><form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); createQuranPlaylist(playlistName, selectedSurah); setPlaylistName('') }}><input value={playlistName} onChange={(event) => setPlaylistName(event.target.value)} placeholder="اسم قائمة جديدة" aria-label="اسم قائمة تلاوة جديدة" className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" /><Button type="submit" size="sm" disabled={!playlistName.trim()}><Plus className="ms-1 h-3.5 w-3.5" /> إنشاء قائمة</Button></form><div className="space-y-2">{(religious.quran.playlists ?? []).length === 0 ? <p className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">أنشئ قائمة واحفظ فيها السورة الحالية للعودة إليها لاحقًا.</p> : (religious.quran.playlists ?? []).map((playlist) => <div key={playlist.id} className="rounded-xl border border-border p-3"><div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{playlist.name}</p><span className="text-xs text-muted-foreground">{playlist.surahNumbers.length} سور</span></div><div className="mt-2 flex flex-wrap gap-2">{playlist.surahNumbers.map((surahNumber) => <Button key={surahNumber} type="button" size="sm" variant={surahNumber === selectedSurah ? 'secondary' : 'outline'} onClick={() => toggleQuranPlaylistSurah(playlist.id, surahNumber)} aria-pressed={surahNumber === selectedSurah}>السورة {surahNumber}</Button>)}<Button type="button" size="sm" variant="ghost" onClick={() => toggleQuranPlaylistSurah(playlist.id, selectedSurah)}>{playlist.surahNumbers.includes(selectedSurah) ? 'إزالة الحالية' : 'إضافة الحالية'}</Button></div></div>)}</div></div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-primary/20 bg-primary/5 px-3 py-2"><div><p className="text-xs font-semibold text-foreground">حالة السورة الحالية</p><p className="mt-1 text-xs text-muted-foreground">{listenLater.length} في «أسمعه بعدين» · {listenedSurahNumbers.length} تم الاستماع إليها</p></div><div className="flex flex-wrap gap-2"><Button type="button" size="sm" variant={currentSurahIsLater ? 'secondary' : 'outline'} onClick={() => toggleQuranListenLater(selectedSurah)}>{currentSurahIsLater ? 'إزالة من أسمعه بعدين' : 'أسمعه بعدين'}</Button><Button type="button" size="sm" variant={currentSurahIsListened ? 'secondary' : 'outline'} onClick={() => toggleQuranListened(selectedSurah)}>{currentSurahIsListened ? 'إلغاء تم الاستماع' : 'تم الاستماع'}</Button></div></div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-muted/40 px-3 py-2"><span className="text-xs text-muted-foreground">حجم الخط</span><div className="flex items-center gap-1" role="group" aria-label="حجم خط المصحف"><Button type="button" size="sm" variant={quranFontScale === 'sm' ? 'secondary' : 'ghost'} onClick={() => setQuranFontScale('sm')} aria-label="حجم خط صغير">صغير</Button><Button type="button" size="sm" variant={quranFontScale === 'md' ? 'secondary' : 'ghost'} onClick={() => setQuranFontScale('md')} aria-label="حجم خط متوسط">متوسط</Button><Button type="button" size="sm" variant={quranFontScale === 'lg' ? 'secondary' : 'ghost'} onClick={() => setQuranFontScale('lg')} aria-label="حجم خط كبير">كبير</Button></div></div>
-        <div className="mt-3 max-h-80 overflow-y-auto rounded-2xl border border-border bg-background p-4" dir="rtl">{quranState === 'loading' && <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin text-primary" /> جاري تحميل الآيات…</div>}{quranState === 'error' && <div className="flex flex-wrap items-center justify-between gap-3 py-6 text-sm text-destructive"><span>{quranMessage}</span><Button type="button" size="sm" variant="outline" onClick={() => setQuranRetryToken((token) => token + 1)}>إعادة المحاولة</Button></div>}{quranState === 'success' && quran?.ayahs?.map((ayah) => { const ayahNumber = ayah.number ?? 0; const favorite = religious.quran.favoriteAyahs?.find((item) => item.surahNumber === selectedSurah && item.ayahNumber === ayahNumber); const isLastReadAyah = currentSurahLastPosition?.ayahNumber === ayahNumber; return <div id={`quran-ayah-${selectedSurah}-${ayahNumber}`} key={ayah.number} className={`flex items-start gap-3 border-b border-border/60 py-3 last:border-0 ${isLastReadAyah ? 'rounded-xl bg-primary/5 px-2' : ''}`}><p className={`min-w-0 flex-1 ${quranTextClass}`}>{ayah.text} <span className="me-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-1 text-xs text-accent-foreground">{ayah.number}</span></p><div className="flex shrink-0 flex-wrap items-center justify-end gap-1"><Button type="button" size="sm" variant={isLastReadAyah ? 'secondary' : 'ghost'} onClick={() => saveCurrentAyahPosition(ayahNumber)} aria-label={isLastReadAyah ? `آخر موضع محفوظ عند الآية ${ayahNumber}` : `حفظ آخر موضع عند الآية ${ayahNumber}`} aria-pressed={isLastReadAyah}>{isLastReadAyah ? 'آخر موضع' : 'احفظ الموضع'}</Button><Button type="button" size="sm" variant={favorite ? 'secondary' : 'ghost'} onClick={() => favorite ? removeQuranFavoriteAyah(favorite.id) : saveQuranFavoriteAyah({ surahNumber: selectedSurah, ayahNumber })} aria-label={favorite ? `إزالة الآية ${ayahNumber} من المفضلة` : `حفظ الآية ${ayahNumber}`} aria-pressed={Boolean(favorite)}><Heart className={`ms-1 h-4 w-4 ${favorite ? 'fill-current' : ''}`} />{favorite ? 'محفوظة' : 'حفظ الآية'}</Button></div></div>})}</div>
+        <div className="mt-3 max-h-80 overflow-y-auto rounded-2xl border border-border bg-background p-4" dir="rtl">{quranState === 'loading' && <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin text-primary" /> جاري تحميل الآيات…</div>}{quranState === 'error' && <div className="flex flex-wrap items-center justify-between gap-3 py-6 text-sm text-destructive"><span>{quranMessage}</span><Button type="button" size="sm" variant="outline" onClick={() => setQuranRetryToken((token) => token + 1)}>إعادة المحاولة</Button></div>}{quranState === 'success' && quran?.ayahs?.map((ayah) => { const ayahNumber = ayah.number ?? 0; const ayahSurahNumber = ayah.surahNumber ?? selectedSurah; const favorite = religious.quran.favoriteAyahs?.find((item) => item.surahNumber === ayahSurahNumber && item.ayahNumber === ayahNumber); const isLastReadAyah = quranMode === 'surah' && currentSurahLastPosition?.ayahNumber === ayahNumber; return <div id={`quran-ayah-${ayahSurahNumber}-${ayahNumber}`} key={`${ayahSurahNumber}-${ayahNumber}`} className={`flex items-start gap-3 border-b border-border/60 py-3 last:border-0 ${isLastReadAyah ? 'rounded-xl bg-primary/5 px-2' : ''}`}><p className={quranTextClass}>{quranMode === 'juz' && ayah.surahName ? <span className="mb-1 block text-xs font-semibold text-primary">{ayah.surahName}</span> : null}{ayah.text} <span className="me-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-1 text-xs text-accent-foreground">{ayah.number}</span></p><div className="flex shrink-0 flex-wrap items-center justify-end gap-1">{quranMode === 'surah' && <Button type="button" size="sm" variant={isLastReadAyah ? 'secondary' : 'ghost'} onClick={() => saveCurrentAyahPosition(ayahNumber)} aria-label={isLastReadAyah ? `آخر موضع محفوظ عند الآية ${ayahNumber}` : `حفظ آخر موضع عند الآية ${ayahNumber}`} aria-pressed={isLastReadAyah}>{isLastReadAyah ? 'آخر موضع' : 'احفظ الموضع'}</Button>}<Button type="button" size="sm" variant={favorite ? 'secondary' : 'ghost'} onClick={() => favorite ? removeQuranFavoriteAyah(favorite.id) : saveQuranFavoriteAyah({ surahNumber: ayahSurahNumber, ayahNumber })} aria-label={favorite ? `إزالة الآية ${ayahNumber} من المفضلة` : `حفظ الآية ${ayahNumber}`} aria-pressed={Boolean(favorite)}><Heart className={`ms-1 h-4 w-4 ${favorite ? 'fill-current' : ''}`} />{favorite ? 'محفوظة' : 'حفظ الآية'}</Button></div></div>})}</div>
         {(religious.quran.favoriteAyahs ?? []).length > 0 && <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-4"><div className="flex items-center justify-between gap-2"><div><p className="text-sm font-semibold">آياتي المفضلة</p><p className="mt-1 text-xs text-muted-foreground">أضف تدبرك الشخصي بجانب مرجع الآية. النص يُعرض من المصدر عند فتح السورة.</p></div><span className="text-xs font-semibold text-primary">{religious.quran.favoriteAyahs?.length} آية</span></div><div className="mt-3 space-y-3">{religious.quran.favoriteAyahs?.map((favorite) => <div key={favorite.id} className="rounded-xl border border-border bg-background p-3"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-semibold">سورة {favorite.surahNumber} · الآية {favorite.ayahNumber}</p><Button type="button" size="sm" variant="ghost" onClick={() => removeQuranFavoriteAyah(favorite.id)} aria-label={`حذف الآية ${favorite.ayahNumber} من المفضلة`}><Trash2 className="ms-1 h-4 w-4" /> حذف</Button></div><label className="mt-2 block space-y-1 text-xs text-muted-foreground"><span>خانة التدبر</span><textarea defaultValue={favorite.reflection} onBlur={(event) => saveQuranFavoriteAyah({ surahNumber: favorite.surahNumber, ayahNumber: favorite.ayahNumber, reflection: event.currentTarget.value })} placeholder="ما الذي تريد تذكره أو تطبيقه؟" className="min-h-16 w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring" /></label></div>)}</div></div>}
         <p className="mt-3 text-xs text-muted-foreground">النص من AlQuran Cloud، والتلاوة من MP3Quran. التطبيق يحفظ مراجع الآيات وتدبرك فقط ولا يستضيف المحتوى الديني.</p>
       </ContentCard>
