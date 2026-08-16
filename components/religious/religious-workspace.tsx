@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BookOpen, Check, Clock3, Compass, LoaderCircle, MapPin, Moon, RefreshCw, Sunrise, SunMedium } from 'lucide-react'
+import { BookOpen, Check, Clock3, Compass, LoaderCircle, MapPin, Moon, Play, RefreshCw, Sunrise, SunMedium, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { useCommandCenter } from '@/lib/command-center-store'
@@ -30,12 +30,31 @@ type TimingsResponse = {
   error?: string
 }
 
+type QuranResponse = {
+  source: string
+  surah?: { number?: number; name?: string; numberOfAyahs?: number }
+  ayahs?: Array<{ number?: number; text?: string }>
+  error?: string
+}
+
+type Reciter = { id: number; name: string; read?: string; server: string; surahTotal?: number; surahList?: string }
+
+type RecitersResponse = { source: string; reciters?: Reciter[]; error?: string }
+
 export function ReligiousWorkspace() {
   const { religious, togglePrayer, addWirdProgress, toggleDhikr, updateReligiousSettings, updatePrayerTimes } = useCommandCenter()
   const [timingState, setTimingState] = useState<TimingState>('idle')
   const [timingMessage, setTimingMessage] = useState('')
   const [timingDate, setTimingDate] = useState<string | null>(null)
   const [hijriDate, setHijriDate] = useState<string | null>(null)
+  const [selectedSurah, setSelectedSurah] = useState(1)
+  const [quranState, setQuranState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [quranMessage, setQuranMessage] = useState('')
+  const [quran, setQuran] = useState<QuranResponse | null>(null)
+  const [reciters, setReciters] = useState<Reciter[]>([])
+  const [selectedReciter, setSelectedReciter] = useState<Reciter | null>(null)
+  const [audioUrl, setAudioUrl] = useState('')
+  const [isPlaying, setIsPlaying] = useState(false)
   const completedPrayers = religious.prayerLogs.filter((prayer) => prayer.status === 'done').length
   const prayerPercent = Math.round((completedPrayers / Math.max(religious.prayerLogs.length, 1)) * 100)
   const wirdPercent = Math.round((religious.quran.completedMinutes / Math.max(religious.quran.targetMinutes, 1)) * 100)
@@ -63,6 +82,53 @@ export function ReligiousWorkspace() {
     const timer = window.setTimeout(() => { void refreshPrayerTimes() }, 450)
     return () => window.clearTimeout(timer)
   }, [religious.city, religious.calculationMethod])
+
+  useEffect(() => {
+    let active = true
+    setQuranState('loading')
+    setQuranMessage('جاري جلب نص السورة من المصدر الخارجي…')
+    fetch(`/api/religious/quran?surah=${selectedSurah}`, { cache: 'no-store' })
+      .then(async (response) => {
+        const payload = await response.json() as QuranResponse
+        if (!response.ok) throw new Error(payload.error || 'تعذر جلب السورة.')
+        if (active) {
+          setQuran(payload)
+          setQuranState('success')
+          setQuranMessage(`المصدر: ${payload.source}`)
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setQuranState('error')
+          setQuranMessage(error instanceof Error ? error.message : 'تعذر جلب نص السورة.')
+        }
+      })
+    return () => { active = false }
+  }, [selectedSurah])
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/religious/reciters', { cache: 'no-store' })
+      .then(async (response) => {
+        const payload = await response.json() as RecitersResponse
+        if (!response.ok) throw new Error(payload.error || 'تعذر جلب القراء.')
+        if (active && payload.reciters?.length) {
+          setReciters(payload.reciters)
+          setSelectedReciter(payload.reciters[0])
+        }
+      })
+      .catch(() => {
+        if (active) setQuranMessage((message) => message || 'تعذر تحميل كتالوج التلاوات؛ يمكنك الاستمرار في القراءة.')
+      })
+    return () => { active = false }
+  }, [])
+
+  function playSelectedSurah() {
+    if (!selectedReciter?.server) return
+    const url = `${selectedReciter.server}${String(selectedSurah).padStart(3, '0')}.mp3`
+    setAudioUrl(url)
+    setIsPlaying(true)
+  }
 
   return (
     <div className="space-y-5">
@@ -110,6 +176,17 @@ export function ReligiousWorkspace() {
           <div className="mt-5 flex gap-2"><Button size="sm" variant="outline" onClick={() => addWirdProgress(5)}>+ 5 دقائق</Button><Button size="sm" onClick={() => addWirdProgress(10)}>أنجزت 10 دقائق</Button></div>
         </ContentCard>
       </div>
+
+      <ContentCard title="المصحف والتلاوة" description={quran?.surah?.name ? `${quran.surah.name} · ${quran.surah.numberOfAyahs ?? 0} آية` : 'النص والتلاوة يجلبان عند الطلب من مصادر خارجية موثوقة.'} action={<span className="text-xs text-muted-foreground">{quranMessage}</span>}>
+        <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+          <label className="space-y-2 text-sm font-medium"><span>السورة</span><select value={selectedSurah} onChange={(event) => setSelectedSurah(Number(event.target.value))} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary"><option value={1}>1 — الفاتحة</option><option value={2}>2 — البقرة</option><option value={18}>18 — الكهف</option><option value={36}>36 — يس</option><option value={55}>55 — الرحمن</option><option value={67}>67 — الملك</option><option value={112}>112 — الإخلاص</option></select></label>
+          <label className="space-y-2 text-sm font-medium"><span>القارئ</span><select value={selectedReciter?.id ?? ''} onChange={(event) => setSelectedReciter(reciters.find((reciter) => reciter.id === Number(event.target.value)) ?? null)} className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary" disabled={!reciters.length}><option value="">{reciters.length ? 'اختر قارئًا' : 'جاري تحميل القراء…'}</option>{reciters.map((reciter) => <option key={reciter.id} value={reciter.id}>{reciter.name}</option>)}</select></label>
+          <div className="flex items-end"><Button onClick={playSelectedSurah} disabled={!selectedReciter || quranState === 'loading'}><Play className="ms-1 h-4 w-4" /> تشغيل السورة</Button></div>
+        </div>
+        {audioUrl && <div className="mt-4 rounded-2xl border border-border bg-muted/40 p-3"><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Volume2 className="h-4 w-4 text-primary" /> {selectedReciter?.name} · {isPlaying ? 'تعمل الآن' : 'متوقفة'}</div><audio controls autoPlay src={audioUrl} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} className="w-full" /></div>}
+        <div className="mt-4 max-h-80 overflow-y-auto rounded-2xl border border-border bg-background p-4" dir="rtl">{quranState === 'loading' && <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin text-primary" /> جاري تحميل الآيات…</div>}{quranState === 'error' && <div className="py-6 text-sm text-destructive">{quranMessage}</div>}{quranState === 'success' && quran?.ayahs?.map((ayah) => <p key={ayah.number} className="border-b border-border/60 py-3 text-lg leading-9 last:border-0">{ayah.text} <span className="me-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-1 text-xs text-accent-foreground">{ayah.number}</span></p>)}</div>
+        <p className="mt-3 text-xs text-muted-foreground">النص من AlQuran Cloud، والتلاوة من MP3Quran. التطبيق يحفظ تقدمك وإعداداتك فقط ولا يستضيف المحتوى الديني.</p>
+      </ContentCard>
 
       <div className="grid gap-5 lg:grid-cols-3">
         <ContentCard title="الأذكار" description="سجل الجلسة فقط، ويمكنك الرجوع لمصدرك الموثوق.">
