@@ -688,3 +688,7 @@
 اعتمد `AccountWorkspace` على `Input` المشترك في حقول الاسم والمدينة وبداية اليوم وفترة العمل، وعلى `Textarea` للهدف الرئيسي و`Button` لحفظ التفضيلات، مع إبقاء حقل رفع ملف النسخة الاحتياطية الخام مخفيًا لأنه يحتاج `input type="file"` للوصول إلى File API.
 اختُبرت `/account` بصريًا وتفاعليًا؛ أُدخل نص مؤقت في حقل الاسم ثم أُعيدت القيمة الأصلية دون الضغط على الحفظ، وبقي RTL والهوية وسلوك النموذج سليمين. التفاصيل في `verification/account-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 لم تُنفذ عمليات تصدير أو استعادة أو حذف، ولم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة.
+## سجل دفعة — اعتماد الحقول المشتركة في الملاحظات — 2026-08-16
+اعتمد `NotesWorkspace` و`NoteCard` على `Input` و`Textarea` و`Select` و`Button` المشتركة في البحث وفلترة الوسوم والتقاط الملاحظة وتحريرها، مع إبقاء أزرار الوسوم التفاعلية المخصصة كما هي لأنها تمثل حالة متعددة الاختيار داخل البطاقة.
+اختُبرت `/notes` بصريًا وتفاعليًا؛ أُدخل «مشروع» في البحث ثم اختير وسم «تطوير»، فظهرت النتيجة المطابقة وظهر خيار «مسح الفلتر» دون إنشاء أو تعديل أي ملاحظة. التفاصيل في `verification/notes-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+لم تُضف migrations أو secrets، وتُستكمل بوابات TypeScript وESLint و`git diff --check` و`next build` قبل تسجيل الدفعة.
