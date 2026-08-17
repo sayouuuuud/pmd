@@ -832,3 +832,12 @@
 - **التوثيق:** `verification/religious-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 - **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build`؛ تحذير تقادم convention الخاص بـmiddleware من Next.js معلوماتي وغير حاجز.
 - **الحالة:** مكتملة وجاهزة للـcommit والـpush.
+
+
+## دفعة المكونات المشتركة — المراجعة الأسبوعية — 2026-08-17
+- **النطاق:** ترحيل أزرار «حفظ كمسودة» و«اعتماد المراجعة» و«أضف كهمة للأسبوع» في `components/review/weekly-review-workspace.tsx` إلى `Button` المشتركة، مع الحفاظ على handlers والحالة المحلية والتصميم الحالي وRTL.
+- **التحقق المتصفحي:** فُتحت `http://localhost:3004/review`؛ ظهر RTL والكروت العربية ومؤشرات الأسبوع وروابط السياق وحقول المراجعة دون أخطاء. أكد فحص DOM أن `rawButtons: 0` و`rawInputs: 0` و`rawSelects: 0` و`rawTextareas: 0`، مع ظهور أزرار الدفعة وحقول `Textarea` المشتركة. أُدخل قرار مؤقت واختُبر زر «حفظ كمسودة»، ثم استُعيدت حالة localStorage الأصلية وأُعيد تحميل الصفحة دون أثر دائم أو إنشاء مهمة.
+- **الحفاظ على السلوك:** لم يُعتمد الأسبوع ولم تُنشأ مهمة فعلية أثناء الاختبار، ولم تُضف migrations أو secrets، وبقيت الروابط والسياق وlocalStorage fallback كما هي.
+- **التوثيق:** `verification/review-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+- **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build`؛ تحذير تقادم convention الخاص بـmiddleware من Next.js معلوماتي وغير حاجز.
+- **الحالة:** مكتملة وجاهزة للـcommit والـpush.

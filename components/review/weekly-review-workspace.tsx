@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, BookOpen, CheckCircle2, CircleAlert, ClipboardCheck, Clapperboard, Flame, HeartPulse, Landmark, Link2, ListMusic, ListPlus, Save, Target, WalletCards } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Textarea } from '@/components/ui/textarea'
 import { isPrayerCompletedStatus, useCommandCenter } from '@/lib/command-center-store'
@@ -141,8 +142,8 @@ export function WeeklyReviewWorkspace() {
           <div className="mt-4 flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-muted-foreground">{weeklyReview.status === 'completed' && !isDirty ? 'تم اعتماد مراجعة هذا الأسبوع.' : isDirty ? 'هناك نص غير محفوظ.' : hasReflection ? 'تم حفظ المسودة ويمكنك العودة إليها لاحقًا.' : 'ابدأ بكتابة أول سطر.'} {weeklyReview.updatedAt !== 'لم تُحفظ بعد' ? `آخر حفظ: ${weeklyReview.updatedAt}` : ''}</p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => save('draft')} className="flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-semibold hover:bg-muted"><Save className="h-4 w-4" /> حفظ كمسودة</button>
-              <button type="button" onClick={() => save('completed')} className="flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground"><CheckCircle2 className="h-4 w-4" /> اعتماد المراجعة</button>
+              <Button type="button" variant="outline" size="lg" onClick={() => save('draft')} className="rounded-full text-xs"><Save className="h-4 w-4" /> حفظ كمسودة</Button>
+              <Button type="button" variant="default" size="lg" onClick={() => save('completed')} className="rounded-full text-xs"><CheckCircle2 className="h-4 w-4" /> اعتماد المراجعة</Button>
             </div>
           </div>
         </ContentCard>
@@ -151,7 +152,7 @@ export function WeeklyReviewWorkspace() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div><p className="text-xl font-semibold">{nextGoal.trim() || 'حافظ على البساطة: مهمة عميقة واحدة كل صباح.'}</p><p className="mt-2 max-w-2xl text-sm leading-7 text-surface-dark-foreground/60">حوّل القرار إلى خطوة واضحة في قائمة مهام الأسبوع، أو افتح خطة اليوم لتعديل السياق يدويًا.</p></div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-              <button type="button" onClick={addNextGoalAsTask} disabled={!cleanNextGoal || Boolean(goalTask)} aria-label={goalTask ? 'تمت إضافة قرار الأسبوع إلى المهام' : 'إضافة قرار الأسبوع إلى المهام'} className="flex items-center justify-center gap-2 rounded-full border border-surface-dark-foreground/20 px-4 py-3 text-xs font-semibold transition hover:bg-surface-dark-foreground/10 disabled:cursor-not-allowed disabled:opacity-60"><ListPlus className="h-4 w-4" />{goalTask ? 'أضيفت إلى المهام' : 'أضف كهمة للأسبوع'}</button>
+              <Button type="button" variant="ghost" size="lg" onClick={addNextGoalAsTask} disabled={!cleanNextGoal || Boolean(goalTask)} aria-label={goalTask ? 'تمت إضافة قرار الأسبوع إلى المهام' : 'إضافة قرار الأسبوع إلى المهام'} className="rounded-full border border-surface-dark-foreground/20 text-xs text-surface-dark-foreground hover:bg-surface-dark-foreground/10 hover:text-surface-dark-foreground"><ListPlus className="h-4 w-4" />{goalTask ? 'أضيفت إلى المهام' : 'أضف كهمة للأسبوع'}</Button>
               <Link href="/daily-plan" className="flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground">تعديل خطة اليوم <ArrowLeft className="h-4 w-4" /></Link>
             </div>
           </div>
