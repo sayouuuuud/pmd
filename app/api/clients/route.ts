@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from 'drizzle-orm'
+import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { client } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
@@ -30,8 +30,9 @@ export async function GET(request: Request) {
     const currentWorkspace = await resolveWorkspace(request, currentUser.id, db)
     if (!currentWorkspace) return json({ error: 'مساحة العمل غير متاحة.' }, { status: 403 })
 
+    const includeArchived = new URL(request.url).searchParams.get('archived') === 'true'
     const clients = await db.select().from(client)
-      .where(and(eq(client.workspaceId, currentWorkspace.id), isNull(client.archivedAt)))
+      .where(and(eq(client.workspaceId, currentWorkspace.id), includeArchived ? isNotNull(client.archivedAt) : isNull(client.archivedAt)))
       .orderBy(desc(client.updatedAt))
 
     return json({ workspaceId: currentWorkspace.id, clients })

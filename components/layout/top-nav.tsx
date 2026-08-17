@@ -176,7 +176,7 @@ export function TopNav() {
   return (
     <>
       <header className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 rounded-full bg-card py-1.5 pr-2 pl-4">
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
             <div className="text-right leading-tight">

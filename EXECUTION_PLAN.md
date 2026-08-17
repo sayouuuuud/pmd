@@ -963,3 +963,8 @@
 نجحت `tsc --noEmit` وESLint و`git diff --check` و`next build`. لم تُشغّل migrations ولم تُضف أسرارًا. المرجع: `verification/daily-plan-past-date-browser.md` و`verification/interaction-smoke-tests.md`.
 ### الحالة
 مكتمل — في انتظار commit الدفعة.
+
+
+## سجل تنفيذ 2026-08-17 — التقويم اليدوي
+
+اكتملت جولة التقويم التفاعلية بإضافة حدث يدوي وتعديله وحذفه. كشفت الجولة فجوة عملية في غياب تحرير الأحداث اليدوية وسباقًا كان يكتب قائمة فارغة إلى `localStorage` قبل اكتمال تهيئة القراءة؛ عولجا بإعادة استخدام نموذج الإنشاء للتحرير، وإضافة PATCH للأحداث البعيدة مع fallback محلي، وحراسة `storageLoaded`. نجحت فحوص TypeScript وESLint و`git diff --check` وNext build، ووُثقت التفاصيل في `verification/calendar-event-edit-storage-fix-2026-08-17.md` وسجل التفاعل ومصفوفة التدقيق. أزيلت بيانات الاختبار بعد التحقق.

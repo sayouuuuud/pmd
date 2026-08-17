@@ -7,47 +7,10 @@ import { ContentCard } from '@/components/ui/content-card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-
-type Workspace = {
-  id: string
-  name: string
-  kind: string
-  role: string
-}
-
-type Client = {
-  id: string
-  name: string
-  company: string | null
-  email: string | null
-  phone: string | null
-  notes: string | null
-}
-
-type WorkspaceFallback = {
-  workspaces: Workspace[]
-  clientsByWorkspace: Record<string, Client[]>
-}
-
-const STORAGE_KEY = 'personal-command-center-workspace-v1'
-const fallback: WorkspaceFallback = {
-  workspaces: [{ id: 'local-personal', name: 'مساحتي الشخصية', kind: 'personal', role: 'owner' }],
-  clientsByWorkspace: { 'local-personal': [] },
-}
-
-function readFallback(): WorkspaceFallback {
-  if (typeof window === 'undefined') return fallback
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '') as WorkspaceFallback
-    if (Array.isArray(parsed.workspaces) && parsed.clientsByWorkspace) return parsed
-  } catch {
-    // The local fallback is intentionally resilient to malformed browser data.
-  }
-  return fallback
-}
+import { persistWorkspaceFallback, readWorkspaceFallback, workspaceFallback, type Client, type Workspace, type WorkspaceFallback } from '@/lib/workspace-types'
 
 export function WorkspaceWorkspace() {
-  const [data, setData] = useState<WorkspaceFallback>(fallback)
+  const [data, setData] = useState<WorkspaceFallback>(workspaceFallback)
   const [activeWorkspaceId, setActiveWorkspaceId] = useState('local-personal')
   const [backendAvailable, setBackendAvailable] = useState(true)
   const [workspaceName, setWorkspaceName] = useState('')
@@ -75,7 +38,7 @@ export function WorkspaceWorkspace() {
 
   function persist(next: WorkspaceFallback) {
     setData(next)
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    persistWorkspaceFallback(next)
   }
 
   async function loadData() {
@@ -90,14 +53,20 @@ export function WorkspaceWorkspace() {
         const response = await fetch(`/api/clients?workspaceId=${encodeURIComponent(item.id)}`, { cache: 'no-store' })
         if (!response.ok) return [item.id, []] as const
         const payload = await response.json() as { clients: Client[] }
-        return [item.id, payload.clients ?? []] as const
+        return [item.id, (payload.clients ?? []).map((client) => ({ ...client, workspaceId: item.id }))] as const
       }))
-      const nextData = { workspaces: nextWorkspaces, clientsByWorkspace: Object.fromEntries(nextClients) }
+      const nextArchivedClients = await Promise.all(nextWorkspaces.map(async (item) => {
+        const response = await fetch(`/api/clients?workspaceId=${encodeURIComponent(item.id)}&archived=true`, { cache: 'no-store' })
+        if (!response.ok) return [item.id, []] as const
+        const payload = await response.json() as { clients: Array<Client & { archivedAt: string | Date | null }> }
+        return [item.id, (payload.clients ?? []).filter((client): client is Client & { archivedAt: string | Date } => Boolean(client.archivedAt)).map((client) => ({ ...client, workspaceId: item.id, archivedAt: typeof client.archivedAt === 'string' ? client.archivedAt : new Date(client.archivedAt).toISOString() }))] as const
+      }))
+      const nextData: WorkspaceFallback = { workspaces: nextWorkspaces, clientsByWorkspace: Object.fromEntries(nextClients), archivedClientsByWorkspace: Object.fromEntries(nextArchivedClients) }
       setBackendAvailable(true)
       setData(nextData)
       setActiveWorkspaceId(workspacesPayload.activeWorkspaceId ?? nextWorkspaces[0]?.id ?? 'local-personal')
     } catch {
-      const local = readFallback()
+      const local = readWorkspaceFallback()
       setBackendAvailable(false)
       setData(local)
       setActiveWorkspaceId(local.workspaces[0]?.id ?? 'local-personal')
@@ -138,6 +107,7 @@ export function WorkspaceWorkspace() {
     persist({
       workspaces: [...data.workspaces, created],
       clientsByWorkspace: { ...data.clientsByWorkspace, [created.id]: [] },
+      archivedClientsByWorkspace: { ...data.archivedClientsByWorkspace, [created.id]: [] },
     })
     setActiveWorkspaceId(created.id)
     setWorkspaceName('')
@@ -208,7 +178,12 @@ export function WorkspaceWorkspace() {
         setBackendAvailable(false)
       }
     }
-    persist({ ...data, clientsByWorkspace: { ...data.clientsByWorkspace, [activeWorkspace.id]: clients.filter((clientItem) => clientItem.id !== item.id) } })
+    const archived: Client & { archivedAt: string } = { ...item, archivedAt: new Date().toISOString() }
+    persist({
+      ...data,
+      clientsByWorkspace: { ...data.clientsByWorkspace, [activeWorkspace.id]: clients.filter((clientItem) => clientItem.id !== item.id) },
+      archivedClientsByWorkspace: { ...data.archivedClientsByWorkspace, [activeWorkspace.id]: [archived, ...(data.archivedClientsByWorkspace[activeWorkspace.id] ?? []).filter((clientItem) => clientItem.id !== item.id)] },
+    })
     if (editingClientId === item.id) resetClientEditor()
     setNotice('تمت أرشفة العميل محليًا.')
     setSaving(false)
@@ -238,10 +213,11 @@ export function WorkspaceWorkspace() {
       }
     }
 
-    const created: Client = { id: `local-${crypto.randomUUID()}`, name, company: clientCompany || null, email: clientEmail || null, phone: null, notes: clientNotes || null }
+    const created: Client = { id: `local-${crypto.randomUUID()}`, workspaceId: activeWorkspace.id, name, company: clientCompany || null, email: clientEmail || null, phone: null, notes: clientNotes || null }
     persist({
       ...data,
       clientsByWorkspace: { ...data.clientsByWorkspace, [activeWorkspace.id]: [...clients, created] },
+      archivedClientsByWorkspace: { ...data.archivedClientsByWorkspace, [activeWorkspace.id]: data.archivedClientsByWorkspace[activeWorkspace.id] ?? [] },
     })
     resetClientEditor()
     setNotice('تم حفظ العميل محليًا.')

@@ -163,7 +163,7 @@ export function AccountWorkspace() {
             <Input value={form.city} onChange={(event) => updateField('city', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" />
           </label>
           <label className="block text-sm font-medium">بداية اليوم
-            <Input type="time" value={form.dayStart} onChange={(event) => updateField('dayStart', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" />
+            <Input type="time" aria-label="بداية اليوم" value={form.dayStart} onChange={(event) => updateField('dayStart', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" />
           </label>
           <label className="block text-sm font-medium">فترة العمل
             <Input value={form.workWindow} onChange={(event) => updateField('workWindow', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" placeholder="09:00 - 17:00" />
@@ -204,7 +204,7 @@ export function AccountWorkspace() {
             <span><strong className="block text-sm">مسح بيانات الجهاز</strong><small className="mt-1 block text-xs text-muted-foreground">لا يحذف حسابك البعيد</small></span>
           </Button>
         </div>
-        <Input ref={fileInputRef} type="file" accept="application/json,.json" onChange={restoreBackup} className="hidden" />
+        <Input ref={fileInputRef} type="file" aria-label="ملف النسخة الاحتياطية" accept="application/json,.json" onChange={restoreBackup} className="hidden" />
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-muted/60 p-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> لا تتضمن النسخ المحلية كلمات المرور أو رموز الجلسات.</span>
           {dataMessage && <span className="font-medium text-foreground">{dataMessage}</span>}

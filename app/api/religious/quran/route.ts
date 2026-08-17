@@ -55,7 +55,7 @@ export async function GET(request: Request) {
 
   if (isCatalogRequest(catalog)) {
     try {
-      const response = await fetch('https://api.alquran.cloud/v1/surah', { next: { revalidate: 86400 } })
+      const response = await fetch('https://api.alquran.cloud/v1/surah', { next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) })
       if (!response.ok) return NextResponse.json({ error: 'تعذر جلب فهرس السور من المصدر الخارجي.' }, { status: 502 })
       const payload = await response.json() as SurahCatalogPayload
       const surahs = payload.data?.filter((surah) => Number.isInteger(surah.number) && Boolean(surah.name)).map((surah) => ({
@@ -85,7 +85,7 @@ export async function GET(request: Request) {
     : `https://api.alquran.cloud/v1/surah/${surah}/quran-uthmani`
 
   try {
-    const response = await fetch(endpoint, { next: { revalidate: 86400 } })
+    const response = await fetch(endpoint, { next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) })
     if (!response.ok) return NextResponse.json({ error: 'تعذر جلب نص القرآن من المصدر الخارجي.' }, { status: 502 })
     const payload = await response.json() as QuranPayload
     if (payload.code !== 200 || !payload.data?.ayahs?.length) return NextResponse.json({ error: 'لم يُرجع المصدر نص القرآن المطلوب.' }, { status: 502 })

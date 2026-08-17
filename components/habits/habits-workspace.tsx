@@ -41,6 +41,7 @@ export function HabitsWorkspace() {
   const [taskId, setTaskId] = useState('')
   const [projectId, setProjectId] = useState('')
   const [goalId, setGoalId] = useState('')
+  const [habitFormError, setHabitFormError] = useState('')
   const recentDates = useMemo(() => getRecentDates(35), [])
   const today = recentDates[recentDates.length - 1]
   const weekDates = recentDates.slice(-7)
@@ -54,7 +55,10 @@ export function HabitsWorkspace() {
 
   function submitHabit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!title.trim()) return
+    if (!title.trim()) {
+      setHabitFormError('اكتب اسم العادة أولًا.')
+      return
+    }
     addHabit({ title, target, frequency, icon: 'عادة', taskId: taskId || undefined, projectId: projectId || undefined, goalId: goalId || undefined })
     setTitle('')
     setTarget('20 دقيقة')
@@ -62,15 +66,16 @@ export function HabitsWorkspace() {
     setTaskId('')
     setProjectId('')
     setGoalId('')
+    setHabitFormError('')
     setShowForm(false)
   }
 
   return <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
     <ContentCard className="lg:col-span-8" title="عادات النهاردة" description={`${completed} من ${habits.length} عادات مكتملة`} action={<Button type="button" onClick={() => setShowForm((visible) => !visible)} aria-expanded={showForm} size="sm" className="gap-2 rounded-full text-xs font-semibold"><Plus className="h-3.5 w-3.5" /> عادة جديدة</Button>}>
-      {showForm && <form onSubmit={submitHabit} className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-4" aria-label="إضافة عادة جديدة">
+      {showForm && <form onSubmit={submitHabit} noValidate className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-4" aria-label="إضافة عادة جديدة">
         <div className="mb-3 flex items-center justify-between"><p className="text-sm font-semibold">أضف عادة تناسب يومك</p><Button type="button" onClick={() => setShowForm(false)} aria-label="إغلاق نموذج العادة" variant="ghost" size="icon" className="rounded-lg text-muted-foreground"><X className="h-4 w-4" /></Button></div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="space-y-1 text-xs font-medium"><span>اسم العادة</span><Input value={title} onChange={(event) => setTitle(event.target.value)} autoFocus required maxLength={100} placeholder="مثل: المشي" /></label>
+          <label className="space-y-1 text-xs font-medium"><span>اسم العادة</span><Input value={title} onChange={(event) => { setTitle(event.target.value); if (habitFormError) setHabitFormError('') }} autoFocus maxLength={100} aria-invalid={Boolean(habitFormError)} aria-describedby={habitFormError ? 'habit-form-error' : undefined} placeholder="مثل: المشي" />{habitFormError && <span id="habit-form-error" role="alert" className="block text-[11px] text-destructive">{habitFormError}</span>}</label>
           <label className="space-y-1 text-xs font-medium"><span>هدفها</span><Input value={target} onChange={(event) => setTarget(event.target.value)} maxLength={80} placeholder="مثل: 20 دقيقة" /></label>
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">

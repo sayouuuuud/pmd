@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   endpoint.searchParams.set('method', selectedMethod)
 
   try {
-    const response = await fetch(endpoint, { next: { revalidate: 1800 } })
+    const response = await fetch(endpoint, { next: { revalidate: 1800 }, signal: AbortSignal.timeout(8000) })
     if (!response.ok) {
       return NextResponse.json({ error: 'تعذر جلب مواقيت الصلاة من المصدر الخارجي.' }, { status: 502 })
     }

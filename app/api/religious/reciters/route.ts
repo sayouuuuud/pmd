@@ -5,7 +5,7 @@ type ApiReciter = { id?: number; name?: string; moshaf?: ApiMoshaf[] }
 
 export async function GET() {
   try {
-    const response = await fetch('https://www.mp3quran.net/api/v3/reciters?language=ar', { next: { revalidate: 86400 } })
+    const response = await fetch('https://www.mp3quran.net/api/v3/reciters?language=ar', { next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) })
     if (!response.ok) return NextResponse.json({ error: 'تعذر جلب كتالوج القراء من المصدر الخارجي.' }, { status: 502 })
     const payload = await response.json() as { reciters?: ApiReciter[] }
     const reciters = (payload.reciters ?? []).slice(0, 30).map((reciter) => {

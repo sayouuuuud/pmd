@@ -75,7 +75,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     }
     if (body.timezone !== undefined) patch.timezone = textValue(body.timezone, 80) || 'Africa/Cairo'
     if (Object.keys(patch).length === 0) return json({ item: current })
-    const [updated] = await getDb().update(calendarEvent).set({ ...patch, updatedAt: new Date() }).where(eq(calendarEvent.id, id)).returning()
+    const [updated] = await getDb().update(calendarEvent).set({ ...patch, updatedAt: new Date() }).where(and(eq(calendarEvent.id, id), eq(calendarEvent.createdBy, user.id), isNull(calendarEvent.archivedAt))).returning()
     return updated ? json({ item: updated }) : json({ error: 'تعذر تحديث الحدث.' }, { status: 500 })
   } catch {
     return backendUnavailable()
@@ -90,7 +90,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     const { id } = await context.params
     const current = await findOwnedEvent(id, user.id)
     if (!current) return json({ error: 'الحدث غير موجود.' }, { status: 404 })
-    const [archived] = await getDb().update(calendarEvent).set({ archivedAt: new Date(), updatedAt: new Date() }).where(eq(calendarEvent.id, id)).returning()
+    const [archived] = await getDb().update(calendarEvent).set({ archivedAt: new Date(), updatedAt: new Date() }).where(and(eq(calendarEvent.id, id), eq(calendarEvent.createdBy, user.id), isNull(calendarEvent.archivedAt))).returning()
     return archived ? json({ item: archived }) : json({ error: 'تعذر أرشفة الحدث.' }, { status: 500 })
   } catch {
     return backendUnavailable()

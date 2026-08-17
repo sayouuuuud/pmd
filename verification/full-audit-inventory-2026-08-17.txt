@@ -1,0 +1,191 @@
+## ROUTES
+app/account/page.tsx
+app/api/account/export/route.ts
+app/api/account/route.ts
+app/api/archive/[kind]/[id]/route.ts
+app/api/archive/route.ts
+app/api/auth/[...all]/route.ts
+app/api/calendar-events/[id]/route.ts
+app/api/calendar-events/route.ts
+app/api/clients/[id]/route.ts
+app/api/clients/route.ts
+app/api/daily-plan/[id]/route.ts
+app/api/daily-plan/route.ts
+app/api/entertainment/[id]/route.ts
+app/api/entertainment/route.ts
+app/api/finance/[id]/route.ts
+app/api/finance/budget/route.ts
+app/api/finance/route.ts
+app/api/goals/[id]/route.ts
+app/api/goals/route.ts
+app/api/habits/[id]/route.ts
+app/api/habits/route.ts
+app/api/journal/[id]/route.ts
+app/api/journal/route.ts
+app/api/notes/[id]/route.ts
+app/api/notes/route.ts
+app/api/profile/route.ts
+app/api/projects/[id]/pricing/route.ts
+app/api/projects/[id]/route.ts
+app/api/projects/[id]/updates/route.ts
+app/api/projects/pricing/[pricingId]/route.ts
+app/api/projects/pricing/route.ts
+app/api/projects/route.ts
+app/api/projects/updates/route.ts
+app/api/religious/quran/route.ts
+app/api/religious/reciters/route.ts
+app/api/religious/route.ts
+app/api/religious/timings/route.ts
+app/api/reminders/[id]/route.ts
+app/api/reminders/route.ts
+app/api/review/route.ts
+app/api/tasks/[id]/route.ts
+app/api/tasks/[id]/subtasks/[subtaskId]/route.ts
+app/api/tasks/[id]/subtasks/route.ts
+app/api/tasks/route.ts
+app/api/workspaces/route.ts
+app/archive/page.tsx
+app/board/page.tsx
+app/calendar/page.tsx
+app/daily-plan/page.tsx
+app/design-system/page.tsx
+app/entertainment/page.tsx
+app/goals/page.tsx
+app/habits/page.tsx
+app/journal/page.tsx
+app/login/page.tsx
+app/money/page.tsx
+app/notes/page.tsx
+app/offline/page.tsx
+app/onboarding/page.tsx
+app/page.tsx
+app/projects/page.tsx
+app/religious/page.tsx
+app/reminders/page.tsx
+app/review/page.tsx
+app/tasks/page.tsx
+app/workspace/page.tsx
+## COMPONENTS
+components/account/account-workspace.tsx
+components/archive/archive-workspace.tsx
+components/auth/auth-form.tsx
+components/board/board-workspace-lazy.tsx
+components/board/board-workspace.tsx
+components/calendar/calendar-workspace.tsx
+components/daily-plan/daily-plan-workspace.tsx
+components/dashboard/dashboard-home.tsx
+components/entertainment/entertainment-workspace-lazy.tsx
+components/entertainment/entertainment-workspace.tsx
+components/goals/goals-workspace.tsx
+components/habits/habits-workspace.tsx
+components/journal/journal-workspace-lazy.tsx
+components/journal/journal-workspace.tsx
+components/layout/page-shell.tsx
+components/layout/top-nav.tsx
+components/money/money-workspace.tsx
+components/notes/notes-workspace.tsx
+components/onboarding/onboarding-flow.tsx
+components/projects/projects-workspace.tsx
+components/pwa/pwa-register.tsx
+components/religious/religious-workspace-lazy.tsx
+components/religious/religious-workspace.tsx
+components/reminders/reminders-workspace.tsx
+components/review/weekly-review-workspace.tsx
+components/search/global-search-dialog.tsx
+components/tasks/tasks-workspace.tsx
+components/ui/badge.tsx
+components/ui/button.tsx
+components/ui/checkbox.tsx
+components/ui/content-card.tsx
+components/ui/dialog.tsx
+components/ui/empty-state.tsx
+components/ui/input.tsx
+components/ui/loading-state.tsx
+components/ui/select.tsx
+components/ui/stat-card.tsx
+components/ui/textarea.tsx
+components/workspace/workspace-workspace.tsx
+## API ROUTES
+app/api/account/export/route.ts
+app/api/account/route.ts
+app/api/archive/[kind]/[id]/route.ts
+app/api/archive/route.ts
+app/api/auth/[...all]/route.ts
+app/api/calendar-events/[id]/route.ts
+app/api/calendar-events/route.ts
+app/api/clients/[id]/route.ts
+app/api/clients/route.ts
+app/api/daily-plan/[id]/route.ts
+app/api/daily-plan/route.ts
+app/api/entertainment/[id]/route.ts
+app/api/entertainment/route.ts
+app/api/finance/[id]/route.ts
+app/api/finance/budget/route.ts
+app/api/finance/route.ts
+app/api/goals/[id]/route.ts
+app/api/goals/route.ts
+app/api/habits/[id]/route.ts
+app/api/habits/route.ts
+app/api/journal/[id]/route.ts
+app/api/journal/route.ts
+app/api/notes/[id]/route.ts
+app/api/notes/route.ts
+app/api/profile/route.ts
+app/api/projects/[id]/pricing/route.ts
+app/api/projects/[id]/route.ts
+app/api/projects/[id]/updates/route.ts
+app/api/projects/pricing/[pricingId]/route.ts
+app/api/projects/pricing/route.ts
+app/api/projects/route.ts
+app/api/projects/updates/route.ts
+app/api/religious/quran/route.ts
+app/api/religious/reciters/route.ts
+app/api/religious/route.ts
+app/api/religious/timings/route.ts
+app/api/reminders/[id]/route.ts
+app/api/reminders/route.ts
+app/api/review/route.ts
+app/api/tasks/[id]/route.ts
+app/api/tasks/[id]/subtasks/[subtaskId]/route.ts
+app/api/tasks/[id]/subtasks/route.ts
+app/api/tasks/route.ts
+app/api/workspaces/route.ts
+## SCHEMA TABLES
+11:export const user = pgTable('user', {
+21:export const session = pgTable('session', {
+32:export const account = pgTable('account', {
+48:export const verification = pgTable('verification', {
+57:export const userProfile = pgTable('user_profile', {
+68:export const workspace = pgTable('workspace', {
+79:export const workspaceMember = pgTable('workspace_member', {
+92:export const workspaceInvitation = pgTable('workspace_invitation', {
+108:export const client = pgTable('client', {
+123:export const clientCredential = pgTable('client_credential', {
+140:export const calendarEvent = pgTable('calendar_event', {
+158:export const libraryResource = pgTable('library_resource', {
+174:export const activitySession = pgTable('activity_session', {
+189:export const secondFactorSetting = pgTable('second_factor_setting', {
+200:export const religiousSettings = pgTable('religious_settings', {
+212:export const goal = pgTable('goal', {
+228:export const project = pgTable('project', {
+246:export const projectUpdate = pgTable('project_update', {
+257:export const projectPricing = pgTable('project_pricing', {
+275:export const projectShare = pgTable('project_share', {
+288:export const task = pgTable('task', {
+308:export const subtask = pgTable('subtask', {
+318:export const note = pgTable('note', {
+331:export const habit = pgTable('habit', {
+346:export const habitLog = pgTable('habit_log', {
+358:export const dailyPlanItem = pgTable('daily_plan_item', {
+374:export const financeEntry = pgTable('finance_entry', {
+393:export const budget = pgTable('budget', {
+401:export const reminder = pgTable('reminder', {
+417:export const journalEntry = pgTable('journal_entry', {
+431:export const entertainmentItem = pgTable('entertainment_item', {
+451:export const weeklyReview = pgTable('weekly_review', {
+## EXPERIMENTAL REFERENCES
+server/db/migrations/0010_workspace_work_system_experimental.sql
+server/db/schema.ts
+## DEV SERVER
+HTTP 200
+<!DOCTYPE html><html lang="ar" dir="rtl" class="bg-background"><head><meta charSet="utf-8"/><meta name="viewport" conten

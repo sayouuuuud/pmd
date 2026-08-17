@@ -58,15 +58,15 @@ export function GoalsWorkspace() {
 
       <ContentCard title="هدف جديد" description="اختار نتيجة قابلة للفهم، مش مجرد قائمة أمنيات.">
         <form onSubmit={createGoal} className="space-y-3">
-          <Input name="title" required className="w-full rounded-2xl px-4 py-3" placeholder="مثال: إطلاق النسخة الأولى" />
-          <Textarea name="description" className="min-h-20 w-full rounded-2xl px-4 py-3" placeholder="ليه الهدف ده مهم؟" />
+          <Input name="title" required aria-label="عنوان الهدف" className="w-full rounded-2xl px-4 py-3" placeholder="مثال: إطلاق النسخة الأولى" />
+          <Textarea name="description" aria-label="وصف الهدف" className="min-h-20 w-full rounded-2xl px-4 py-3" placeholder="ليه الهدف ده مهم؟" />
           <div className="grid grid-cols-2 gap-2">
-            <Select name="horizon" defaultValue="quarter" className="rounded-2xl px-3 py-3">
+            <Select name="horizon" aria-label="أفق الهدف" defaultValue="quarter" className="rounded-2xl px-3 py-3">
               <option value="quarter">هذا الربع</option>
               <option value="year">هذه السنة</option>
               <option value="someday">لاحقًا</option>
             </Select>
-            <Input name="targetLabel" className="rounded-2xl px-3 py-3" placeholder="موعد تقريبي" />
+            <Input name="targetLabel" aria-label="الموعد التقريبي للهدف" className="rounded-2xl px-3 py-3" placeholder="موعد تقريبي" />
           </div>
           <Button type="submit" className="flex w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> إضافة الهدف</Button>
         </form>

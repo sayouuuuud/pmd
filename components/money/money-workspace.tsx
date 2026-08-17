@@ -217,25 +217,25 @@ export function MoneyWorkspace() {
       <ContentCard className="lg:col-span-5" title="عملية مالية جديدة" description="خلي التسجيل سريعًا، واربطه بمشروع أو هدف لو كان له سياق.">
         <form onSubmit={createEntry} noValidate className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            <Select name="kind" defaultValue="expense" className="h-auto rounded-2xl py-3"><option value="expense">مصروف</option><option value="income">دخل</option></Select>
+            <Select name="kind" aria-label="نوع العملية" defaultValue="expense" className="h-auto rounded-2xl py-3"><option value="expense">مصروف</option><option value="income">دخل</option></Select>
             <Input name="amount" type="number" min="1" aria-label="مبلغ العملية" aria-invalid={Boolean(entryFormError)} aria-describedby={entryFormError ? 'finance-entry-error' : undefined} onChange={() => { if (entryFormError) setEntryFormError('') }} className="h-auto rounded-2xl py-3" placeholder="المبلغ" />
           </div>
           <Input name="title" aria-label="عنوان العملية" aria-invalid={Boolean(entryFormError)} aria-describedby={entryFormError ? 'finance-entry-error' : undefined} onChange={() => { if (entryFormError) setEntryFormError('') }} className="h-auto rounded-2xl px-4 py-3" placeholder="مثال: مشتريات البيت" />
                     <div className="grid grid-cols-2 gap-2">
-            <Select name="category" defaultValue="عام" className="h-auto rounded-2xl py-3">
+            <Select name="category" aria-label="تصنيف العملية" defaultValue="عام" className="h-auto rounded-2xl py-3">
 {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}</Select>
-            <Input name="localDate" type="date" defaultValue={currentLocalDate()} className="h-auto rounded-2xl py-3" />
+            <Input name="localDate" type="date" aria-label="تاريخ العملية" defaultValue={currentLocalDate()} className="h-auto rounded-2xl py-3" />
           </div>
-          <Select name="recurrence" defaultValue="none" className="h-auto rounded-2xl py-3">
+          <Select name="recurrence" aria-label="تكرار العملية" defaultValue="none" className="h-auto rounded-2xl py-3">
             <option value="none">بدون تكرار</option>
             <option value="monthly">مصروف شهري</option>
             <option value="weekly">مصروف أسبوعي</option>
           </Select>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <Select name="projectId" defaultValue="" className="h-auto rounded-2xl py-3"><option value="">بدون مشروع</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}</Select>
-            <Select name="goalId" defaultValue="" className="h-auto rounded-2xl py-3"><option value="">بدون هدف</option>{goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</Select>
+            <Select name="projectId" aria-label="المشروع المرتبط" defaultValue="" className="h-auto rounded-2xl py-3"><option value="">بدون مشروع</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}</Select>
+            <Select name="goalId" aria-label="الهدف المرتبط" defaultValue="" className="h-auto rounded-2xl py-3"><option value="">بدون هدف</option>{goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</Select>
           </div>
-          <Input name="note" className="h-auto rounded-2xl px-4 py-3" placeholder="ملاحظة اختيارية" />
+          <Input name="note" aria-label="ملاحظة العملية" className="h-auto rounded-2xl px-4 py-3" placeholder="ملاحظة اختيارية" />
           {entryFormError && <p id="finance-entry-error" role="alert" className="text-xs text-destructive">{entryFormError}</p>}
           <Button type="submit" className="h-auto w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> تسجيل العملية</Button>
         </form>
