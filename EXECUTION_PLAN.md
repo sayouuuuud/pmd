@@ -1066,3 +1066,10 @@
 البوابات الأساسية: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS. وأُعيدت فحوص ownership وresponsive وaccessibility بين `2026-08-17T14:25:23Z` و`2026-08-17T14:26:41Z`: ownership PASS لـ45 Route Handler، responsive PASS لـ34/34، accessibility PASS لـ34/34. التقارير: `verification/calendar-validation-ar-2026-08-17.md`، `verification/calendar-validation-quality-20260817T142300Z.log`، و`verification/calendar-validation-audits-20260817T142523Z.log`.
 
 **الحالة:** PASS — دفعة التقويم جاهزة للاعتماد بعد تنظيف artifacts.
+
+
+## دفعة تحقق دفعات المشاريع — 2026-08-17
+
+أُغلقت فجوة UX في دفعات المشاريع داخل `components/projects/projects-workspace.tsx`. أصبح نموذج إنشاء الدفعة ومحرر تعديلها يستخدمان تحققًا عربيًا inline مستقلًا لكل مسار: رفض العنوان الفارغ، رفض المبلغ الفارغ، ومسح الرسالة أثناء الإدخال، مع `noValidate` و`aria-invalid` و`aria-describedby`. اختُبر الإنشاء بعنوان «دفعة اختبار التحقق» ومبلغ `1000` ثم أُزيلت الدفعة التجريبية من الواجهة، كما اختُبر العنوان والمبلغ الفارغان داخل محرر التعديل وأُعيدت القيم الصحيحة دون تغيير بيانات المستخدم.
+
+الأدلة: `verification/project-pricing-validation-ar-2026-08-17.md`، وسجل البوابات الأساسي `verification/project-pricing-validation-quality-20260817T142931Z.log`، وإعادة التدقيق `verification/project-pricing-audits-20260817T143233Z.log`. نجحت TypeScript وESLint و`git diff --check` و`next build`، كما نجحت ownership (`45` Route Handler، `41` مع جلسة وملكية ظاهرة)، وresponsive (`34/34`)، وaccessibility (`34/34`).

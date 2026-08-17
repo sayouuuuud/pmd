@@ -268,3 +268,10 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 الأدلة: `verification/calendar-validation-ar-2026-08-17.md`، `verification/calendar-validation-quality-20260817T142300Z.log`، `verification/calendar-validation-audits-20260817T142523Z.log`، و`verification/interaction-smoke-tests.md`.
 
 النتيجة: PASS — TypeScript، ESLint، diff check، Next build، ownership (45 Route Handler؛ 41 session و41 visible ownership)، responsive (34/34)، accessibility (34/34).
+
+
+## دفعة تحقق دفعات المشاريع — 2026-08-17
+
+أُغلقت فجوة التحقق في `components/projects/projects-workspace.tsx` لنموذج إنشاء الدفعات ومحرر تعديلها. اختُبر رفض عنوان الدفعة الفارغ، ورفض المبلغ الفارغ، ومسح الرسائل أثناء الكتابة، ثم إنشاء دفعة صحيحة بمبلغ `1000` وإلغاؤها من الواجهة. كما اختُبر المساران نفسيهما داخل محرر التعديل وأُعيدت القيم الصحيحة دون تغيير بيانات المستخدم.
+
+الأدلة: `verification/project-pricing-validation-ar-2026-08-17.md`، `verification/project-pricing-validation-quality-20260817T142931Z.log`، و`verification/project-pricing-audits-20260817T143233Z.log`. النتيجة: TypeScript وESLint و`git diff --check` و`next build` ناجحة؛ ownership `PASS` مع 45 Route Handler و41 مسارًا مع جلسة وملكية ظاهرة؛ responsive `PASS` (34/34)؛ accessibility `PASS` (34/34).
