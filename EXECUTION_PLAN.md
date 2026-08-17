@@ -1036,3 +1036,8 @@
 أُعيد تشغيل ownership وresponsive وaccessibility على الشجرة النظيفة بعد دفعات البحث والديني والتحقق العربي. القياس الفعلي: `2026-08-17T13:50:19Z`–`2026-08-17T13:51:37Z`. نجح ownership لـ45 Route Handler، ونجح responsive في 34/34 حالة، ونجحت accessibility في 34/34 حالة. السجل الخام هو `verification/final-review-audits-2026-08-17.log` والتقرير هو `verification/final-review-audit-2026-08-17.md`. أُعيدت artifacts المتغيرة من responsive إلى النسخ الملتزمة، ولم تُشغّل migrations ولم تُضف أسرار.
 
 **الحالة:** بوابات إعادة التدقيق المرحلي PASS؛ الدفعة جاهزة للاعتماد في commit توثيقي مستقل.
+
+## 2026-08-17 — دفعة التحقق العربي في السبورة
+أُغلقت فجوات الفشل الصامت في `components/board/board-workspace.tsx` لثلاثة نماذج: إنشاء ورقة، إنشاء سبورة، وإنشاء منطقة تجميع. أضيفت `noValidate` ورسائل عربية inline مع `role="alert"` و`aria-invalid` و`aria-describedby` ومسح الخطأ أثناء الكتابة، مع الحفاظ على مكوّنات الإدخال والكروت وSemantic Tokens كما هي. اختُبر الإرسال الفارغ لكل نموذج، ثم إدخال بيانات صحيحة والإنشاء، ثم أزيلت الورقة والسبورة ومنطقة التجميع الاختبارية من localStorage وعادت البيانات الأصلية. التقرير: `verification/board-validation-ar-2026-08-17.md`.
+
+بوابات ما بعد التعديل: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS مع تحذير middleware المعلوماتي المعتاد، ownership PASS (45 Route Handler؛ 41 session و41 visible ownership)، responsive PASS (34/34)، accessibility PASS (34/34). السجل الخام: `verification/board-final-quality-20260817T140759Z.log`.
