@@ -1073,3 +1073,11 @@
 أُغلقت فجوة UX في دفعات المشاريع داخل `components/projects/projects-workspace.tsx`. أصبح نموذج إنشاء الدفعة ومحرر تعديلها يستخدمان تحققًا عربيًا inline مستقلًا لكل مسار: رفض العنوان الفارغ، رفض المبلغ الفارغ، ومسح الرسالة أثناء الإدخال، مع `noValidate` و`aria-invalid` و`aria-describedby`. اختُبر الإنشاء بعنوان «دفعة اختبار التحقق» ومبلغ `1000` ثم أُزيلت الدفعة التجريبية من الواجهة، كما اختُبر العنوان والمبلغ الفارغان داخل محرر التعديل وأُعيدت القيم الصحيحة دون تغيير بيانات المستخدم.
 
 الأدلة: `verification/project-pricing-validation-ar-2026-08-17.md`، وسجل البوابات الأساسي `verification/project-pricing-validation-quality-20260817T142931Z.log`، وإعادة التدقيق `verification/project-pricing-audits-20260817T143233Z.log`. نجحت TypeScript وESLint و`git diff --check` و`next build`، كما نجحت ownership (`45` Route Handler، `41` مع جلسة وملكية ظاهرة)، وresponsive (`34/34`)، وaccessibility (`34/34`).
+
+## 2026-08-17 — دفعة تحقق مساحة العمل والعملاء
+
+أُغلقت فجوة الفشل الصامت في `components/workspace/workspace-workspace.tsx` بإضافة تحقق عربي inline لمساحة العمل والعميل، مع `noValidate` و`aria-invalid` و`aria-describedby` ومسح الأخطاء أثناء الكتابة. اختُبر إرسال اسم مساحة العمل فارغًا، ثم إدخال «مساحة اختبار التحقق» وإنشاؤها بنجاح. داخل المساحة الاختبارية رُفض اسم العميل الفارغ، ثم رُفض البريد الاختياري `invalid-email` برسالة عربية، وبعد استبداله بـ`test@example.com` نجح إنشاء العميل.
+
+أُرشِف العميل التجريبي، ثم أُزيلت مساحة الاختبار وبياناتها المؤرشفة من localStorage فقط، وعادت مساحة المستخدم الشخصية وعميلها الأصليان دون تغيير. الأدلة: `verification/workspace-validation-ar-2026-08-17.md`، `verification/workspace-validation-quality-20260817T143610Z.log`، و`verification/workspace-validation-audits-20260817T143853Z.log`.
+
+البوابات: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS؛ ownership PASS (45 Route Handler، 41 session و41 visible ownership)، responsive PASS (34/34)، accessibility PASS (34/34). **الحالة: دفعة مساحة العمل والعملاء مكتملة وجاهزة للاعتماد.**

@@ -773,3 +773,12 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **ARIA والهوية:** تحقق `noValidate` و`aria-invalid` و`aria-describedby` ومسح الخطأ عند التصحيح، دون تغيير تخطيط بطاقات المشاريع أو ألوان Semantic أو اتجاه RTL.
 - **البوابات:** TypeScript وESLint وdiff check وNext build نجحت؛ ownership: 45/45 مسارًا مطابقًا؛ responsive: 34/34؛ accessibility: 34/34.
 - **الأدلة:** `verification/project-pricing-validation-ar-2026-08-17.md`، `verification/project-pricing-validation-quality-20260817T142931Z.log`، `verification/project-pricing-audits-20260817T143233Z.log`.
+
+## دفعة مساحة العمل والعملاء — تحقق عربي — 2026-08-17
+
+- **النطاق:** `components/workspace/workspace-workspace.tsx`.
+- **مساحة العمل:** إرسال النموذج باسم فارغ أظهر `اكتب اسم مساحة العمل أولًا`، ثم إدخال `مساحة اختبار التحقق` مسح الخطأ أثناء الكتابة ونجح الإنشاء.
+- **العميل:** إرسال النموذج باسم فارغ أظهر رسالة عربية؛ إدخال `عميل اختبار التحقق` ثم `invalid-email` أظهر رفض البريد العربي، ثم صُحح إلى `test@example.com` ونجح إنشاء العميل.
+- **التنظيف:** أُرشِف العميل التجريبي، ثم أُزيلت مساحة الاختبار وبياناتها المؤرشفة من localStorage فقط. أظهر التحقق النهائي مساحة المستخدم الشخصية وعميلها الأصليين فقط.
+- **البوابات:** TypeScript وESLint و`git diff --check` وNext build نجحت في `verification/workspace-validation-quality-20260817T143610Z.log`؛ ownership `45` route و`41` مع session وownership ظاهر؛ responsive `34/34`؛ accessibility `34/34` في `verification/workspace-validation-audits-20260817T143853Z.log`.
+- **النتيجة:** PASS، ولا توجد بيانات اختبار متبقية.

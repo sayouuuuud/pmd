@@ -275,3 +275,9 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 أُغلقت فجوة التحقق في `components/projects/projects-workspace.tsx` لنموذج إنشاء الدفعات ومحرر تعديلها. اختُبر رفض عنوان الدفعة الفارغ، ورفض المبلغ الفارغ، ومسح الرسائل أثناء الكتابة، ثم إنشاء دفعة صحيحة بمبلغ `1000` وإلغاؤها من الواجهة. كما اختُبر المساران نفسيهما داخل محرر التعديل وأُعيدت القيم الصحيحة دون تغيير بيانات المستخدم.
 
 الأدلة: `verification/project-pricing-validation-ar-2026-08-17.md`، `verification/project-pricing-validation-quality-20260817T142931Z.log`، و`verification/project-pricing-audits-20260817T143233Z.log`. النتيجة: TypeScript وESLint و`git diff --check` و`next build` ناجحة؛ ownership `PASS` مع 45 Route Handler و41 مسارًا مع جلسة وملكية ظاهرة؛ responsive `PASS` (34/34)؛ accessibility `PASS` (34/34).
+
+## 2026-08-17 — دفعة مساحة العمل والعملاء
+
+أُغلقت فجوة التحقق الصامت في `components/workspace/workspace-workspace.tsx`. اختُبر رفض اسم مساحة العمل الفارغ، ثم إنشاء مساحة `مساحة اختبار التحقق` بعد مسح الخطأ. داخلها اختُبر رفض اسم العميل الفارغ، ورفض البريد الاختياري `invalid-email`، ثم نجاح الإنشاء بعد إدخال `test@example.com`. أُرشِف العميل وأُزيلت مساحة الاختبار وبياناتها من localStorage، وبقيت بيانات المستخدم الأصلية.
+
+الأدلة: `verification/workspace-validation-ar-2026-08-17.md`، `verification/workspace-validation-quality-20260817T143610Z.log`، `verification/workspace-validation-audits-20260817T143853Z.log`. البوابات: TypeScript وESLint وdiff check وNext build PASS؛ ownership `45/45` مع 41 route مملوكًا ظاهرًا؛ responsive `34/34`؛ accessibility `34/34`. **الحالة: PASS — فجوة UX مغلقة ولا توجد بيانات اختبار متبقية.**

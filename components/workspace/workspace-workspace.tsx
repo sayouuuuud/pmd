@@ -22,6 +22,8 @@ export function WorkspaceWorkspace() {
   const [clientSearch, setClientSearch] = useState('')
   const [editingClientId, setEditingClientId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
+  const [workspaceError, setWorkspaceError] = useState('')
+  const [clientError, setClientError] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -82,7 +84,12 @@ export function WorkspaceWorkspace() {
 
   async function createWorkspace() {
     const name = workspaceName.trim()
-    if (!name || saving) return
+    if (!name) {
+      setWorkspaceError('اكتب اسم مساحة العمل أولًا.')
+      return
+    }
+    if (saving) return
+    setWorkspaceError('')
     setSaving(true)
     setNotice('')
     if (backendAvailable) {
@@ -117,6 +124,7 @@ export function WorkspaceWorkspace() {
 
   function resetClientEditor() {
     setEditingClientId(null)
+    setClientError('')
     setClientName('')
     setClientCompany('')
     setClientEmail('')
@@ -129,14 +137,26 @@ export function WorkspaceWorkspace() {
     setClientCompany(item.company ?? '')
     setClientEmail(item.email ?? '')
     setClientNotes(item.notes ?? '')
+    setClientError('')
     setNotice('')
   }
 
   async function updateClient() {
-    if (!editingClientId || !clientName.trim() || !activeWorkspace || saving) return
+    if (!editingClientId || !activeWorkspace) return
+    const name = clientName.trim()
+    if (!name) {
+      setClientError('اكتب اسم العميل أولًا.')
+      return
+    }
+    if (clientEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail.trim())) {
+      setClientError('اكتب بريدًا إلكترونيًا صحيحًا أو اترك الحقل فارغًا.')
+      return
+    }
+    if (saving) return
+    setClientError('')
     setSaving(true)
     setNotice('')
-    const payload = { name: clientName.trim(), company: clientCompany, email: clientEmail, notes: clientNotes }
+    const payload = { name, company: clientCompany, email: clientEmail, notes: clientNotes }
     if (backendAvailable && !editingClientId.startsWith('local-')) {
       try {
         const response = await fetch(`/api/clients/${encodeURIComponent(editingClientId)}`, {
@@ -191,7 +211,17 @@ export function WorkspaceWorkspace() {
 
   async function createClient() {
     const name = clientName.trim()
-    if (!name || !activeWorkspace || saving) return
+    if (!activeWorkspace) return
+    if (!name) {
+      setClientError('اكتب اسم العميل أولًا.')
+      return
+    }
+    if (clientEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail.trim())) {
+      setClientError('اكتب بريدًا إلكترونيًا صحيحًا أو اترك الحقل فارغًا.')
+      return
+    }
+    if (saving) return
+    setClientError('')
     setSaving(true)
     setNotice('')
     const payload = { name, company: clientCompany, email: clientEmail, notes: clientNotes }
@@ -262,12 +292,13 @@ export function WorkspaceWorkspace() {
             ))}
           </div>
           <div className="mt-4 space-y-3 border-t border-border pt-4">
-            <Input value={workspaceName} onChange={(event) => setWorkspaceName(event.target.value)} placeholder="اسم مساحة جديدة" aria-label="اسم مساحة العمل الجديدة" />
+            <Input value={workspaceName} onChange={(event) => { setWorkspaceName(event.target.value); if (workspaceError) setWorkspaceError('') }} placeholder="اسم مساحة جديدة" aria-label="اسم مساحة العمل الجديدة" aria-invalid={Boolean(workspaceError)} aria-describedby={workspaceError ? 'workspace-name-error' : undefined} />
+            {workspaceError && <p id="workspace-name-error" role="alert" className="text-xs text-destructive">{workspaceError}</p>}
             <Select value={workspaceKind} onChange={(event) => setWorkspaceKind(event.target.value)} aria-label="نوع مساحة العمل">
               <option value="work">عمل حر</option>
               <option value="team">فريق تجريبي</option>
             </Select>
-            <Button type="button" onClick={() => void createWorkspace()} disabled={!workspaceName.trim() || saving} className="w-full">
+            <Button type="button" onClick={() => void createWorkspace()} disabled={saving} className="w-full">
               <Plus className="h-4 w-4" />
               إضافة مساحة عمل
             </Button>
@@ -305,14 +336,15 @@ export function WorkspaceWorkspace() {
             {!loading && visibleClients.length === 0 ? <p className="text-sm text-muted-foreground sm:col-span-2">{clients.length ? 'لا توجد نتائج مطابقة للبحث.' : 'لا يوجد عملاء في هذه المساحة بعد.'}</p> : null}
           </div>
           <div className="mt-5 space-y-3 border-t border-border pt-4">
-            <Input value={clientName} onChange={(event) => setClientName(event.target.value)} placeholder="اسم العميل" aria-label="اسم العميل" />
+            <Input value={clientName} onChange={(event) => { setClientName(event.target.value); if (clientError) setClientError('') }} placeholder="اسم العميل" aria-label="اسم العميل" aria-invalid={Boolean(clientError)} aria-describedby={clientError ? 'client-form-error' : undefined} />
             <div className="grid gap-3 sm:grid-cols-2">
               <Input value={clientCompany} onChange={(event) => setClientCompany(event.target.value)} placeholder="الشركة أو النشاط" aria-label="الشركة أو النشاط" />
-              <Input type="email" value={clientEmail} onChange={(event) => setClientEmail(event.target.value)} placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني" />
+              <Input type="email" value={clientEmail} onChange={(event) => { setClientEmail(event.target.value); if (clientError) setClientError('') }} placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني" aria-invalid={Boolean(clientError)} aria-describedby={clientError ? 'client-form-error' : undefined} />
             </div>
             <Textarea value={clientNotes} onChange={(event) => setClientNotes(event.target.value)} placeholder="ملاحظات أولية (اختياري)" aria-label="ملاحظات العميل" />
+            {clientError && <p id="client-form-error" role="alert" className="text-xs text-destructive">{clientError}</p>}
             <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={() => void (editingClientId ? updateClient() : createClient())} disabled={!clientName.trim() || !activeWorkspace || saving}>
+              <Button type="button" onClick={() => void (editingClientId ? updateClient() : createClient())} disabled={!activeWorkspace || saving}>
                 {editingClientId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                 {editingClientId ? 'حفظ التعديل' : 'إضافة عميل'}
               </Button>
