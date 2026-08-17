@@ -806,3 +806,12 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **التنظيف:** حُذف الدعاء التجريبي وأُزيلت قائمة التلاوة التجريبية، وعادت الواجهة إلى الحالة الأصلية دون بيانات اختبار متبقية.
 - **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS في `verification/religious-validation-quality-20260817T150746Z.log`؛ ownership `45` route و`41` session و`41` visible ownership؛ responsive `34/34`؛ accessibility `34/34` في `verification/religious-validation-audits-20260817T151007Z.log`.
 - **النتيجة:** PASS، أُغلقت فجوة الرفض الصامت في النموذجين مع الحفاظ على RTL والهوية البصرية وإشعارات النجاح الهادئة.
+
+## 2026-08-17 — Quick Add: تحقق عربي
+| السيناريو | النتيجة | الدليل |
+|---|---|---|
+| إرسال Quick Add فارغًا | رُفض الإدخال برسالة عربية مرئية `اكتب بيانات الإضافة أولًا بصيغة واضحة.` مرتبطة بالحقل، دون رسالة متصفح افتراضية أو منع صامت | `verification/quick-add-validation-ar-2026-08-17.md` |
+| الكتابة بعد الرفض | أُدخلت `مهمة سريعة للتجربة` فاختفت رسالة الخطأ أثناء الكتابة، ثم نجحت المعاينة | `components/layout/top-nav.tsx`، `verification/quick-add-validation-ar-2026-08-17.md` |
+| المراجعة والحفظ | ظهرت معاينة `مهمة · النهاردة` ثم نجح `تأكيد وحفظ` وظهرت المهمة في الصفحة الرئيسية وصفحة المهام | `verification/quick-add-validation-ar-2026-08-17.md` |
+| التنظيف | أزيل العنصر التجريبي المحدد وحده من الحالة المحلية، ثم عادت صفحة المهام إلى 7 إجمالًا و5 مفتوحة و5 لمهام اليوم | `verification/quick-add-validation-ar-2026-08-17.md` |
+| بوابات الجودة والتدقيق | TypeScript وESLint وdiff check وNext build PASS؛ ownership PASS؛ responsive `34/34`؛ accessibility `34/34` | `verification/quick-add-validation-quality-20260817T151414Z.log`، `verification/quick-add-validation-audits-20260817T151622Z.log` |

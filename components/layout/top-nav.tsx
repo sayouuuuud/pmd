@@ -277,7 +277,7 @@ export function TopNav() {
         description="اكتبها بطريقتك، راجع التفاصيل، وبعدها احفظها."
         className="max-w-lg"
       >
-          <form onSubmit={submitQuickAdd}>
+          <form onSubmit={submitQuickAdd} noValidate>
             <div className="grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
               {quickAddTypes.map((item) => (
                 <Button key={item.value} type="button" variant="ghost" onClick={() => changeType(item.value)} aria-pressed={type === item.value} className={`h-auto rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
@@ -295,11 +295,20 @@ export function TopNav() {
                   id="quick-add-title"
                   autoFocus
                   value={title}
-                  onChange={(event) => setTitle(event.target.value)}
+                  onChange={(event) => {
+                    setTitle(event.target.value)
+                    if (error) setError('')
+                  }}
+                  required
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? 'quick-add-error' : undefined}
                   className="mt-2 h-auto w-full rounded-2xl px-4 py-3"
                   placeholder={type === 'task' ? 'مثال: ضيف مهمة بكرة الساعة ٨ الاتصال بالعميل' : type === 'note' ? 'مثال: فكرة إطلاق المنتج' : type === 'finance' ? 'مثال: سجل مصروف ١٢٠ مواصلات' : 'مثال: فيلم إنترستيلر'}
                 />
-                {type === 'note' && <Textarea aria-label="تفاصيل الملاحظة" value={body} onChange={(event) => setBody(event.target.value)} className="mt-3 min-h-24 w-full rounded-2xl px-4 py-3" placeholder="اكتب التفاصيل هنا..." />}
+                {type === 'note' && <Textarea aria-label="تفاصيل الملاحظة" value={body} onChange={(event) => {
+                  setBody(event.target.value)
+                  if (error) setError('')
+                }} aria-invalid={Boolean(error)} aria-describedby={error ? 'quick-add-error' : undefined} className="mt-3 min-h-24 w-full rounded-2xl px-4 py-3" placeholder="اكتب التفاصيل هنا..." />}
                 {type === 'task' && (
                   <label className="mt-3 block text-sm font-medium" htmlFor="quick-add-project">
                     المشروع المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>
@@ -325,7 +334,7 @@ export function TopNav() {
                     </label>
                   </div>
                 )}
-                {error && <p role="alert" className="mt-3 rounded-2xl bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+                {error && <p id="quick-add-error" role="alert" aria-live="assertive" className="mt-3 rounded-2xl bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
                 <div className="mt-5 flex justify-end gap-2">
                   <Button type="button" variant="ghost" onClick={closeQuickAdd} className="h-auto rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</Button>
                   <Button type="submit" className="h-auto rounded-full px-5 py-2.5 text-sm">مراجعة قبل الحفظ</Button>
