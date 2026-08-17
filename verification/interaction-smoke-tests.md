@@ -1123,3 +1123,12 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 **الحالة:** PASS تجريبي للـlocal-first وواجهة التحصيل؛ يحتاج اعتماد الإنتاج إلى اختبار transaction والتزامن والصلاحيات بقاعدة بيانات حقيقية.
 
 ---
+
+
+## بوابة الجودة النهائية — 2026-08-17T21:37Z
+
+أعيد تشغيل TypeScript وESLint وWebpack production build، ثم تدقيق الملكية والاستجابة وإتاحة الوصول. نجحت جميع البوابات: `pnpm exec tsc --noEmit` و`pnpm lint` و`NEXT_TELEMETRY_DISABLED=1 pnpm build --webpack`، مع تحذير ESLint واحد غير حاجز في `components/workspace/workspace-workspace.tsx` حول dependency باسم `loadData`، وتحذيرَي Next المعلوماتيين المتعلقين بتقادم middleware وEdge Runtime. أظهر تدقيق الملكية `48` route، منها `44` route بجلسة و`44` route بملكية مرئية، دون مسارات ناقصة. أظهر تدقيق الاستجابة `34/34` دون failures، وأظهر تدقيق الوصول `34/34` مع `0` failures.
+
+أُجري smoke test على جميع صفحات التطبيق الأساسية وعددها `22`: كل صفحة أعادت `HTTP 200`، بما فيها `/account` و`/projects` و`/workspace` و`/money` و`/religious` و`/daily-plan`. كما أعادت مسارات الـAPI المحمية `/api/workspaces` و`/api/projects` و`/api/finance` ومسار تحصيل التسعير الجديد `POST /api/projects/pricing/test-pricing-id/collect` حالة `HTTP 401` دون جلسة، وهو السلوك المتوقع. الأدلة التفصيلية في `verification/final-quality-audit-20260817T213458Z.log` و`verification/final-route-smoke-20260817T213714Z.log`.
+
+لم يكشف مسح الأسرار عن قيم سرية فعلية؛ النتائج الظاهرة أسماء متغيرات وplaceholders وتوثيق لغياب credentials فقط. أُعيدت artifacts الخاصة بالصور والتقارير و`tsconfig.tsbuildinfo` قبل الاعتماد.

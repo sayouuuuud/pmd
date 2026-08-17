@@ -1452,3 +1452,12 @@
 اختبار المتصفح على `http://localhost:3004/projects` أثبت إضافة دفعة اختبار بقيمة 321 جنيهًا، ثم تحويلها إلى «تم التحصيل» وظهور رسالة حفظ الدخل محليًا مع خيار إعادة المزامنة. نجحت `pnpm exec tsc --noEmit` و`pnpm lint` دون أخطاء، ونجح `next build --webpack` مع التحذيرات المعلوماتية المعتادة الخاصة بـmiddleware وEdge Runtime، وظهر المسار الديناميكي الجديد في جدول build. لم يُشغّل `drizzle-kit generate` ولم تُضف أسرار إلى المستودع. الدليل: `verification/projects-pricing-finance-browser-20260817T2131Z.md`، وسجل التفاعل، وبطاقة المصفوفة المركزية.
 
 **النتيجة:** PASS تجريبي للربط المحلي والمسار البنيوي؛ اعتماد الإنتاج مشروط باختبار قاعدة بيانات حقيقية، transaction/race conditions، واختبار صلاحيات وجلسات Better Auth.
+
+
+## بوابة الإصدار النهائية — 2026-08-17T21:37Z
+
+أُعيد تشغيل بوابات الجودة على commit `5dfbf49`: نجح TypeScript، وESLint، وWebpack production build. أظهر البناء توليد الصفحات الثابتة `27/27`، وظهر مسار التحصيل الجديد `/api/projects/pricing/[pricingId]/collect` مع مسارات Workspace الجديدة ضمن جدول routes. تحذير ESLint الوحيد غير حاجز ويتعلق بـ`loadData` في Workspace، بينما تحذيرا middleware وEdge Runtime من Next.js معلوماتيان.
+
+أظهر تدقيق الملكية `48` route، منها `44` session-aware و`44` visible ownership دون routes ناقصة. أظهر تدقيق responsive `34/34` دون failures، وتدقيق accessibility `34/34` مع `0` failures. وأُجري smoke test نهائي لـ`22` صفحة، فأعادت جميعها `HTTP 200`. أعادت المسارات المحمية `/api/workspaces` و`/api/projects` و`/api/finance` ومسار تحصيل التسعير حالة `HTTP 401` دون جلسة، ما يؤكد أن حواجز الجلسة لا تزال فعالة.
+
+أُعيدت artifacts المولدة من الصور وتقارير التدقيق قبل الاعتماد. حُفظت سجلات الاختبار في `verification/final-quality-audit-20260817T213458Z.log` و`verification/final-route-smoke-20260817T213714Z.log`. لا يتضمن هذا gate اختبار Neon أو Better Auth أو 2FA الحقيقي، ولا race-condition حقيقيًا، لأن credentials وقاعدة البيانات غير متاحة في البيئة الحالية؛ لذلك يبقى اعتماد الإنتاج مشروطًا بهذه الاختبارات.

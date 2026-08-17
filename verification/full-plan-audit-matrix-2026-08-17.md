@@ -711,3 +711,20 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | بوابات الجودة | PASS | `pnpm exec tsc --noEmit` و`pnpm lint` و`next build --webpack` نجحت؛ تحذير hooks الموجود في Workspace غير حاجز. | تحذيرات middleware وEdge Runtime القائمة معلوماتية. |
 
 **النتيجة:** أُغلقت هذه الشريحة باعتبارها تحسينًا تجريبيًا مكتملًا للـlocal-first وربط Finance، مع إبقاء اعتماد الإنتاج مشروطًا باختبار backend فعلي وصلاحيات وتزامن.
+
+
+## Final release gate — 2026-08-17T21:37Z
+
+| البوابة | النتيجة | الدليل |
+|---|---|---|
+| TypeScript | PASS | `pnpm exec tsc --noEmit` — exit 0 |
+| ESLint | PASS غير حاجز | exit 0؛ تحذير واحد قائم في dependency لـ`loadData` داخل Workspace |
+| Production build | PASS | `NEXT_TELEMETRY_DISABLED=1 pnpm build --webpack` — static pages 27/27، exit 0 |
+| Ownership | PASS | 48 route، 44 session-aware، 44 visible ownership، ولا مسارات ناقصة |
+| Responsive | PASS | 34/34، بلا failures |
+| Accessibility | PASS | 34/34، 0 failures |
+| Page smoke | PASS | 22 صفحة، كلها `HTTP 200` |
+| Protected API smoke | PASS | Workspace/Projects/Finance وcollect أعادت `HTTP 401` بلا جلسة |
+| Secret hygiene | PASS | لا قيم secrets فعلية؛ النتائج أسماء env/placeholders أو توثيق غياب الإعداد |
+
+تظل اختبارات Neon/Better Auth الفعلية، transaction race conditions، وتفعيل 2FA الحقيقي خارج اعتماد الإنتاج لغياب credentials المقصودة في البيئة الحالية. الأدلة الكاملة في `verification/final-quality-audit-20260817T213458Z.log` و`verification/final-route-smoke-20260817T213714Z.log`.

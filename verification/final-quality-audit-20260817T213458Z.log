@@ -1,0 +1,197 @@
+Personal Command Center final quality audit
+UTC=2026-08-17T21:34:58Z
+HEAD=5dfbf49
+
+=== typecheck ===
+EXIT_CODE=0
+
+=== eslint ===
+$ eslint .
+
+/home/ubuntu/pmd/components/workspace/workspace-workspace.tsx
+  121:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 1 problem (0 errors, 1 warning)
+
+EXIT_CODE=0
+
+=== webpack-build ===
+$ next build --webpack
+▲ Next.js 16.3.0 (webpack)
+✓ Running next.config.mjs took 8ms
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+⚠ Compiled with warnings in 748ms
+
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+A Node.js API is used (process.cwd at line: 1044) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/request/connection.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/web/exports/index.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/api/server.js
+
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+A Node.js API is used (process.cwd at line: 1044) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/request/connection.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/web/exports/index.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/api/server.js
+
+✓ Compiled successfully in 14.3s
+  Running TypeScript ...
+  Finished TypeScript in 1757ms ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/27) ...
+  Generating static pages using 5 workers (6/27)
+  Generating static pages using 5 workers (13/27)
+  Generating static pages using 5 workers (20/27)
+✓ Generating static pages using 5 workers (27/27) in 310ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /account
+├ ƒ /api/account
+├ ƒ /api/account/export
+├ ƒ /api/archive
+├ ƒ /api/archive/[kind]/[id]
+├ ƒ /api/auth/[...all]
+├ ƒ /api/calendar-events
+├ ƒ /api/calendar-events/[id]
+├ ƒ /api/clients
+├ ƒ /api/clients/[id]
+├ ƒ /api/clients/[id]/restore
+├ ƒ /api/daily-plan
+├ ƒ /api/daily-plan/[id]
+├ ƒ /api/entertainment
+├ ƒ /api/entertainment/[id]
+├ ƒ /api/finance
+├ ƒ /api/finance/[id]
+├ ƒ /api/finance/budget
+├ ƒ /api/goals
+├ ƒ /api/goals/[id]
+├ ƒ /api/habits
+├ ƒ /api/habits/[id]
+├ ƒ /api/journal
+├ ƒ /api/journal/[id]
+├ ƒ /api/notes
+├ ƒ /api/notes/[id]
+├ ƒ /api/profile
+├ ƒ /api/projects
+├ ƒ /api/projects/[id]
+├ ƒ /api/projects/[id]/pricing
+├ ƒ /api/projects/[id]/updates
+├ ƒ /api/projects/pricing
+├ ƒ /api/projects/pricing/[pricingId]
+├ ƒ /api/projects/pricing/[pricingId]/collect
+├ ƒ /api/projects/updates
+├ ƒ /api/religious
+├ ƒ /api/religious/quran
+├ ƒ /api/religious/reciters
+├ ƒ /api/religious/timings
+├ ƒ /api/reminders
+├ ƒ /api/reminders/[id]
+├ ƒ /api/review
+├ ƒ /api/tasks
+├ ƒ /api/tasks/[id]
+├ ƒ /api/tasks/[id]/subtasks
+├ ƒ /api/tasks/[id]/subtasks/[subtaskId]
+├ ƒ /api/workspaces
+├ ƒ /api/workspaces/invitations
+├ ƒ /api/workspaces/members/[memberId]
+├ ○ /archive
+├ ○ /board
+├ ○ /calendar
+├ ○ /daily-plan
+├ ○ /design-system
+├ ○ /entertainment
+├ ○ /goals
+├ ○ /habits
+├ ○ /journal
+├ ○ /login
+├ ○ /money
+├ ○ /notes
+├ ○ /offline
+├ ○ /onboarding
+├ ○ /projects
+├ ○ /religious
+├ ○ /reminders
+├ ○ /review
+├ ○ /tasks
+└ ○ /workspace
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+EXIT_CODE=0
+
+=== route-ownership ===
+route_count=48
+routes_with_session=44
+routes_with_visible_ownership=44
+missing_session_routes:
+missing_visible_ownership_routes:
+ownership_audit=PASS
+EXIT_CODE=0
+
+=== responsive-audit ===
+{
+  "total": 34,
+  "failures": [],
+  "reportPath": "/home/ubuntu/pmd/docs/responsive-audit-results.json"
+}
+EXIT_CODE=0
+
+=== accessibility-audit ===
+{
+  "total": 34,
+  "failures": 0,
+  "reportPath": "/home/ubuntu/pmd/docs/accessibility-audit-results.json",
+  "failureSummary": []
+}
+EXIT_CODE=0
+
+=== secret scan ===
+[35m.env.example[m[36m:[m[32m2[m[36m:[m[1;31mDATABASE_URL=[mpostgresql://user:password@host/db?sslmode=require
+[35m.env.example[m[36m:[m[32m5[m[36m:[m[1;31mBETTER_AUTH_SECRET=[mreplace-with-a-long-random-secret
+[35mACCOUNT_VERIFICATION.md[m[36m:[m[32m26[m[36m:[m| عمل Profile مع قاعدة بيانات فعلية | مؤجل | لا توجد [1;31m`DATABASE_URL`[m أو [1;31m`BETTER_AUTH_SECRET`[m فعلية في بيئة الاختبار الحالية؛ طبقة الواجهة تستخدم localStorage fallback كما هو مطلوب. |
+[35mBACKEND_VERIFICATION.md[m[36m:[m[32m15[m[36m:[mNo [1;31m`DATABASE_URL`[m or [1;31m`BETTER_AUTH_SECRET`[m is present in the local environment, so the UI intentionally keeps the localStorage fallback and the server endpoints remain unavailable until Neon and Better Auth secrets are configured. The migration is generated and ready to apply once credentials are available.
+[35mEXECUTION_PLAN.md[m[36m:[m[32m285[m[36m:[m- [~] ربط تكامل **Neon** بالمشروع: اتصال Drizzle lazy وملف إعداد ومigration جاهزون، بينما اتصال Neon الفعلي ينتظر [1;31m`DATABASE_URL`[m.
+[35mEXECUTION_PLAN.md[m[36m:[m[32m286[m[36m:[m- [~] التحقق من وجود [1;31m`BETTER_AUTH_SECRET`[m: الإعداد يرفض التشغيل الآمن عند غيابه، لكن secret الإنتاجي لم يُضف إلى البيئة المحلية.
+[35mEXECUTION_PLAN.md[m[36m:[m[32m859[m[36m:[mالـvertical slice يدعم إنشاء المساحات والعملاء عبر قاعدة البيانات عند توفر الإعدادات، ويدعم localStorage fallback عند غياب [1;31m`DATABASE_URL`[m أو [1;31m`BETTER_AUTH_SECRET`[m. تم اختبار إنشاء مساحة وعميل تجريبي، عزل العميل عن المساحة الشخصية، ثم تنظيف بيانات الاختبار. نجحت TypeScript وESLint و`git diff --check` و`next build`، وظهر التحذير المعلوماتي المعتاد الخاص بـmiddleware فقط. التفاصيل الكاملة في `docs/foundation-readiness-audit.md`.
+[35mEXECUTION_PLAN.md[m[36m:[m[32m1127[m[36m:[m| مهمة المشروع المرتبطة | إضافة `noValidate` و`aria-invalid` و`aria-describedby` ورسالة `role="alert"` عربية عند إرسال اسم فارغ، مع مسح الخطأ أثناء الكتابة والحفاظ على منطق إنشاء المهمة وعلاقة `projectId` | PASS — 45 route، 41 session، 41 visible ownership | PASS — 34/34 | PASS — 34/34، 0 failures | TypeScript وESLint و`git diff --check` وNext build PASS | PASS | `components/projects/projects-workspace.tsx`، `verification/project-t[1;31mask-validation-ar-2026-08-17.[mmd`، `verification/project-t[1;31mask-validation-quality-20260817T154102Z.[mlog`، `verification/project-t[1;31mask-validation-audits-20260817T154313Z.[mlog` |
+[35mEXECUTION_PLAN.md[m[36m:[m[32m1128[m[36m:[m| دورة المتصفح والتنظيف | رفض فارغ، مسح الخطأ بعد إدخال `مراجعة بنية المشروع`، إنشاء المهمة العربية مؤقتًا، ثم حذفها وحدها مع عنصر خطة اليوم المرتبط وإعادة التحميل؛ عاد عدد المهام المرتبطة إلى 1 دون أثر تجريبي | PASS | PASS | PASS | موثق في التقرير المستقل | PASS | `verification/project-t[1;31mask-validation-ar-2026-08-17.[mmd` |
+[35mEXECUTION_PLAN.md[m[36m:[m[32m1427[m[36m:[mأضيفت إلى `/account` بطاقة عربية واضحة باسم «التحقق بخطوتين — تجريبي» تشمل حالات التفعيل، إدخال رمز TOTP، رموز الاسترداد، التعطيل، التحميل، والخطأ. عند غياب [1;31m`DATABASE_URL`[m و[1;31m`BETTER_AUTH_SECRET`[m تعمل الواجهة خلف local guard، لذلك لم تُنفّذ عملية auth حقيقية ولم تُنشأ أسرار أو بيانات حساسة. تمت إضافة `suppressHydrationWarning` على الجذر لمعالجة اختلاف bootstrap الخاص بالثيم دون تغيير هوية الواجهة.
+[35mEXECUTION_PLAN.md[m[36m:[m[32m1450[m[36m:[mأضيف المسار `POST /api/projects/pricing/[pricingId]/collect` لحماية العملية بجلسة المستخدم وعزل `user_id` وملكية المشروع والدفعة، مع رفض الدفعات الملغاة، واستخدام معرف ثابت للدخل `pricing-income-{pricingId}`. جرى تنفيذ إنشاء أو استعادة الدخل وتحديث الدفعة داخل transaction واحدة، مع إرجاع الدفعة وسجل الدخل في استجابة موحدة. لم تُجرَ عملية قاعدة البيانات الفعلية بسبب غياب [1;31m`DATABASE_URL`[m وجلسة Better Auth في البيئة الحالية، لذلك بقيت حدود الإنتاج موثقة ولم يُدّع اكتمال الاتصال.
+[35mFINANCE_BROWSER_FINDINGS.md[m[36m:[m[32m5[m[36m:[mتم فحص صفحة `/money` على نسخة Next.js production المحلية بعد إعادة تشغيل build الأخير، مع غياب [1;31m`DATABASE_URL`[m و[1;31m`BETTER_AUTH_SECRET`[m؛ لذلك يعمل التطبيق عبر localStorage fallback.
+[35mPROJECTS_GOALS_VERIFICATION.md[m[36m:[m[32m30[m[36m:[mلا توجد قيم فعلية لـ[1;31m`DATABASE_URL`[m أو[1;31m`BETTER_AUTH_SECRET`[m في البيئة الحالية، لذلك لم يُختبر الاتصال الفعلي بقاعدة Neon أو سيناريو مستخدم مسجل الدخول. ما تم التحقق منه هو حماية الـAPI، سلامة compilation، وتجربة الواجهة مع fallback المحلي.
+[35mREMINDERS_VERIFICATION.md[m[36m:[m[32m37[m[36m:[mعند غياب [1;31m`DATABASE_URL`[m و[1;31m`BETTER_AUTH_SECRET`[m، تعمل الواجهة محليًا عبر localStorage بينما تظل المزامنة البعيدة محمية وتعود إلى fallback المحلي. لا تخزن الدفعة أسرارًا أو نصوصًا خارجية حساسة، وتستخدم ownership من الجلسة في الـAPI.
+[35mdrizzle.config.ts[m[36m:[m[32m9[m[36m:[m    url: process.env[1;31m.DATABASE_URL [m?? '',
+[35mmiddleware.ts[m[36m:[m[32m6[m[36m:[m  const authConfigured = Boolean(process.env[1;31m.DATABASE_URL [m&& process.env[1;31m.BETTER_AUTH_SECRET)[m
+[35mserver/auth.ts[m[36m:[m[32m8[m[36m:[m  return Boolean(process.env[1;31m.DATABASE_URL [m&& process.env[1;31m.BETTER_AUTH_SECRET)[m
+[35mserver/auth.ts[m[36m:[m[32m12[m[36m:[m  const secret = process.env[1;31m.BETTER_AUTH_SECRET[m
+[35mserver/auth.ts[m[36m:[m[32m14[m[36m:[m    throw new Error([1;31m'BETTER_AUTH_SECRET [mis not configured. Add a long random secret before enabling authentication.')
+[35mserver/auth/session.ts[m[36m:[m[32m20[m[36m:[m  return new Response(JSON.stringify({ error: 'الخادم غير مُعد بعد. أضف[1;31m DATABASE_URL [m[1;31mوBETTER_AUTH_SECRET.[m' }), {
+[35mserver/db/index.ts[m[36m:[m[32m6[m[36m:[m  return Boolean(process.env[1;31m.DATABASE_URL)[m
+[35mserver/db/index.ts[m[36m:[m[32m10[m[36m:[m  const databaseUrl = process.env[1;31m.DATABASE_URL[m
+[35mserver/db/index.ts[m[36m:[m[32m12[m[36m:[m    throw new Error([1;31m'DATABASE_URL [mis not configured. Add a Neon PostgreSQL connection string before enabling server persistence.')
+
+=== git diff check ===
+EXIT_CODE=0
