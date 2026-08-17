@@ -1036,3 +1036,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 ## 2026-08-17 — المشاريع: live-region وربط أخطاء النماذج العربية
 
 اختُبرت صفحة `http://localhost:3004/projects` عبر مسارات إنشاء مشروع فارغ، إضافة مهمة مشروع فارغة، وتحديث مشروع فارغ. ظهرت الرسائل العربية، وأثبت DOM أن أخطاء إنشاء المشروع ومهمة المشروع وتحديث المشروع تحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن الحقول مرتبطة عبر `aria-describedby` وتحمل `aria-invalid=true`. اكتُشفت أثناء الاختبار فجوة ربط في حقل نص التحديث؛ أضيفت لها `aria-describedby` و`aria-invalid` وأضيف `noValidate` إلى النموذج، ثم أعيد الفحص ونجح. لم تُنشأ بيانات اختبارية. بوابات TypeScript وESLint وbuild وownership وresponsive وaccessibility: PASS. الأدلة: `verification/projects-error-browser-findings-2026-08-17.md` و`verification/projects-error-live-region-ar-2026-08-17.md` و`verification/projects-error-quality-20260817T1840Z.log` و`verification/projects-error-audits-20260817T1841Z.log`.
+
+## 2026-08-17 — الملاحظات: live-region لأخطاء الإنشاء والتعديل
+
+في `/notes` فُرغ عنوان نموذج إنشاء الملاحظة وأُرسل النموذج، ثم فُتح نموذج تعديل ملاحظة وفُرغ العنوان وأُرسل النموذج. ظهرت رسائل التحقق العربية، وأثبت DOM في المسارين أن عناصر الخطأ تحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن الحقول تحمل `aria-invalid="true"` و`aria-describedby` إلى الرسائل المطابقة. في مسار التعديل كانت الرسالة `اكتب عنوان الملاحظة أولًا.` ومعرّفها `note-note-1786967049031-edit-error`. لم تُنشأ بيانات اختبارية ولم يُحفظ تعديل. نجحت TypeScript وESLint وNext build وownership وresponsive وaccessibility. الأدلة: `verification/notes-error-browser-findings-2026-08-17.md` و`verification/notes-error-live-region-ar-2026-08-17.md`.
+
+**الحكم: PASS.**

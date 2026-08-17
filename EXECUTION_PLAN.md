@@ -1363,3 +1363,14 @@
 
 الأدلة: `verification/projects-error-live-region-ar-2026-08-17.md`، `verification/projects-error-browser-findings-2026-08-17.md`، `verification/projects-error-quality-20260817T1840Z.log`، `verification/projects-error-audits-20260817T1841Z.log`، وتحديثا `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts العابرة وإنشاء commit مستقل.
+
+
+## 2026-08-17 — إغلاق دفعة الملاحظات: live-region لأخطاء الإنشاء والتعديل
+
+أُغلقت فجوة الوصول في `components/notes/notes-workspace.tsx` بإضافة `aria-live="assertive"` و`aria-atomic="true"` إلى رسالتي خطأ إنشاء الملاحظة وتعديلها. حافظ الإصلاح على النصوص العربية، والتحقق المحلي، و`noValidate`، وربط الحقول عبر `aria-describedby` وحالة `aria-invalid`، دون تغيير API أو schema أو migrations أو Better Auth أو localStorage fallback.
+
+في المتصفح المحلي `http://localhost:3004/notes` اختُبر مسار إنشاء ملاحظة بعنوان فارغ ومسار تعديل ملاحظة بعنوان فارغ. ظهرت رسائل التحقق العربية، وأثبت DOM في المسارين `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، مع ارتباط الحقول بالرسائل وحالة `aria-invalid="true"`. في مسار التعديل كانت الرسالة `اكتب عنوان الملاحظة أولًا.` ومعرّفها `note-note-1786967049031-edit-error`. لم تُنشأ بيانات اختبارية ولم يُحفظ تعديل.
+
+نجحت بوابات TypeScript وESLint وNext build وroute ownership وresponsive وaccessibility و`git diff --check`. حُذفت artifacts العابرة وأُعيدت ملفات نتائج الفحوص المتتبعة إلى حالتها السابقة. الأدلة محفوظة في `verification/notes-error-browser-findings-2026-08-17.md` و`verification/notes-error-live-region-ar-2026-08-17.md`، وسُجلت النتيجة في `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة: PASS — الدفعة جاهزة للاعتماد.**

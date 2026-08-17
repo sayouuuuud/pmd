@@ -586,3 +586,13 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | حدود النطاق | لا API أو DB أو Auth أو ownership changes؛ لا secrets؛ لم يُنفذ `drizzle-kit generate` |
 
 **الأدلة:** `verification/projects-error-live-region-ar-2026-08-17.md`، `verification/projects-error-browser-findings-2026-08-17.md`، `verification/projects-error-quality-20260817T1840Z.log`، `verification/projects-error-audits-20260817T1841Z.log`.
+
+## 2026-08-17 — الملاحظات: live-region لأخطاء الإنشاء والتعديل
+
+- **الفجوة:** رسالتا خطأ إنشاء الملاحظة وتعديلها كانتا تستخدمان `role="alert"` دون `aria-live` و`aria-atomic` صريحين.
+- **الإصلاح:** إضافة `aria-live="assertive"` و`aria-atomic="true"` إلى الرسالتين، مع الحفاظ على النصوص العربية، و`noValidate`، وربط الحقول عبر `aria-describedby` وحالة `aria-invalid`.
+- **اختبار المتصفح:** في `/notes` أُرسل نموذج إنشاء ملاحظة بعنوان فارغ، ثم نموذج تعديل ملاحظة بعنوان فارغ. ظهرت الرسائل العربية، وأثبت DOM الخصائص المطلوبة في المسارين. في مسار التعديل كان معرّف الخطأ `note-note-1786967049031-edit-error` والنص `اكتب عنوان الملاحظة أولًا.`.
+- **البوابات:** TypeScript وESLint وNext build وroute ownership وresponsive وaccessibility و`git diff --check` — PASS.
+- **النطاق:** لم تُنشأ بيانات اختبارية، ولم تتغير API أو schema أو migrations أو المصادقة أو عزل البيانات أو الهوية البصرية.
+- **الأدلة:** `verification/notes-error-browser-findings-2026-08-17.md`، `verification/notes-error-live-region-ar-2026-08-17.md`.
+- **الحكم:** PASS.
