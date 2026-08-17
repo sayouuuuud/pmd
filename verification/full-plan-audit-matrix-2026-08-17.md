@@ -246,3 +246,12 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Accessibility | PASS — 34/34 حالة، 0 failures، `failureSummary: []` |
 
 المرجع الخام: `verification/final-review-audits-2026-08-17.log`. التقرير: `verification/final-review-audit-2026-08-17.md`. أُعيدت artifacts المولدة من responsive إلى النسخ الملتزمة بعد حفظ القياس النصي.
+
+
+## 2026-08-17 — خطة اليوم: تحقق عربي لمساري التعديل والنقل
+
+أُغلقت فجوة الفشل الصامت في تعديل عنوان عنصر خطة اليوم ونقله. اختُبر رفض العنوان الفارغ برسالة عربية inline، ومسح الخطأ أثناء إعادة العنوان، ثم الحفظ الصحيح. واختُبر رفض تاريخ النقل الفارغ، ثم نقل العنصر إلى `2026-08-17` وإرجاعه إلى `2026-08-16` مع التحقق البصري من ظهوره في اليوم الوسيط ثم عودته إلى موضعه الأصلي. لم تُنشأ سجلات جديدة ولم تُترك بيانات اختبار.
+
+الأدلة: `components/daily-plan/daily-plan-workspace.tsx`، `verification/daily-plan-validation-ar-2026-08-17.md`، `verification/daily-plan-validation-quality-20260817T141123Z.log`، و`verification/interaction-smoke-tests.md`.
+
+النتيجة: PASS — TypeScript، ESLint، diff check، Next build، ownership (45/45 Route Handler؛ 41 session و41 visible ownership)، responsive (34/34)، accessibility (34/34).

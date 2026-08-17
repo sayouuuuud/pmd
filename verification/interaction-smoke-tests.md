@@ -743,3 +743,13 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - التقرير المستقل: `verification/reminders-validation-ar-2026-08-17.md`.
 ## إعادة التدقيق المرحلي الشامل — 2026-08-17
 أُعيد تشغيل فحوص ownership وresponsive وaccessibility على الشجرة النظيفة بين `2026-08-17T13:50:19Z` و`2026-08-17T13:51:37Z`. النتيجة: ownership PASS لـ45 Route Handler، responsive PASS لـ34/34 حالة، accessibility PASS لـ34/34 حالة. السجل الخام: `verification/final-review-audits-2026-08-17.log`، والتقرير المستقل: `verification/final-review-audit-2026-08-17.md`. أُعيدت artifacts المولدة من responsive إلى النسخ الملتزمة بعد حفظ القياس النصي.
+
+## 2026-08-17 — تحقق عربي لخطة اليوم
+
+أُعيد اختبار `http://localhost:3004/daily-plan` باستخدام عنصر مفتوح موجود أصلًا بعنوان «اختبار مهمة يومية» في `2026-08-16`. في مسار التعديل، أُرسل العنوان فارغًا فظهرت رسالة `اكتب عنوان عنصر الخطة أولًا` inline، ثم أُعيد العنوان الأصلي فاختفى الخطأ ونجح الحفظ. في مسار النقل، أُرسل التاريخ فارغًا فظهرت رسالة `اختر يومًا مختلفًا وصحيحًا للنقل أولًا.`، ثم نُقل العنصر إلى `2026-08-17` وظهر هناك، وأُعيد إلى `2026-08-16` وظهر في موقعه الأصلي. لم تُنشأ سجلات جديدة ولم تُترك بيانات اختبار.
+
+بوابات دفعة خطة اليوم: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS، ownership PASS (45 Route Handler؛ 41 session و41 visible ownership)، responsive PASS (34/34)، accessibility PASS (34/34). السجل الخام: `verification/daily-plan-validation-quality-20260817T141123Z.log`، والتقرير: `verification/daily-plan-validation-ar-2026-08-17.md`.
+
+الحالة: PASS — أُغلقت فجوة الفشل الصامت في تعديل ونقل عناصر خطة اليوم برسائل عربية وARIA دون تغيير الهوية البصرية أو عقد البيانات.
+
+---

@@ -21,6 +21,8 @@ export function DailyPlanWorkspace() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [editingTime, setEditingTime] = useState('')
+  const [editError, setEditError] = useState('')
+  const [moveError, setMoveError] = useState('')
   const visiblePlanItems = planItems.filter((item) => (item.localDate ?? cairoToday()) === viewDate)
   const sortedVisiblePlanItems = sortPlanItems(visiblePlanItems, tasks)
   const completed = visiblePlanItems.filter((item) => item.status === 'done').length
@@ -30,10 +32,16 @@ export function DailyPlanWorkspace() {
     setEditingId(item.id)
     setEditingTitle(item.title)
     setEditingTime(item.time === '—' ? '' : item.time)
+    setEditError('')
   }
 
   function saveEdit() {
-    if (!editingId || !editingTitle.trim()) return
+    if (!editingId) return
+    if (!editingTitle.trim()) {
+      setEditError('اكتب عنوان العنصر أولًا.')
+      return
+    }
+    setEditError('')
     updatePlanItem(editingId, { title: editingTitle.trim(), time: editingTime || '—' })
     setEditingId(null)
   }
@@ -41,10 +49,16 @@ export function DailyPlanWorkspace() {
   function beginMove(item: { id: string; localDate?: string }) {
     setMoveDateId(item.id)
     setMoveDate(item.localDate && item.localDate !== viewDate ? item.localDate : '')
+    setMoveError('')
   }
 
   function saveMove() {
-    if (!moveDateId || !/^\d{4}-\d{2}-\d{2}$/.test(moveDate) || moveDate === viewDate) return
+    if (!moveDateId) return
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(moveDate) || moveDate === viewDate) {
+      setMoveError('اختر يومًا مختلفًا وصحيحًا للنقل أولًا.')
+      return
+    }
+    setMoveError('')
     movePlanItem(moveDateId, moveDate)
     setMoveDateId(null)
     setMoveDate('')
@@ -70,8 +84,8 @@ export function DailyPlanWorkspace() {
             {item.status !== 'done' && item.status !== 'snoozed' && item.status !== 'skipped' && <Button type="button" variant="ghost" size="icon-sm" aria-label="نقل إلى يوم آخر" onClick={() => beginMove(item)} className="rounded-full text-muted-foreground hover:bg-muted"><CalendarDays className="h-4 w-4" /></Button>}
             <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${item.status === 'done' ? 'border-primary bg-primary text-primary-foreground' : item.status === 'skipped' ? 'border-border bg-muted text-muted-foreground' : 'border-border'}`}>{item.status === 'done' ? <Check className="h-3.5 w-3.5" /> : item.status === 'skipped' ? <SkipForward className="h-3.5 w-3.5" /> : null}</span>
           </div>
-          {moveDateId === item.id && <form onSubmit={(event) => { event.preventDefault(); saveMove() }} className="mt-3 grid gap-2 rounded-2xl bg-muted/60 p-3 sm:grid-cols-[1fr_auto_auto]"><label className="flex items-center gap-2 text-xs text-muted-foreground" htmlFor={`move-date-${item.id}`}>نقل إلى <Input id={`move-date-${item.id}`} type="date" value={moveDate} onChange={(event) => setMoveDate(event.target.value)} className="h-8 rounded-xl text-xs text-foreground" /></label><Button type="submit" size="icon-sm" aria-label="حفظ النقل" className="rounded-xl"><Check className="mx-auto h-4 w-4" /></Button><Button type="button" variant="outline" size="icon-sm" aria-label="إلغاء النقل" onClick={() => setMoveDateId(null)} className="rounded-xl text-muted-foreground hover:bg-background"><X className="mx-auto h-4 w-4" /></Button></form>}
-          {editingId === item.id && <form onSubmit={(event) => { event.preventDefault(); saveEdit() }} className="mt-3 grid gap-2 rounded-2xl bg-muted/60 p-3 sm:grid-cols-[1fr_120px_auto_auto]"><label className="sr-only" htmlFor={`plan-title-${item.id}`}>عنوان العنصر</label><Input id={`plan-title-${item.id}`} value={editingTitle} onChange={(event) => setEditingTitle(event.target.value)} className="h-9 rounded-xl text-sm" /><label className="sr-only" htmlFor={`plan-time-${item.id}`}>وقت العنصر</label><Input id={`plan-time-${item.id}`} type="time" value={editingTime} onChange={(event) => setEditingTime(event.target.value)} className="h-9 rounded-xl text-sm" /><Button type="submit" size="icon-sm" aria-label="حفظ التعديل" className="rounded-xl"><Check className="mx-auto h-4 w-4" /></Button><Button type="button" variant="outline" size="icon-sm" aria-label="إلغاء التعديل" onClick={() => setEditingId(null)} className="rounded-xl text-muted-foreground hover:bg-background"><X className="mx-auto h-4 w-4" /></Button></form>}
+          {moveDateId === item.id && <form onSubmit={(event) => { event.preventDefault(); saveMove() }} noValidate className="mt-3 grid gap-2 rounded-2xl bg-muted/60 p-3 sm:grid-cols-[1fr_auto_auto]"><label className="flex items-center gap-2 text-xs text-muted-foreground" htmlFor={`move-date-${item.id}`}>نقل إلى <Input id={`move-date-${item.id}`} type="date" value={moveDate} onChange={(event) => { setMoveDate(event.target.value); if (moveError) setMoveError('') }} aria-invalid={Boolean(moveError)} aria-describedby={moveError ? `move-date-${item.id}-error` : undefined} className="h-8 rounded-xl text-xs text-foreground" /></label>{moveError && <p id={`move-date-${item.id}-error`} role="alert" className="text-xs text-destructive sm:col-span-3">{moveError}</p>}<Button type="submit" size="icon-sm" aria-label="حفظ النقل" className="rounded-xl"><Check className="mx-auto h-4 w-4" /></Button><Button type="button" variant="outline" size="icon-sm" aria-label="إلغاء النقل" onClick={() => { setMoveDateId(null); setMoveError('') }} className="rounded-xl text-muted-foreground hover:bg-background"><X className="mx-auto h-4 w-4" /></Button></form>}
+          {editingId === item.id && <form onSubmit={(event) => { event.preventDefault(); saveEdit() }} noValidate className="mt-3 grid gap-2 rounded-2xl bg-muted/60 p-3 sm:grid-cols-[1fr_120px_auto_auto]"><label className="sr-only" htmlFor={`plan-title-${item.id}`}>عنوان العنصر</label><Input id={`plan-title-${item.id}`} value={editingTitle} onChange={(event) => { setEditingTitle(event.target.value); if (editError) setEditError('') }} aria-invalid={Boolean(editError)} aria-describedby={editError ? `plan-title-${item.id}-error` : undefined} className="h-9 rounded-xl text-sm" />{editError && <p id={`plan-title-${item.id}-error`} role="alert" className="text-xs text-destructive sm:col-span-4">{editError}</p>}<label className="sr-only" htmlFor={`plan-time-${item.id}`}>وقت العنصر</label><Input id={`plan-time-${item.id}`} type="time" value={editingTime} onChange={(event) => setEditingTime(event.target.value)} className="h-9 rounded-xl text-sm" /><Button type="submit" size="icon-sm" aria-label="حفظ التعديل" className="rounded-xl"><Check className="mx-auto h-4 w-4" /></Button><Button type="button" variant="outline" size="icon-sm" aria-label="إلغاء التعديل" onClick={() => { setEditingId(null); setEditError('') }} className="rounded-xl text-muted-foreground hover:bg-background"><X className="mx-auto h-4 w-4" /></Button></form>}
           <PlanContext item={item} tasks={tasks} habits={habits} projects={projects} goals={goals} />
         </div>)}
       </div>

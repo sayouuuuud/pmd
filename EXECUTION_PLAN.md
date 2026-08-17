@@ -1041,3 +1041,13 @@
 أُغلقت فجوات الفشل الصامت في `components/board/board-workspace.tsx` لثلاثة نماذج: إنشاء ورقة، إنشاء سبورة، وإنشاء منطقة تجميع. أضيفت `noValidate` ورسائل عربية inline مع `role="alert"` و`aria-invalid` و`aria-describedby` ومسح الخطأ أثناء الكتابة، مع الحفاظ على مكوّنات الإدخال والكروت وSemantic Tokens كما هي. اختُبر الإرسال الفارغ لكل نموذج، ثم إدخال بيانات صحيحة والإنشاء، ثم أزيلت الورقة والسبورة ومنطقة التجميع الاختبارية من localStorage وعادت البيانات الأصلية. التقرير: `verification/board-validation-ar-2026-08-17.md`.
 
 بوابات ما بعد التعديل: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS مع تحذير middleware المعلوماتي المعتاد، ownership PASS (45 Route Handler؛ 41 session و41 visible ownership)، responsive PASS (34/34)، accessibility PASS (34/34). السجل الخام: `verification/board-final-quality-20260817T140759Z.log`.
+
+
+## 2026-08-17 — دفعة التحقق العربي في خطة اليوم
+أُغلقت فجوتان في `components/daily-plan/daily-plan-workspace.tsx`: حفظ تعديل عنصر خطة اليوم بعنوان فارغ، ونقل عنصر إلى تاريخ فارغ أو غير صالح. أضيفت رسائل عربية inline مع `noValidate` و`role="alert"` و`aria-invalid` و`aria-describedby` ومسح الخطأ أثناء الإدخال، مع الحفاظ على التخطيط الحالي وSemantic Tokens وعدم تغيير عقد البيانات.
+
+اختبار المتصفح على `http://localhost:3004/daily-plan`: رُفض العنوان الفارغ برسالة `اكتب عنوان عنصر الخطة أولًا`، ثم نجح الحفظ بعد إعادة العنوان الأصلي. رُفض تاريخ النقل الفارغ برسالة `اختر يومًا مختلفًا وصحيحًا للنقل أولًا.`، ثم نُقل عنصر «اختبار مهمة يومية» إلى `2026-08-17` وظهر هناك، وأُعيد إلى `2026-08-16` وظهر في موضعه الأصلي. لم تُنشأ بيانات جديدة ولم تُترك بيانات اختبار.
+
+البوابات: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS، ownership PASS (45 Route Handler؛ 41 session و41 visible ownership)، responsive PASS (34/34)، accessibility PASS (34/34). السجل الخام `verification/daily-plan-validation-quality-20260817T141123Z.log`، والتقرير `verification/daily-plan-validation-ar-2026-08-17.md`.
+
+**الحالة:** دفعة خطة اليوم ناجحة وجاهزة للاعتماد في commit مستقل.
