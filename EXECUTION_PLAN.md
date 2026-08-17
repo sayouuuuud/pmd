@@ -1341,3 +1341,15 @@
 بوابات الاعتماد: `pnpm exec tsc --noEmit` PASS، `pnpm lint` PASS، `pnpm build` PASS مع تحذير Next.js المعلوماتي المعتاد بشأن تقادم convention الخاص بـmiddleware؛ ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`, `0` إخفاق). لم تتغير API أو قاعدة البيانات أو Better Auth أو ملكية البيانات، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
 
 الأدلة: `verification/reminders-error-live-region-ar-2026-08-17.md`، `verification/reminders-error-browser-findings-2026-08-17.md`، `verification/reminders-error-quality-20260817T1829Z.log`، `verification/reminders-error-audits-20260817T1830Z.log`، وتحديثات `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+## 2026-08-17 — إغلاق دفعة live-region لخطأ اسم onboarding
+
+أُغلقت فجوة وصول عملية في `components/onboarding/onboarding-flow.tsx`: عنصر خطأ الاسم كان يحمل `role="alert"` ويرتبط بالحقل عبر `aria-describedby` دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي، ومنطق الانتقال بين خطوات onboarding، والتخزين المحلي، وfallback الحالي.
+
+في `http://localhost:3004/onboarding` بقي حقل الاسم فارغًا وأُرسل نموذج الخطوة الأولى عبر «التالي»؛ ظهرت الرسالة `اكتب اسمك أولًا.`. أثبت فحص DOM أن الخطأ يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن الحقل يحمل `aria-invalid=true` ويرتبط عبر `aria-describedby=onboarding-name-error`. لم تُنشأ بيانات اختبارية.
+
+بوابات الاعتماد: `pnpm exec tsc --noEmit` PASS، `pnpm lint` PASS، `pnpm build` PASS مع تحذير Next.js المعلوماتي المعتاد بشأن تقادم convention الخاص بـmiddleware؛ ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`، صفر إخفاقات). لم تتغير API أو قاعدة البيانات أو Better Auth أو ملكية البيانات، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/onboarding-error-live-region-ar-2026-08-17.md`، `verification/onboarding-error-browser-findings-2026-08-17.md`، `verification/onboarding-error-quality-20260817T1832Z.log`، `verification/onboarding-error-audits-20260817T1833Z.log`، وتحديثات `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts العابرة وإنشاء commit مستقل.

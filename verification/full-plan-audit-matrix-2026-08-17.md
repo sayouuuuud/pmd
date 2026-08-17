@@ -559,3 +559,14 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 
 الأدلة: `verification/reminders-error-live-region-ar-2026-08-17.md`، `verification/reminders-error-browser-findings-2026-08-17.md`، `verification/reminders-error-quality-20260817T1829Z.log`، `verification/reminders-error-audits-20260817T1830Z.log`، وتحديث `verification/interaction-smoke-tests.md`.
 **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts العابرة وإنشاء commit مستقل.
+
+## 2026-08-17 — إغلاق دفعة live-region لخطأ اسم onboarding
+
+أُغلقت فجوة وصول في `components/onboarding/onboarding-flow.tsx`: عنصر خطأ اسم المستخدم كان يحمل `role="alert"` ويرتبط بالحقل عبر `aria-describedby` دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي ومنطق التحقق والانتقال بين خطوات onboarding.
+
+في `http://localhost:3004/onboarding` أُرسل نموذج الخطوة الأولى وحقل الاسم فارغ؛ ظهرت الرسالة `اكتب اسمك أولًا.`. أثبت فحص DOM أن الرسالة تحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن الحقل يحمل `aria-invalid=true` ويرتبط عبر `aria-describedby=onboarding-name-error`. لم تُنشأ بيانات اختبارية.
+
+بوابات الاعتماد: `pnpm exec tsc --noEmit` PASS، `pnpm lint` PASS، `pnpm build` PASS مع تحذير Next.js المعلوماتي بشأن تقادم convention الخاص بـmiddleware؛ ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`، صفر إخفاقات). لم تتغير API أو قاعدة البيانات أو Better Auth أو ملكية البيانات، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/onboarding-error-live-region-ar-2026-08-17.md`، `verification/onboarding-error-browser-findings-2026-08-17.md`، `verification/onboarding-error-quality-20260817T1832Z.log`، `verification/onboarding-error-audits-20260817T1833Z.log`، وتحديث `verification/interaction-smoke-tests.md`.
+**الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts العابرة وإنشاء commit مستقل.

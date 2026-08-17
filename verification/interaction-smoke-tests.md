@@ -1023,3 +1023,12 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 ## 2026-08-17 — التذكيرات: live-region لخطأ عنوان التذكير
 
 فُتحت `/reminders`، ثم حوار «تذكير جديد»، وأُرسل النموذج بعد تفريغ عنوان التذكير. ظهرت الرسالة العربية `اكتب عنوان التذكير أولًا.` وبقي الحوار مفتوحًا دون إنشاء تذكير. أثبت فحص DOM أن `#reminder-title-error` يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن حقل `#reminder-title` يحمل `aria-invalid=true` و`aria-describedby=reminder-title-error`. نجحت TypeScript وESLint وNext build، كما نجحت ownership وresponsive (`34/34`) وaccessibility (`34/34`, `0` إخفاق). الأدلة: `verification/reminders-error-live-region-ar-2026-08-17.md` و`verification/reminders-error-browser-findings-2026-08-17.md` وسجلا الجودة والتدقيق المرتبطان بالدفعة.
+
+## 2026-08-17 — onboarding: live-region لخطأ اسم المستخدم
+
+**المسار:** `/onboarding`
+**السيناريو:** أُبقي حقل الاسم فارغًا في خطوة «عن يومك» ثم أُرسل النموذج عبر «التالي».
+**النتيجة:** ظهرت الرسالة العربية `اكتب اسمك أولًا.`، وأثبت DOM أن عنصر الخطأ يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`. الحقل يحمل `aria-invalid="true"` ويرتبط بالخطأ عبر `aria-describedby="onboarding-name-error"`.
+**البوابات:** TypeScript، ESLint، build، ownership، responsive، accessibility — PASS.
+**الأدلة:** `verification/onboarding-error-browser-findings-2026-08-17.md`، `verification/onboarding-error-quality-20260817T1832Z.log`، `verification/onboarding-error-audits-20260817T1833Z.log`، `verification/onboarding-error-live-region-ar-2026-08-17.md`.
+**النطاق:** تعديل دلالات الإعلان فقط؛ لا تغيير في API أو قاعدة البيانات أو المصادقة أو التخزين المحلي.
