@@ -1331,3 +1331,13 @@
 الأدلة: `verification/habits-error-live-region-ar-2026-08-17.md`، `verification/habits-error-browser-findings-2026-08-17.md`، `verification/habits-error-quality-20260817T1821Z.log`، `verification/habits-error-audits-20260817T1822Z.log`، وتحديثا `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 
 **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts العابرة وإنشاء commit مستقل.
+
+## إغلاق دفعة live-region لخطأ عنوان التذكير — 2026-08-17
+
+أُغلقت فجوة وصول عملية في `components/reminders/reminders-workspace.tsx`: خطأ عنوان التذكير كان يستخدم `role="alert"` دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي، وارتباط الحقل عبر `aria-describedby`، وحالة `aria-invalid` ومنطق التذكيرات وfallback المحلي.
+
+اختبار المتصفح على `http://localhost:3004/reminders`: فُتح نموذج «تذكير جديد»، أُفرغ عنوان التذكير وأُرسل النموذج؛ ظهرت الرسالة `اكتب عنوان التذكير أولًا.`. أثبت DOM أن الرسالة تحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن الحقل يحمل `aria-invalid=true` و`aria-describedby=reminder-title-error`. لم تُنشأ بيانات اختبارية.
+
+بوابات الاعتماد: `pnpm exec tsc --noEmit` PASS، `pnpm lint` PASS، `pnpm build` PASS مع تحذير Next.js المعلوماتي المعتاد بشأن تقادم convention الخاص بـmiddleware؛ ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`, `0` إخفاق). لم تتغير API أو قاعدة البيانات أو Better Auth أو ملكية البيانات، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/reminders-error-live-region-ar-2026-08-17.md`، `verification/reminders-error-browser-findings-2026-08-17.md`، `verification/reminders-error-quality-20260817T1829Z.log`، `verification/reminders-error-audits-20260817T1830Z.log`، وتحديثات `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.

@@ -1019,3 +1019,7 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 في `/habits` فُتح نموذج «إضافة عادة جديدة»، أُبقي حقل اسم العادة فارغًا وأُرسل النموذج. ظهرت الرسالة العربية `اكتب اسم العادة أولًا.`، وأثبت DOM أن عنصر الخطأ يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`. ارتبطت الرسالة بحقل الاسم عبر `aria-describedby="habit-form-error"`، وحمل الحقل `aria-invalid="true"`. لم تُنشأ بيانات جديدة. نجحت TypeScript وESLint وNext build وownership (`45` route، `41` session، `41` visible ownership) وresponsive (`34/34`) وaccessibility (`34/34`، صفر إخفاقات).
 
 الحكم: PASS.
+
+## 2026-08-17 — التذكيرات: live-region لخطأ عنوان التذكير
+
+فُتحت `/reminders`، ثم حوار «تذكير جديد»، وأُرسل النموذج بعد تفريغ عنوان التذكير. ظهرت الرسالة العربية `اكتب عنوان التذكير أولًا.` وبقي الحوار مفتوحًا دون إنشاء تذكير. أثبت فحص DOM أن `#reminder-title-error` يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن حقل `#reminder-title` يحمل `aria-invalid=true` و`aria-describedby=reminder-title-error`. نجحت TypeScript وESLint وNext build، كما نجحت ownership وresponsive (`34/34`) وaccessibility (`34/34`, `0` إخفاق). الأدلة: `verification/reminders-error-live-region-ar-2026-08-17.md` و`verification/reminders-error-browser-findings-2026-08-17.md` وسجلا الجودة والتدقيق المرتبطان بالدفعة.

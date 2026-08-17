@@ -186,7 +186,7 @@ export function RemindersWorkspace() {
         <form id="new-reminder-form" onSubmit={submit} noValidate>
           <label htmlFor="reminder-title" className="block text-sm font-medium">عنوان التذكير</label>
           <Input id="reminder-title" autoFocus value={title} onChange={(event) => { setTitle(event.target.value); if (titleError) setTitleError('') }} aria-invalid={Boolean(titleError)} aria-describedby={titleError ? 'reminder-title-error' : undefined} className="mt-2" placeholder="مثال: دفع الاشتراك" />
-          {titleError && <p id="reminder-title-error" role="alert" className="mt-2 text-xs text-destructive">{titleError}</p>}
+          {titleError && <p id="reminder-title-error" role="alert" aria-live="assertive" aria-atomic="true" className="mt-2 text-xs text-destructive">{titleError}</p>}
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label className="text-sm font-medium">النوع
               <Select value={kind} onChange={(event) => setKind(event.target.value as ReminderKind)} className="mt-2">
