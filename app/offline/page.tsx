@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, CloudOff, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function OfflinePage() {
   return (
@@ -15,9 +16,9 @@ export default function OfflinePage() {
           لم نتمكن من فتح هذه الصفحة الآن. تحقّق من الاتصال ثم أعد المحاولة. ستظل بياناتك المحلية محفوظة ويمكنك العودة إلى المساحة الرئيسية عند توفرها.
         </p>
         <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row">
-          <button type="button" onClick={() => window.location.reload()} className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
+          <Button type="button" onClick={() => window.location.reload()} size="lg" className="rounded-full">
             <RefreshCw className="h-4 w-4" aria-hidden="true" /> إعادة المحاولة
-          </button>
+          </Button>
           <Link href="/" className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted">
             <ArrowRight className="h-4 w-4" aria-hidden="true" /> العودة للمساحة الرئيسية
           </Link>

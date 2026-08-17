@@ -841,3 +841,12 @@
 - **التوثيق:** `verification/review-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 - **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build`؛ تحذير تقادم convention الخاص بـmiddleware من Next.js معلوماتي وغير حاجز.
 - **الحالة:** مكتملة وجاهزة للـcommit والـpush.
+
+
+## إغلاق التدقيق الساكن — الصفحات العامة — 2026-08-17
+- **النطاق:** كشف التدقيق الساكن عنصرين خامين خارج المساحات المرحّلة: زر إعادة المحاولة في `app/error.tsx` وزر إعادة المحاولة في `app/offline/page.tsx`. جرى ترحيلهما إلى `Button` المشتركة، مع الحفاظ على `reset` و`window.location.reload` والتصميم العربي الحالي.
+- **التحقق المتصفحي:** فُتحت `/offline` بصريًا على `localhost:3004`، وظهر RTL وحالة عدم الاتصال والزر المشترك. أكد DOM أن `rawButtons: 0` و`sharedButtons: 1`. راجعت صفحة الخطأ العامة ساكنًا؛ اختبار ظهورها runtime لم يُفرض عمدًا لأن ذلك يتطلب إثارة خطأ متعمد.
+- **التدقيق الشامل:** أعاد البحث في `app` و`components` صفر عناصر JSX خام من أنواع `button` و`input` و`select` و`textarea` خارج `components/ui`.
+- **التوثيق:** `verification/final-shared-controls-audit.md` و`verification/interaction-smoke-tests.md`.
+- **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build`، مع تحذير تقادم convention الخاص بـmiddleware من Next.js باعتباره معلوماتيًا وغير حاجز.
+- **الحالة:** مكتملة وجاهزة للـcommit والـpush.
