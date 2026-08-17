@@ -11,12 +11,26 @@ import { TopNav } from '@/components/layout/top-nav'
 import { isPrayerCompletedStatus, type PrayerStatus, useCommandCenter } from '@/lib/command-center-store'
 import { formatPrayerCountdown, getNextPrayerCountdown } from '@/lib/prayer-countdown'
 
-function formatDate() {
-  return new Intl.DateTimeFormat('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', calendar: 'gregory' }).format(new Date())
+function formatDate(localDate: string) {
+  if (!localDate) return ''
+  return new Intl.DateTimeFormat('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', calendar: 'gregory' }).format(new Date(`${localDate}T12:00:00Z`))
 }
 
-function formatHijriDate() {
-  return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())
+function formatHijriDate(localDate: string) {
+  if (!localDate) return ''
+  return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${localDate}T12:00:00Z`))
+}
+
+function cairoToday() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
+}
+
+function previousMonthKey(localDate: string) {
+  if (!localDate) return ''
+  const date = new Date(`${localDate}T12:00:00Z`)
+  date.setUTCDate(1)
+  date.setUTCMonth(date.getUTCMonth() - 1)
+  return date.toISOString().slice(0, 7)
 }
 
 export function DashboardHome() {
@@ -26,7 +40,9 @@ export function DashboardHome() {
   const [editingSuggestion, setEditingSuggestion] = useState<string | null>(null)
   const [suggestionEdits, setSuggestionEdits] = useState<Record<string, string>>({})
   const [clockMs, setClockMs] = useState(0)
+  const [hydratedDate, setHydratedDate] = useState('')
   useEffect(() => {
+    setHydratedDate(cairoToday())
     setClockMs(Date.now())
     const interval = window.setInterval(() => setClockMs(Date.now()), 1000)
     return () => window.clearInterval(interval)
@@ -45,8 +61,8 @@ export function DashboardHome() {
   const prayerStatusLabels: Record<PrayerStatus, string> = { pending: 'لم تُسجّل', done: 'في وقتها', 'on-time': 'في وقتها', congregation: 'جماعة', qada: 'قضاء', missed: 'فائتة' }
   const wirdPercent = Math.min(100, Math.round((religious.quran.completedMinutes / Math.max(religious.quran.targetMinutes, 1)) * 100))
   const overdueTasks = tasks.filter((task) => task.status !== 'done' && /متأخر|أمس|أول أمس/.test(task.dueLabel))
-  const currentMonth = new Intl.DateTimeFormat('en-CA').format(new Date()).slice(0, 7)
-  const previousMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().slice(0, 7)
+  const currentMonth = hydratedDate.slice(0, 7)
+  const previousMonth = previousMonthKey(hydratedDate)
   const monthlyExpenses = financeEntries.filter((entry) => entry.kind === 'expense' && entry.localDate.startsWith(currentMonth)).reduce((sum, entry) => sum + entry.amount, 0)
   const previousMonthExpenses = financeEntries.filter((entry) => entry.kind === 'expense' && entry.localDate.startsWith(previousMonth)).reduce((sum, entry) => sum + entry.amount, 0)
   const expenseDelta = monthlyExpenses - previousMonthExpenses
@@ -61,7 +77,7 @@ export function DashboardHome() {
   return (
     <main className="mx-auto max-w-7xl p-4 md:p-6">
       <TopNav />
-      <div className="mt-8"><div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>{formatDate()}</span><span aria-hidden="true">·</span><span>{formatHijriDate()}</span></div><span className="rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground">نظامك الشخصي</span></div></div>
+      <div className="mt-8"><div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>{formatDate(hydratedDate)}</span><span aria-hidden="true">·</span><span>{formatHijriDate(hydratedDate)}</span></div><span className="rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground">نظامك الشخصي</span></div></div>
       <div className="mt-7 flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm text-muted-foreground">صباح الخير يا {profile.name}</p><h1 className="mt-1 text-4xl font-semibold tracking-tight">يومك واضح، خطوة خطوة.</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">خطة اليوم بتجمع أهم ما تحتاجه من غير ما تشتتك بين أقسام كثيرة.</p></div>
         <div className="flex flex-wrap gap-2"><Link href="/onboarding" className="flex items-center gap-2 rounded-full bg-card px-4 py-2.5 text-xs font-semibold">تعديل الإيقاع</Link><Link href="/review" className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground"><CalendarCheck2 className="h-4 w-4" /> مراجعة الأسبوع</Link><Link href="/daily-plan" className="flex items-center gap-2 rounded-full bg-card px-4 py-2.5 text-xs font-semibold"><ListPlus className="h-4 w-4" /> خطة اليوم</Link></div>
       </div>

@@ -1461,3 +1461,19 @@
 أظهر تدقيق الملكية `48` route، منها `44` session-aware و`44` visible ownership دون routes ناقصة. أظهر تدقيق responsive `34/34` دون failures، وتدقيق accessibility `34/34` مع `0` failures. وأُجري smoke test نهائي لـ`22` صفحة، فأعادت جميعها `HTTP 200`. أعادت المسارات المحمية `/api/workspaces` و`/api/projects` و`/api/finance` ومسار تحصيل التسعير حالة `HTTP 401` دون جلسة، ما يؤكد أن حواجز الجلسة لا تزال فعالة.
 
 أُعيدت artifacts المولدة من الصور وتقارير التدقيق قبل الاعتماد. حُفظت سجلات الاختبار في `verification/final-quality-audit-20260817T213458Z.log` و`verification/final-route-smoke-20260817T213714Z.log`. لا يتضمن هذا gate اختبار Neon أو Better Auth أو 2FA الحقيقي، ولا race-condition حقيقيًا، لأن credentials وقاعدة البيانات غير متاحة في البيئة الحالية؛ لذلك يبقى اعتماد الإنتاج مشروطًا بهذه الاختبارات.
+
+
+---
+## Calendar / Search / Archive + Hydration / PWA — 2026-08-17T22:53Z
+أُغلقت دفعة الروابط العميقة والبحث الشامل بعد توسيع البحث ليشمل التقويم والأرشيف، ودعم `/calendar?date=YYYY-MM-DD` و`/archive?q=...`، ثم إعادة اختبار المسارين على نسخة الإنتاج. عولجت قيم التاريخ التي كانت تُحسب أثناء أول render في Dashboard وDaily Plan وHabits وJournal وWeekly Review وMoney وReligious وCalendar، وأزيلت قراءات `useSearchParams` المباشرة من Projects وMoney لصالح قراءة آمنة داخل effect مع الحفاظ على سلوك الروابط العميقة.
+
+كشفت جولات التدقيق المعزول أن خطأ React #418 المتبقي في Onboarding لم يكن من بيانات النموذج وحدها، بل من إعادة تحميل الصفحة أثناء أول تفعيل لـservice worker عبر `controllerchange`. أضيفت حماية تمنع reload في أول activation، مع الإبقاء على reload عند وجود controller سابق أثناء تحديث فعلي، ورُفع إصدار كاش PWA إلى `pmd-shell-v2`. كما عُزلت صفحة Onboarding عن SSR عبر dynamic client-only boundary مع fallback عربي ثابت، وأُبقيت واجهة الإعداد الحالية وسلوكها دون تغيير تصميمي.
+
+نجحت بوابة Responsive بعد عزل السياقات في `34/34` حالة دون failures، ونجحت بوابة Accessibility في `34/34` حالة مع `0` failures. نجح اختبار Onboarding المعزول في `10/10` تشغيلات عبر mobile وtablet دون `Minified React` errors. نجح التحقق البصري من `/calendar?date=2026-08-16` مع عرض أحداث 16 أغسطس، ومن `/archive?q=مشروع` مع تعبئة البحث وظهور مشروع مؤرشف، ومن البحث الشامل بكلمة «تقويم» مع ظهور قسم التقويم و`13` نتيجة. بقي console خاليًا من أخطاء JavaScript أو hydration في الجولات اليدوية.
+
+نجح `pnpm exec tsc --noEmit` و`pnpm lint`، مع تحذير hooks غير حاجز موجود مسبقًا في Workspace. نجح `NEXT_TELEMETRY_DISABLED=1 pnpm exec next build --webpack`، مع تحذيرات Next المعلوماتية السابقة الخاصة بتقادم middleware وEdge Runtime. لم يُشغّل `drizzle-kit generate`، ولم تُضف أسرار إلى المستودع، وأُعيدت artifacts المولدة قبل الاعتماد. الأدلة محفوظة في سجلات `verification/calendar-search-*` و`verification/onboarding-hydration-repeat-20260817T2310Z.json` وبوابتي Responsive وAccessibility.
+
+**الحالة:** PASS — دفعة Calendar/Search/Archive/Hydration جاهزة للاعتماد والرفع، مع بقاء twoFactor تجريبيًا وغير معتمد للإنتاج كما هو موثق سابقًا.
+
+## Final verification correction — 2026-08-17T22:55Z
+أُعيد تشغيل بوابتي Responsive وAccessibility بعد آخر إصلاحات PWA وOnboarding، وليس اعتمادًا على جولات سابقة متذبذبة. النتيجة الفعلية من الجولة النهائية: Responsive `34/34` مع `failures: []`، وAccessibility `34/34` مع `failures: 0` و`failureSummary: []`. كما يثبت سجل Onboarding الأخير `10/10` تشغيلات مع `errors: []` في كل تشغيل. الأدلة النهائية هي `verification/responsive-final-20260817T2255Z.log` و`verification/accessibility-final-20260817T2255Z.log` و`verification/onboarding-hydration-repeat-20260817T2310Z.json`.

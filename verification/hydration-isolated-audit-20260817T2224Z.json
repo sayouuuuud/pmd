@@ -1,0 +1,57 @@
+[
+  {
+    "route": "/",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/daily-plan",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/tasks",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/notes",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/habits",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/projects",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/goals",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/journal",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/money",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/religious",
+    "status": 200,
+    "errors": []
+  },
+  {
+    "route": "/review",
+    "status": 200,
+    "errors": []
+  }
+]

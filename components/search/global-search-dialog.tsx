@@ -27,12 +27,18 @@ type GlobalSearchDialogProps = {
   triggerRef?: RefObject<HTMLElement | null>
 }
 
-const sectionOrder = ['المهام', 'الملاحظات', 'خطة اليوم', 'التذكيرات', 'المشاريع', 'الأهداف', 'العادات', 'اليوميات', 'الفلوس', 'الترفيه', 'الديني']
+const sectionOrder = ['المهام', 'الملاحظات', 'خطة اليوم', 'التذكيرات', 'التقويم', 'المشاريع', 'الأهداف', 'العادات', 'اليوميات', 'الفلوس', 'الترفيه', 'الديني', 'الأرشيف']
 
 export function GlobalSearchDialog({ open, onClose, triggerRef }: GlobalSearchDialogProps) {
   const router = useRouter()
-  const { tasks, notes, goals, projects, financeEntries, planItems, reminders, entertainment, journal, habits, religious } = useCommandCenter()
+  const { tasks, notes, goals, projects, financeEntries, planItems, reminders, entertainment, journal, habits, religious, archive } = useCommandCenter()
   const [query, setQuery] = useState('')
+
+  const calendarItems = useMemo(() => [
+    ...tasks.filter((item) => /^\d{4}-\d{2}-\d{2}$/.test(item.dueLabel)).map((item) => ({ id: `task-${item.id}`, title: item.title, subtitle: `التقويم · ${item.dueLabel}`, href: `/calendar?date=${encodeURIComponent(item.dueLabel)}` })),
+    ...reminders.map((item) => ({ id: `reminder-${item.id}`, title: item.title, subtitle: `التقويم · ${item.dueAt}`, href: '/calendar' })),
+    ...planItems.filter((item): item is typeof item & { localDate: string } => Boolean(item.localDate)).map((item) => ({ id: `plan-${item.id}`, title: item.title, subtitle: `التقويم · ${item.localDate} · ${item.time}`, href: `/calendar?date=${encodeURIComponent(item.localDate)}` })),
+  ], [planItems, reminders, tasks])
 
   const results = useMemo<SearchResult[]>(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ar')
@@ -47,12 +53,14 @@ export function GlobalSearchDialog({ open, onClose, triggerRef }: GlobalSearchDi
       ...financeEntries.filter((item) => matches(item.title) || matches(item.category) || matches(item.note ?? '')).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.category} · ${item.amount.toLocaleString('ar-EG')} جنيه`, section: 'الفلوس', href: `/money?month=${encodeURIComponent(item.localDate.slice(0, 7))}#finance-${item.id}` })),
       ...planItems.filter((item) => matches(item.title)).map((item) => ({ id: item.id, title: item.title, subtitle: `خطة اليوم · ${item.time}`, section: 'خطة اليوم', href: `/daily-plan#plan-item-${item.id}` })),
       ...reminders.filter((item) => matches(item.title) || matches(item.dueAt)).map((item) => ({ id: item.id, title: item.title, subtitle: `تذكير · ${item.dueAt}`, section: 'التذكيرات', href: `/reminders#reminder-${item.id}` })),
+      ...calendarItems.filter((item) => matches(item.title) || matches(item.subtitle)).map((item) => ({ ...item, section: 'التقويم' })),
       ...entertainment.filter((item) => matches(item.title) || matches(item.genre) || matches(item.note ?? '')).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.type === 'movie' ? 'فيلم' : 'مسلسل'} · ${item.genre}`, section: 'الترفيه', href: `/entertainment#entertainment-${item.id}` })),
       ...journal.filter((item) => matches(item.title) || matches(item.body) || matches(item.mood) || matches(item.localDate)).map((item) => ({ id: item.id, title: item.title || 'يوميات بلا عنوان', subtitle: `اليوميات · ${item.localDate} · ${item.mood}`, section: 'اليوميات', href: `/journal?date=${encodeURIComponent(item.localDate)}#journal-${item.id}` })),
       ...habits.filter((item) => matches(item.title) || matches(item.target)).map((item) => ({ id: item.id, title: item.title, subtitle: `عادة · ${item.target}`, section: 'العادات', href: `/habits#${item.id}` })),
       ...religious.prayerLogs.filter((item) => matches(item.name) || matches(item.localDate) || matches(item.time)).map((item) => ({ id: item.id, title: item.name, subtitle: `الصلاة · ${item.localDate} · ${item.time}`, section: 'الديني', href: '/religious#prayer-tracker' })),
+      ...archive.filter((item) => matches(item.title) || matches(item.subtitle)).map((item) => ({ id: `${item.kind}-${item.id}`, title: item.title, subtitle: `أرشيف · ${item.subtitle}`, section: 'الأرشيف', href: `/archive?q=${encodeURIComponent(item.title)}` })),
     ].slice(0, 24)
-  }, [entertainment, financeEntries, goals, habits, journal, notes, planItems, projects, query, reminders, religious.prayerLogs, tasks])
+  }, [archive, calendarItems, entertainment, financeEntries, goals, habits, journal, notes, planItems, projects, query, reminders, religious.prayerLogs, tasks])
 
   const groups = useMemo<SearchGroup[]>(() => sectionOrder
     .map((section) => ({ section, results: results.filter((result) => result.section === section) }))
@@ -79,7 +87,7 @@ export function GlobalSearchDialog({ open, onClose, triggerRef }: GlobalSearchDi
         <Button type="button" variant="ghost" size="icon-sm" aria-label="إغلاق البحث" onClick={close}><X className="h-4 w-4" aria-hidden="true" /></Button>
       </div>
       <div id="global-search-results" className="max-h-[60vh] overflow-y-auto p-3" aria-live="polite">
-        {!query.trim() && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">دور على أي حاجة في مساحتك</p><p className="mt-2 text-xs text-muted-foreground">المهام، الملاحظات، خطة اليوم، التذكيرات، المشاريع، الأهداف، العادات، اليوميات، الفلوس، الترفيه، والديني.</p></div>}
+        {!query.trim() && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">دور على أي حاجة في مساحتك</p><p className="mt-2 text-xs text-muted-foreground">المهام، الملاحظات، خطة اليوم، التذكيرات، التقويم، المشاريع، الأهداف، العادات، اليوميات، الفلوس، الترفيه، الديني، والأرشيف.</p></div>}
         {query.trim() && groups.length === 0 && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">مفيش نتائج مطابقة</p><p className="mt-2 text-xs text-muted-foreground">جرّب كلمة أقصر أو اسم القسم.</p></div>}
         {groups.length > 0 && <div className="space-y-4" aria-label={`نتائج البحث: ${results.length}`}>
           {groups.map((group) => <section key={group.section} aria-labelledby={`search-group-${group.section}`}>

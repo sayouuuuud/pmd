@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+
 import { AlertCircle, ArrowDownLeft, ArrowUpRight, Archive, Banknote, CalendarDays, ChartNoAxesColumn, Plus, RotateCcw, Wallet } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ContentCard } from '@/components/ui/content-card'
@@ -21,19 +21,21 @@ function currentLocalDate() {
 }
 
 export function MoneyWorkspace() {
-  const searchParams = useSearchParams()
   const { financeEntries, budget, projects, goals, addFinanceEntry, archiveFinanceEntry, updateBudget } = useCommandCenter()
   const [budgetDraft, setBudgetDraft] = useState(String(budget.monthlyLimit))
   const [budgetError, setBudgetError] = useState('')
   const [entryFormError, setEntryFormError] = useState('')
-  const [selectedMonth, setSelectedMonth] = useState(currentLocalDate().slice(0, 7))
+  const [todayDate, setTodayDate] = useState('')
+  const [entryDate, setEntryDate] = useState('')
+  const [selectedMonth, setSelectedMonth] = useState('')
 
   useEffect(() => {
-    const requestedMonth = searchParams.get('month')
-    if (requestedMonth && /^\d{4}-\d{2}$/.test(requestedMonth)) {
-      setSelectedMonth(requestedMonth)
-    }
-  }, [searchParams])
+    const today = currentLocalDate()
+    const requestedMonth = new URLSearchParams(window.location.search).get('month')
+    setTodayDate(today)
+    setEntryDate(today)
+    setSelectedMonth(requestedMonth && /^\d{4}-\d{2}$/.test(requestedMonth) ? requestedMonth : today.slice(0, 7))
+  }, [])
   const monthEntries = financeEntries.filter((entry) => entry.localDate.startsWith(selectedMonth))
   const recurringEntries = financeEntries.filter((entry) => entry.kind === 'expense' && entry.recurrence !== 'none')
   const expenses = monthEntries.filter((entry) => entry.kind === 'expense')
@@ -43,13 +45,15 @@ export function MoneyWorkspace() {
   const remaining = budget.monthlyLimit - totalExpenses
   const budgetProgress = budget.monthlyLimit ? Math.min(100, Math.round((totalExpenses / budget.monthlyLimit) * 100)) : 0
   const monthOptions = useMemo(() => {
-    const today = new Date()
+    if (!todayDate) return []
+    const [year, month] = todayDate.split('-').map(Number)
+    const base = new Date(year, month - 1, 15)
     return Array.from({ length: 6 }, (_, offset) => {
-      const date = new Date(today.getFullYear(), today.getMonth() - offset, 15)
-      const key = date.toISOString().slice(0, 7)
+      const date = new Date(base.getFullYear(), base.getMonth() - offset, 15)
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
       return { key, label: new Intl.DateTimeFormat('ar-EG', { month: 'long', year: 'numeric' }).format(date) }
     })
-  }, [])
+  }, [todayDate])
   const categoryTotals = useMemo(() => {
     const totals = new Map<string, number>()
     expenses.forEach((entry) => totals.set(entry.category, (totals.get(entry.category) ?? 0) + entry.amount))
@@ -77,7 +81,8 @@ export function MoneyWorkspace() {
 
   function recurringDueLabel(entry: (typeof recurringEntries)[number]) {
     if (entry.recurrence === 'weekly') return 'يتكرر أسبوعيًا'
-    const today = new Date(`${currentLocalDate()}T00:00:00`)
+    if (!todayDate) return 'موعد شهري'
+    const today = new Date(`${todayDate}T00:00:00`)
     const templateDay = Math.min(28, Math.max(1, Number(entry.localDate.slice(-2)) || 1))
     const dueThisMonth = new Date(today.getFullYear(), today.getMonth(), templateDay)
     const dueDate = dueThisMonth < today ? new Date(today.getFullYear(), today.getMonth() + 1, templateDay) : dueThisMonth
@@ -233,7 +238,7 @@ export function MoneyWorkspace() {
                     <div className="grid grid-cols-2 gap-2">
             <Select name="category" aria-label="تصنيف العملية" defaultValue="عام" className="h-auto rounded-2xl py-3">
 {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}</Select>
-            <Input name="localDate" type="date" aria-label="تاريخ العملية" defaultValue={currentLocalDate()} className="h-auto rounded-2xl py-3" />
+            <Input name="localDate" type="date" aria-label="تاريخ العملية" value={entryDate} onChange={(event) => setEntryDate(event.target.value)} className="h-auto rounded-2xl py-3" />
           </div>
           <Select name="recurrence" aria-label="تكرار العملية" defaultValue="none" className="h-auto rounded-2xl py-3">
             <option value="none">بدون تكرار</option>

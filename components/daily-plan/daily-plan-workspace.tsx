@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CalendarDays, Check, Clock3, FolderKanban, Link2, Moon, Pause, Pencil, Play, Repeat, SkipForward, Sparkles, Target, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
@@ -15,15 +15,18 @@ function cairoToday() {
 
 export function DailyPlanWorkspace() {
   const { planItems, tasks, habits, projects, goals, togglePlanItem, updatePlanItem, movePlanItem, snoozePlanItem, skipPlanItem, restorePlanItem } = useCommandCenter()
-  const [viewDate, setViewDate] = useState(cairoToday)
+  const [viewDate, setViewDate] = useState('2000-01-01')
   const [moveDateId, setMoveDateId] = useState<string | null>(null)
   const [moveDate, setMoveDate] = useState('')
+  useEffect(() => {
+    setViewDate(cairoToday())
+  }, [])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [editingTime, setEditingTime] = useState('')
   const [editError, setEditError] = useState('')
   const [moveError, setMoveError] = useState('')
-  const visiblePlanItems = planItems.filter((item) => (item.localDate ?? cairoToday()) === viewDate)
+  const visiblePlanItems = planItems.filter((item) => (item.localDate ?? viewDate) === viewDate)
   const sortedVisiblePlanItems = sortPlanItems(visiblePlanItems, tasks)
   const completed = visiblePlanItems.filter((item) => item.status === 'done').length
   const activePlanItems = visiblePlanItems.filter((item) => item.status !== 'skipped')

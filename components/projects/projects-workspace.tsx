@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { Archive, CheckCircle2, ChevronLeft, Circle, ExternalLink, FolderKanban, GripVertical, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
@@ -22,7 +21,6 @@ const columns: { id: ProjectStatus; label: string; tone: string }[] = [
 ]
 
 export function ProjectsWorkspace() {
-  const searchParams = useSearchParams()
   const { projects, goals, tasks, notes, projectUpdates, projectPricings, addProject, addTask, updateProject, toggleTask, archiveProject, addProjectUpdate, removeProjectUpdate, addProjectPricing, updateProjectPricing, addFinanceEntryFromPricing, collectProjectPricing } = useCommandCenter()
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null)
@@ -61,11 +59,11 @@ export function ProjectsWorkspace() {
   }, [])
 
   useEffect(() => {
-    const requestedProjectId = searchParams.get('project')
+    const requestedProjectId = new URLSearchParams(window.location.search).get('project')
     if (requestedProjectId && projects.some((project) => project.id === requestedProjectId)) {
       setSelectedProjectId(requestedProjectId)
     }
-  }, [projects, searchParams])
+  }, [projects])
 
   const linkedTasks = (projectId: string) => tasks.filter((task) => task.projectId === projectId)
   const linkedNotes = (projectId: string) => {

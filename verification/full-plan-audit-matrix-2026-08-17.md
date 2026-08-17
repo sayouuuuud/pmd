@@ -728,3 +728,21 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Secret hygiene | PASS | لا قيم secrets فعلية؛ النتائج أسماء env/placeholders أو توثيق غياب الإعداد |
 
 تظل اختبارات Neon/Better Auth الفعلية، transaction race conditions، وتفعيل 2FA الحقيقي خارج اعتماد الإنتاج لغياب credentials المقصودة في البيئة الحالية. الأدلة الكاملة في `verification/final-quality-audit-20260817T213458Z.log` و`verification/final-route-smoke-20260817T213714Z.log`.
+
+## 2026-08-17 — Calendar/Search/Archive + Hydration/PWA — 22:53Z
+| نطاق الخطة | التنفيذ والتحقق | الحالة |
+|---|---|---|
+| البحث الشامل | إضافة أقسام التقويم والأرشيف؛ اختبار كلمة «تقويم» أظهر 13 نتيجة تقويمية في الإنتاج دون console errors | PASS |
+| Calendar deep-link | `/calendar?date=2026-08-16` فتح يوم 16 أغسطس وأظهر عناصر مرتبطة باليوم في الإنتاج | PASS |
+| Archive deep-link | `/archive?q=مشروع` ملأ حقل البحث وأظهر مشروعًا مؤرشفًا مطابقًا | PASS |
+| Hydration في المسارات الزمنية | تأجيل حسابات التاريخ إلى ما بعد mount في Dashboard وDaily Plan وHabits وJournal وWeekly Review وMoney وReligious وCalendar؛ إزالة قراءات query المباشرة من Projects وMoney | PASS |
+| Onboarding | dynamic client-only boundary مع fallback ثابت، واختبار معزول 10/10 تشغيلات mobile/tablet بلا Minified React errors | PASS |
+| PWA | منع reload أثناء أول service-worker activation ورفع الكاش إلى `pmd-shell-v2` | PASS |
+| Responsive | 34/34 حالة، دون failures | PASS |
+| Accessibility | 34/34 حالة، 0 failures | PASS |
+| الحواجز | TypeScript وWebpack build ناجحان؛ ESLint تحذير hooks سابق غير حاجز؛ لم تُشغّل drizzle-kit generate ولم تُضف أسرار | PASS |
+
+**قرار المصفوفة:** الدفعة مغلقة وظيفيًا وبصريًا، وجاهزة للاعتماد في GitHub. حدود twoFactor التجريبية وبقية البنود المؤجلة لا تتغير.
+
+## 2026-08-17 — Final gate correction — 22:55Z
+أُعيد تشغيل البوابات بعد اكتمال إصلاح PWA وOnboarding: Responsive `34/34` مع `failures: []`، وAccessibility `34/34` مع `failures: 0` و`failureSummary: []`. يثبت سجل Onboarding الأخير عدم وجود أخطاء في `10/10` تشغيلات. هذه هي النتائج المعتمدة، أما سجلات الجولات السابقة ذات الأخطاء المتقطعة فتبقى تاريخًا تشخيصيًا ولا تمثل حالة البناء النهائي.

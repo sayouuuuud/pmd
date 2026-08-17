@@ -1132,3 +1132,19 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 أُجري smoke test على جميع صفحات التطبيق الأساسية وعددها `22`: كل صفحة أعادت `HTTP 200`، بما فيها `/account` و`/projects` و`/workspace` و`/money` و`/religious` و`/daily-plan`. كما أعادت مسارات الـAPI المحمية `/api/workspaces` و`/api/projects` و`/api/finance` ومسار تحصيل التسعير الجديد `POST /api/projects/pricing/test-pricing-id/collect` حالة `HTTP 401` دون جلسة، وهو السلوك المتوقع. الأدلة التفصيلية في `verification/final-quality-audit-20260817T213458Z.log` و`verification/final-route-smoke-20260817T213714Z.log`.
 
 لم يكشف مسح الأسرار عن قيم سرية فعلية؛ النتائج الظاهرة أسماء متغيرات وplaceholders وتوثيق لغياب credentials فقط. أُعيدت artifacts الخاصة بالصور والتقارير و`tsconfig.tsbuildinfo` قبل الاعتماد.
+
+## 2026-08-17 — Calendar/Search/Archive + Hydration/PWA — 22:53Z
+| السيناريو | النتيجة |
+|---|---|
+| فتح `/calendar?date=2026-08-16` في الإنتاج | PASS — عُرض يوم 16 أغسطس والأحداث المرتبطة به، بلا console errors |
+| فتح `/archive?q=مشروع` في الإنتاج | PASS — انتقل query إلى حقل البحث وظهر مشروع مؤرشف مطابق |
+| فتح البحث الشامل وإدخال «تقويم» | PASS — ظهر قسم التقويم مع 13 نتيجة، بلا أخطاء JavaScript أو hydration |
+| تدقيق Responsive بعد عزل السياقات | PASS — 34/34 |
+| تدقيق Accessibility بعد عزل السياقات | PASS — 34/34 و0 failures |
+| اختبار Onboarding المعزول | PASS — 10/10 تشغيلات mobile/tablet بلا Minified React errors |
+| TypeScript / ESLint / Webpack build | PASS — ESLint يحوي تحذير hooks سابقًا غير حاجز |
+
+**القرار:** سيناريوهات الدفعة الأساسية مغلقة وقابلة للتتبع في سجلات `verification/calendar-search-*` و`verification/*hydration*`.
+
+## 2026-08-17 — Final gate correction — 22:55Z
+أعيد تشغيل Responsive وAccessibility على نسخة الإنتاج الحالية بعد إصلاح PWA وOnboarding؛ نجحت 34/34 حالة في كل بوابة، مع 0 failures في Accessibility. سجل Onboarding النهائي يثبت `errors: []` في جميع التشغيلات العشرة.

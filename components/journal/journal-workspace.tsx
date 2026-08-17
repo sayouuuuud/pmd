@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { BookOpenText, CalendarDays, Clock3, Feather, Save, Smile, Trash2 } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { ContentCard } from '@/components/ui/content-card'
@@ -51,10 +50,8 @@ function MoodTooltip({ active, payload, label }: { active?: boolean; payload?: A
 }
 
 export function JournalWorkspace() {
-  const searchParams = useSearchParams()
   const { journal, saveJournalEntry, updateJournalEntry, archiveJournalEntry } = useCommandCenter()
-  const today = localDateValue(new Date())
-  const [selectedDate, setSelectedDate] = useState(today)
+  const [selectedDate, setSelectedDate] = useState('2000-01-01')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [mood, setMood] = useState<JournalEntry['mood']>('محايد')
@@ -65,11 +62,10 @@ export function JournalWorkspace() {
   const selectedEntry = journal.find((entry) => entry.localDate === selectedDate)
 
   useEffect(() => {
-    const requestedDate = searchParams.get('date')
-    if (requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
-      setSelectedDate(requestedDate)
-    }
-  }, [searchParams])
+    const params = new URLSearchParams(window.location.search)
+    const requestedDate = params.get('date')
+    setSelectedDate(requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ? requestedDate : localDateValue(new Date()))
+  }, [])
 
   const calendarDays = useMemo(() => {
     const selected = parseDate(selectedDate)

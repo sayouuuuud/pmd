@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Archive, Check, Flame, Link2, Plus, Repeat, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
@@ -42,8 +42,11 @@ export function HabitsWorkspace() {
   const [projectId, setProjectId] = useState('')
   const [goalId, setGoalId] = useState('')
   const [habitFormError, setHabitFormError] = useState('')
-  const recentDates = useMemo(() => getRecentDates(35), [])
-  const today = recentDates[recentDates.length - 1]
+  const [recentDates, setRecentDates] = useState<string[]>([])
+  useEffect(() => {
+    setRecentDates(getRecentDates(35))
+  }, [])
+  const today = recentDates[recentDates.length - 1] ?? '2000-01-01'
   const weekDates = recentDates.slice(-7)
   const completed = habits.filter((habit) => habit.doneToday).length
   const completionPercent = Math.round((completed / Math.max(habits.length, 1)) * 100)

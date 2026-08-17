@@ -12,11 +12,14 @@ export function PwaRegister() {
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) return
 
+    const hadController = Boolean(navigator.serviceWorker.controller)
     const handleInstallPrompt = (event: Event) => {
       event.preventDefault()
       setInstallPrompt(event as BeforeInstallPromptEvent)
     }
-    const handleControllerChange = () => window.location.reload()
+    const handleControllerChange = () => {
+      if (hadController) window.location.reload()
+    }
 
     window.addEventListener('beforeinstallprompt', handleInstallPrompt)
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange)

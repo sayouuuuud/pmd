@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { LoadingState } from '@/components/ui/loading-state'
 import { type QuranWirdMode, useCommandCenter } from '@/lib/command-center-store'
 
 const steps = ['عن يومك', 'إيقاعك', 'هدفك', 'بدايتك']
@@ -20,6 +21,7 @@ const wirdOptions: Array<{ value: QuranWirdMode; label: string; target: number; 
 
 export function OnboardingFlow() {
   const { profile, habits, completeOnboarding, addHabit, setWirdTarget } = useCommandCenter()
+  const [mounted, setMounted] = useState(false)
   const [step, setStep] = useState(0)
   const [completed, setCompleted] = useState(false)
   const [name, setName] = useState(profile.name === 'كابتن' ? '' : profile.name)
@@ -31,6 +33,10 @@ export function OnboardingFlow() {
   const [wirdMode, setWirdMode] = useState<QuranWirdMode>('pages')
   const [wirdTarget, setWirdTargetValue] = useState(5)
   const [nameError, setNameError] = useState('')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!name.trim() && profile.name !== 'كابتن') setName(profile.name)
@@ -67,6 +73,10 @@ export function OnboardingFlow() {
     const option = wirdOptions.find((item) => item.value === mode) ?? wirdOptions[0]
     setWirdMode(option.value)
     setWirdTargetValue(option.target)
+  }
+
+  if (!mounted) {
+    return <main className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-3xl items-center justify-center p-4 md:p-8"><LoadingState label="جاري تجهيز الإعداد الأولي" count={1} className="w-full" /></main>
   }
 
   if (completed) {

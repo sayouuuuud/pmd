@@ -9,10 +9,7 @@ ROUTES = [
     "/journal", "/money", "/entertainment", "/religious", "/account", "/board",
     "/reminders", "/review", "/login", "/onboarding",
 ]
-VIEWPORTS = [
-    ("mobile", 390, 844),
-    ("tablet", 768, 1024),
-]
+VIEWPORTS = [("mobile", 390, 844), ("tablet", 768, 1024)]
 EXPECTED_RESOURCE_ERROR = re.compile(r"status of (?:401|503)\b")
 
 
@@ -24,8 +21,8 @@ def main():
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True, executable_path="/usr/bin/chromium", args=["--no-sandbox"])
         for viewport_name, width, height in VIEWPORTS:
-            context = browser.new_context(viewport={"width": width, "height": height}, device_scale_factor=1)
             for route in ROUTES:
+                context = browser.new_context(viewport={"width": width, "height": height}, device_scale_factor=1)
                 page = context.new_page()
                 console_errors = []
                 expected_resource_errors = []
@@ -51,7 +48,7 @@ def main():
                 }
                 try:
                     response = page.goto(f"{BASE_URL}{route}", wait_until="domcontentloaded", timeout=20000)
-                    page.wait_for_timeout(1200)
+                    page.wait_for_timeout(1800)
                     metrics = page.evaluate("""() => ({
                         innerWidth: window.innerWidth,
                         bodyScrollWidth: document.body.scrollWidth,
@@ -71,7 +68,7 @@ def main():
                 finally:
                     results.append(record)
                     page.close()
-            context.close()
+                    context.close()
         browser.close()
     report_path = root / "docs" / "responsive-audit-results.json"
     report_path.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -79,7 +76,8 @@ def main():
         r for r in results
         if r.get("loadError") or (r.get("status") or 0) >= 400 or r.get("horizontalOverflow") or r.get("consoleErrors")
     ]
-    print(json.dumps({"total": len(results), "failures": len(failures), "reportPath": str(report_path), "failures": failures}, ensure_ascii=False, indent=2))
+    print(json.dumps({"total": len(results), "failures": failures, "reportPath": str(report_path)}, ensure_ascii=False, indent=2))
+    raise SystemExit(1 if failures else 0)
 
 
 if __name__ == "__main__":

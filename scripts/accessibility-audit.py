@@ -17,14 +17,14 @@ def main():
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True, executable_path="/usr/bin/chromium", args=["--no-sandbox"])
         for viewport_name, width, height in VIEWPORTS:
-            context = browser.new_context(viewport={"width": width, "height": height})
             for route in ROUTES:
+                context = browser.new_context(viewport={"width": width, "height": height}, device_scale_factor=1)
                 page = context.new_page()
                 console_errors = []
                 page.on("pageerror", lambda error: console_errors.append(error.message))
                 try:
                     response = page.goto(f"{BASE_URL}{route}", wait_until="domcontentloaded", timeout=20000)
-                    page.wait_for_timeout(700)
+                    page.wait_for_timeout(1200)
                     audit = page.evaluate("""() => {
                       const nameOf = (element) => {
                         const aria = element.getAttribute('aria-label');
@@ -36,7 +36,7 @@ def main():
                         const associatedLabel = id ? document.querySelector(`label[for="${CSS.escape(id)}"]`)?.textContent?.replace(/\\s+/g, ' ').trim() : element.closest('label')?.textContent?.replace(/\\s+/g, ' ').trim();
                         if (aria?.trim()) return aria.trim();
                         if (labelledBy) {
-                          const labels = labelledBy.split(/\\s+/).map((id) => document.getElementById(id)?.textContent?.trim()).filter(Boolean);
+                          const labels = labelledBy.split(/\\s+/).map((labelId) => document.getElementById(labelId)?.textContent?.trim()).filter(Boolean);
                           if (labels.length) return labels.join(' ');
                         }
                         if (title?.trim()) return title.trim();
@@ -68,7 +68,7 @@ def main():
                     results.append({"viewport": viewport_name, "route": route, "loadError": str(error), "consoleErrors": console_errors})
                 finally:
                     page.close()
-            context.close()
+                    context.close()
         browser.close()
     report = root / "docs" / "accessibility-audit-results.json"
     report.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")

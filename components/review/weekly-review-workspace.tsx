@@ -13,6 +13,11 @@ export function WeeklyReviewWorkspace() {
   const [wentWell, setWentWell] = useState(weeklyReview.wentWell)
   const [blockers, setBlockers] = useState(weeklyReview.blockers)
   const [nextGoal, setNextGoal] = useState(weeklyReview.nextGoal)
+  const [today, setToday] = useState('2000-01-01')
+
+  useEffect(() => {
+    setToday(new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date()))
+  }, [])
 
   useEffect(() => {
     setWentWell(weeklyReview.wentWell)
@@ -31,7 +36,6 @@ export function WeeklyReviewWorkspace() {
       reviewDates.push(reviewDateCursor.toISOString().slice(0, 10))
       reviewDateCursor.setUTCDate(reviewDateCursor.getUTCDate() + 1)
     }
-    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
     const isDoneOn = (habit: (typeof habits)[number], localDate: string) => localDate === today ? habit.doneToday : Boolean(habit.history?.[localDate])
     const habitWeekCompletions = habits.reduce((total, habit) => total + reviewDates.filter((localDate) => isDoneOn(habit, localDate)).length, 0)
     const habitWeekDays = reviewDates.filter((localDate) => habits.some((habit) => isDoneOn(habit, localDate))).length
@@ -51,7 +55,7 @@ export function WeeklyReviewWorkspace() {
     const listenedSurahs = religious.quran.listenedSurahNumbers?.length ?? 0
     const listenLaterSurahs = religious.quran.listenLater?.length ?? 0
     return { doneTasks, openTasks, doneHabits, habitWeekCompletions, habitWeekDays, prayerCount, prayerRate, fullPrayerDays, completedEntertainment, income, expenses, goalProgress, activeProjects, listenedSurahs, listenLaterSurahs }
-  }, [tasks, habits, religious.prayerLogs, religious.prayerHistory, religious.quran.listenedSurahNumbers, religious.quran.listenLater, entertainment, financeEntries, goals, projects, weeklyReview.weekStart, weeklyReview.weekEnd])
+  }, [tasks, habits, religious.prayerLogs, religious.prayerHistory, religious.quran.listenedSurahNumbers, religious.quran.listenLater, entertainment, financeEntries, goals, projects, weeklyReview.weekStart, weeklyReview.weekEnd, today])
 
   const context = useMemo(() => ({
     openTask: tasks.find((task) => task.status !== 'done'),

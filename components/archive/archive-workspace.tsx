@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Archive, ArchiveRestore, Check, Clock3, ListChecks, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -65,6 +66,7 @@ function mapArchivedClient(client: Client & { archivedAt: string | Date }, works
 }
 
 export function ArchiveWorkspace() {
+  const searchParams = useSearchParams()
   const { archive, restoreArchivedItem } = useCommandCenter()
   const [activeKind, setActiveKind] = useState<ArchiveFilter>('all')
   const [query, setQuery] = useState('')
@@ -73,6 +75,11 @@ export function ArchiveWorkspace() {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([])
   const [clientArchive, setClientArchive] = useState<ArchivedClientItem[]>([])
   const [clientArchiveError, setClientArchiveError] = useState('')
+
+  useEffect(() => {
+    const linkedQuery = searchParams.get('q')
+    if (linkedQuery !== null) setQuery(linkedQuery)
+  }, [searchParams])
 
   async function loadClientArchive() {
     const local = readWorkspaceFallback()

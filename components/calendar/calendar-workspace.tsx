@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, ExternalLink, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
@@ -40,6 +41,13 @@ function dateFromKey(value: string) {
   return new Date(year, month - 1, day, 9, 0, 0)
 }
 
+function isDateKey(value: string | null | undefined): value is string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const [year, month, day] = value.split('-').map(Number)
+  const parsed = new Date(year, month - 1, day, 9, 0, 0)
+  return parsed.getFullYear() === year && parsed.getMonth() === month - 1 && parsed.getDate() === day
+}
+
 function displayTime(value: string) {
   const parsed = parseDate(value)
   if (!parsed) return 'بدون وقت'
@@ -74,20 +82,30 @@ function makeId() {
 }
 
 export function CalendarWorkspace() {
+  const searchParams = useSearchParams()
+  const linkedDateParam = searchParams.get('date')
+  const linkedDate = isDateKey(linkedDateParam) ? linkedDateParam : null
   const { tasks, reminders, planItems, projectPricings } = useCommandCenter()
   const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([])
   const [storageLoaded, setStorageLoaded] = useState(false)
-  const [month, setMonth] = useState(() => {
-    const today = new Date()
-    return new Date(today.getFullYear(), today.getMonth(), 1)
-  })
-  const [selectedDate, setSelectedDate] = useState(cairoToday)
+  const [month, setMonth] = useState(() => new Date(2000, 0, 1))
+  const [selectedDate, setSelectedDate] = useState(linkedDate ?? '2000-01-01')
+  const [today, setToday] = useState('2000-01-01')
   const [showForm, setShowForm] = useState(false)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const [form, setForm] = useState({ title: '', description: '', kind: 'general', date: cairoToday(), start: '09:00', end: '' })
+  const [form, setForm] = useState({ title: '', description: '', kind: 'general', date: '', start: '09:00', end: '' })
+
+  useEffect(() => {
+    const nextDate = linkedDate ?? cairoToday()
+    const selected = dateFromKey(nextDate)
+    setMonth(new Date(selected.getFullYear(), selected.getMonth(), 1))
+    setSelectedDate(nextDate)
+    setToday(cairoToday())
+    setForm((current) => current.date ? current : { ...current, date: nextDate })
+  }, [linkedDate])
 
   useEffect(() => {
     try {
@@ -144,8 +162,6 @@ export function CalendarWorkspace() {
     return Array.from({ length: 42 }, (_, index) => new Date(month.getFullYear(), month.getMonth(), index - leading + 1))
   }, [month])
   const selectedItems = items.filter((item) => dateKey(new Date(item.startsAt)) === selectedDate)
-  const today = cairoToday()
-
   function shiftMonth(amount: number) {
     setMonth((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1))
   }
