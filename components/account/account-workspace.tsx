@@ -226,7 +226,7 @@ export function AccountWorkspace() {
         <Input ref={fileInputRef} type="file" aria-label="ملف النسخة الاحتياطية" accept="application/json,.json" onChange={restoreBackup} className="hidden" />
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-muted/60 p-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> لا تتضمن النسخ المحلية كلمات المرور أو رموز الجلسات.</span>
-          {dataMessage && <span className="font-medium text-foreground">{dataMessage}</span>}
+          {dataMessage && <span role="status" aria-live="polite" aria-atomic="true" className="font-medium text-foreground">{dataMessage}</span>}
         </div>
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
           <p className="max-w-2xl text-xs text-muted-foreground">حذف الحساب البعيد عملية نهائية. ستُحذف بياناتك من Neon، بينما تُحذف البيانات المحلية عند نجاح العملية.</p>
