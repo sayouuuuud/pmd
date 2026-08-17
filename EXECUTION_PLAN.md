@@ -1420,3 +1420,13 @@
 اختبار المتصفح على `/` أثبت التبديل الفوري، `html.dark`، `color-scheme: dark`، حفظ الاختيار، واستعادته بعد إعادة التحميل. نجحت بوابات `tsc --noEmit` وESLint وNext build، كما نجحت ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، صفر إخفاقات)، ومسح validation live-region دون فجوات جديدة. الأدلة: `verification/dark-mode-live-region-ar-2026-08-17.md`، `verification/dark-mode-browser-findings-2026-08-17.md`، `verification/dark-mode-quality-20260817T202345Z.log`، و`verification/dark-mode-audits-20260817T202345Z.log`.
 
 **الحالة:** PASS — الدفعة جاهزة للاعتماد والرفع.
+
+## سجل دفعة — 2FA التجريبي — 2026-08-17
+أُضيف plugin `twoFactor` الرسمي من Better Auth إلى `server/auth.ts` مع TOTP وbackup codes وcookie مؤقتة للجهاز الموثوق، وأضيف `twoFactorClient` إلى `lib/auth-client.ts`. أضيف إلى Drizzle حقل `user.twoFactorEnabled` وجدول `twoFactor` ذوا الحقول اللازمة للتحقق وحساب محاولات الفشل والقفل المؤقت، مع migration يدوية idempotent في `server/db/migrations/0011_better_auth_two_factor_experimental.sql`.
+
+أضيفت إلى `/account` بطاقة عربية واضحة باسم «التحقق بخطوتين — تجريبي» تشمل حالات التفعيل، إدخال رمز TOTP، رموز الاسترداد، التعطيل، التحميل، والخطأ. عند غياب `DATABASE_URL` و`BETTER_AUTH_SECRET` تعمل الواجهة خلف local guard، لذلك لم تُنفّذ عملية auth حقيقية ولم تُنشأ أسرار أو بيانات حساسة. تمت إضافة `suppressHydrationWarning` على الجذر لمعالجة اختلاف bootstrap الخاص بالثيم دون تغيير هوية الواجهة.
+
+نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`، ونجحت تدقيقات ownership (`45` route، `41` session، `41` visible ownership) وresponsive/accessibility في الإعادة النهائية. لم يُشغّل `drizzle-kit generate` بسبب اختلاف journal؛ migration تحتاج تطبيقًا يدويًا بعد توفر قاعدة البيانات ومراجعة backup. الأدلة: `verification/interaction-smoke-tests.md`، `verification/full-plan-audit-matrix-2026-08-17.md`، `verification/two-factor-quality-20260817T2058Z.log`، `verification/two-factor-quality-rerun-20260817T2101Z.log`، و`verification/two-factor-audits-20260817T2059Z.log`.
+
+**حدود الاعتماد:** 2FA تجريبي وغير production-ready. يجب قبل الإنتاج اختبار challenge تسجيل الدخول الفعلي، إبطال الجلسات، تدوير الأسرار، backup/recovery، وتدفق الفشل بقاعدة بيانات وcredentials حقيقية، ثم إجراء مراجعة أمنية مستقلة.
+**الحالة:** PASS — الدفعة معتمدة ومرفوعة في commit `973fcee`.

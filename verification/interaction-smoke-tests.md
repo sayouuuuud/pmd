@@ -1087,3 +1087,15 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 أثبت فحص DOM وJavaScript `html.dark`، و`document.documentElement.style.colorScheme = "dark"`، و`localStorage['personal-command-center-theme'] = "dark"`، مع خلفية body `rgb(17, 18, 22)`. بعد إعادة تحميل الصفحة استُعيد الوضع الداكن تلقائيًا. الأدلة: `verification/dark-mode-browser-findings-2026-08-17.md` و`verification/dark-mode-live-region-ar-2026-08-17.md`.
 
 **الحالة: PASS.**
+
+## 2026-08-17 — دفعة 2FA التجريبية
+
+فُتحت صفحة `/account` على خادم التطوير المحلي، وظهرت بطاقة «التحقق بخطوتين — تجريبي» بالعربية داخل مساحة الحساب مع توضيح صريح أنها غير جاهزة للإنتاج. عند غياب `DATABASE_URL` و`BETTER_AUTH_SECRET` بقيت البطاقة خلف guard الوضع المحلي، ولم تُنفّذ أي عملية سرية أو تُنشأ أسرار داخل المتصفح. راجعت الواجهة حالات التفعيل، إدخال رمز TOTP، عرض رموز الاسترداد، التعطيل، ورسائل الخطأ/التحميل، مع الحفاظ على RTL وSemantic Tokens وقابلية الوصول الأساسية.
+
+أضيف plugin `twoFactor` الرسمي إلى Better Auth مع TOTP وbackup codes وcookie مؤقتة للجهاز الموثوق، وأضيف `twoFactorClient` إلى العميل، كما أضيف جدول `two_factor` وحقل `user.two_factor_enabled` في Drizzle. migration `server/db/migrations/0011_better_auth_two_factor_experimental.sql` مكتوبة يدويًا بصيغة idempotent، وتحتاج تطبيقًا يدويًا بعد توفر قاعدة البيانات ومراجعة خطة النسخ الاحتياطي؛ لم يُشغّل `drizzle-kit generate` بسبب اختلاف journal المعروف.
+
+نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`. سجل البناء يؤكد Next.js 16.3.0، توليد 27 صفحة ثابتة، وظهور مسارات Better Auth و`/account` دون فشل تجميعي. نجح تدقيق الملكية بعد الدفعة (`45` route، `41` session، `41` visible ownership)، كما بقي تدقيق responsive/accessibility بلا إخفاقات في إعادة التشغيل النهائية. بقي تحذير تقادم convention الخاص بـmiddleware معلوماتيًا وغير حاجز.
+
+**حدود الاعتماد:** هذا اختبار إعداد تجريبي للوحة الحساب فقط. لم يُعتبر تدفق تسجيل الدخول بعد تفعيل 2FA جاهزًا للإنتاج، لأن اختبار challenge الفعلي عند تسجيل الدخول، إبطال الجلسات، تدوير الأسرار، واستعادة الحساب يحتاج credentials وقاعدة بيانات فعليين ومراجعة أمنية مستقلة. الدليل: `verification/two-factor-quality-20260817T2058Z.log`، `verification/two-factor-quality-rerun-20260817T2101Z.log`، و`verification/two-factor-audits-20260817T2059Z.log`.
+
+**النتيجة:** PASS — إعداد 2FA التجريبي وواجهة الحساب والتحقق الساكن مكتملة، مع إبقاء الإنتاج وتدفق تسجيل الدخول الكامل خارج الاعتماد الحالي.

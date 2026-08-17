@@ -664,5 +664,22 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | TypeScript / ESLint / Build | PASS | `verification/dark-mode-quality-20260817T202345Z.log` |
 | Ownership / Responsive / Accessibility | PASS | `verification/dark-mode-audits-20260817T202345Z.log`: 45 route، 41 session، 41 visible ownership، 34/34 responsive، 34/34 accessibility |
 | حدود النطاق | PASS | لا تغييرات API أو schema أو migrations أو Auth؛ إضافة تفضيل ثيم فقط |
-
 **الحالة:** PASS — دفعة Dark Mode جاهزة للاعتماد بعد فحص staged diff.
+
+## 2026-08-17 — دفعة 2FA التجريبية
+
+| المجال | النتيجة | الدليل أو الحدود |
+|---|---|---|
+| واجهة الحساب | PASS | بطاقة «التحقق بخطوتين — تجريبي» في `components/account/account-workspace.tsx` مع حالات التفعيل، التحقق، رموز الاسترداد، التعطيل، التحميل والخطأ، وguard واضح عند غياب إعدادات المصادقة |
+| Better Auth | PASS تجريبي | إضافة plugin `twoFactor` الرسمي في `server/auth.ts` مع TOTP وbackup codes وcookie مؤقتة للجهاز الموثوق؛ لا يُعتمد كتدفق تسجيل دخول إنتاجي بعد |
+| العميل | PASS تجميعي | إضافة `twoFactorClient` في `lib/auth-client.ts` مع نجاح TypeScript وbuild |
+| Drizzle schema | PASS مراجعة | إضافة `user.twoFactorEnabled` وجدول `twoFactor` في `server/db/schema.ts` مع unique index على `user_id` وحقول lockout التي يستخدمها plugin |
+| Migration | PASS مراجعة يدوية | `server/db/migrations/0011_better_auth_two_factor_experimental.sql` تستخدم `IF NOT EXISTS` وقيود foreign key؛ تحتاج تطبيقًا يدويًا بعد توفر قاعدة البيانات ومراجعة backup |
+| اختبار المتصفح | PASS محدود | `/account` يعرض البطاقة التجريبية ويحافظ على RTL واللغة العربية؛ غياب credentials فعليًا أبقى العمليات خلف local guard |
+| TypeScript / ESLint / Build | PASS | `verification/two-factor-quality-20260817T2058Z.log` و`verification/two-factor-quality-rerun-20260817T2101Z.log`؛ تحذير middleware معلوماتي |
+| Ownership | PASS | `verification/two-factor-audits-20260817T2059Z.log`: `45` route، `41` routes with session، `41` routes with visible ownership |
+| Responsive / Accessibility | PASS في الإعادة النهائية | لا إخفاقات نهائية في تدقيقات الدفعة؛ artifacts المرئية المؤقتة أُعيدت قبل commit |
+| حدود الإنتاج | NOT READY | لم يُختبر challenge تسجيل الدخول الفعلي، إبطال الجلسات، تدوير الأسرار، أو استعادة الحساب بقاعدة بيانات/credentials حقيقية؛ لا يجوز وصف 2FA بأنه production-ready |
+| قواعد السلامة | PASS | لا secrets في الريبو، لا keylogging أو screenshots أو Windows monitor، ولم يُشغّل `drizzle-kit generate` بسبب اختلاف journal |
+
+**الحالة:** PASS — الدفعة التجريبية معتمدة ومرفوعة، مع بقاء اختبار تسجيل الدخول الكامل ومراجعة أمنية مستقلة كشرطين صريحين قبل الإنتاج.
