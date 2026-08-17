@@ -823,3 +823,12 @@
 - **التوثيق:** `verification/notes-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 - **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build`؛ تحذير middleware المعلوماتي غير حاجز.
 - **الحالة:** مكتملة وجاهزة للـcommit والـpush.
+
+
+## دفعة المكونات المشتركة — المساحة الدينية — 2026-08-17
+- **النطاق:** ترحيل زري الصلوات والسنن والنوافل وعناصر التحكم الدينية الخام في `components/religious/religious-workspace.tsx` إلى `Button` المشتركة، وترحيل حالات الصلوات ونوع/هدف الورد وحالات حفظ السور وباقي القوائم الأصلية إلى `Select` المشتركة، مع الحفاظ على الـhandlers والحالة المحلية والتصميم العربي RTL.
+- **التحقق المتصفحي:** فُتحت `http://localhost:3004/religious`؛ ظهر القسم الديني بصريًا مع الصلوات والورد وخطة الحفظ والسنن والنوافل والمصحف دون أخطاء. أكد فحص DOM عدم وجود أزرار أو Select خام داخل الصفحة، وظهور `data-slot` للمكونات المشتركة. اختُبر زر صلاة الظهر بتبديله مؤقتًا ثم إعادته إلى «لم تُسجّل»، واختُبر Select حالة حفظ سورة الفاتحة باختيار «تحتاج مراجعة» ثم إعادته إلى «بحفظها».
+- **الحفاظ على السلوك:** لم تُنفذ عمليات خارجية أو تغييرات دائمة؛ بقيت حالات localStorage والـRTL وSemantic Tokens والمكونات الشبكية كما هي، ولم تُضف migrations أو secrets.
+- **التوثيق:** `verification/religious-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+- **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build`؛ تحذير تقادم convention الخاص بـmiddleware من Next.js معلوماتي وغير حاجز.
+- **الحالة:** مكتملة وجاهزة للـcommit والـpush.
