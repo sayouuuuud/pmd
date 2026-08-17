@@ -776,3 +776,10 @@
 - **بوابات الجودة:** TypeScript وESLint و`git diff --check` و`next build` نجحت بعد إصلاح إغلاقات JSX في أدوات السبورة. ظهر فقط تحذير Next.js المعلوماتي الخاص بتقادم convention الخاص بـmiddleware.
 - **التوثيق:** أُنشئ `verification/onboarding-board-shared-controls-browser.md` وأُضيف السيناريو إلى `verification/interaction-smoke-tests.md`.
 - **الحالة:** الترحيل والتحقق المتصفحي وبوابات الجودة مكتملة، والدفعة جاهزة للتسجيل والدفع.
+
+## دفعة المكونات المشتركة — المال وQuick Add في TopNav — 2026-08-17
+- **النطاق:** ترحيل عناصر التحكم في `components/money/money-workspace.tsx` و`components/layout/top-nav.tsx` إلى `Button` و`Input` و`Select` و`Textarea` المشتركة، مع الحفاظ على الميزانية، نماذج العمليات، التكرار، الأرشفة، وحوار Quick Add وأنواعه.
+- **التحقق المتصفحي:** فُتحت `/money` على `localhost:3004` وتحقق عرض RTL للكروت والميزانية ونموذج العملية. أكد DOM وجود العناصر المشتركة. فُتح Quick Add من TopNav، أُدخل عنوان مؤقت، ثم اختير نوع «ملاحظة» للتحقق من ظهور `Textarea` المشترك، وأُغلق الحوار عبر «إلغاء» دون مراجعة أو حفظ.
+- **الحفاظ على السلوك:** لم تُنفذ تغييرات دائمة، ولم تُضف migrations أو secrets. الأزرار الخام المرصودة خارج نطاق الملفين تخص عناصر التخطيط العام فقط إن ظهرت.
+- **التوثيق:** `verification/money-topnav-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+- **الحالة:** الترحيل والتحقق المتصفحي مكتملان؛ نجحت TypeScript وESLint و`git diff --check` و`next build`. ظهر فقط تحذير Next.js المعلوماتي الخاص بتقادم convention الخاص بـmiddleware، والدفعة جاهزة للـcommit والـpush.

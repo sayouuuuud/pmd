@@ -5,6 +5,9 @@ import { AlertCircle, ArrowDownLeft, ArrowUpRight, Archive, Banknote, CalendarDa
 import { useEffect, useMemo, useState } from 'react'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { useCommandCenter, type FinanceKind, type FinanceRecurrence } from '@/lib/command-center-store'
 
 const categoryOptions = ['بيت', 'أكل', 'تنقل', 'شغل', 'صحة', 'ترفيه', 'دخل', 'عام']
@@ -135,14 +138,14 @@ export function MoneyWorkspace() {
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <ContentCard className="lg:col-span-8" title="ميزانية الشهر" description="شوف إنفاقك الحقيقي مقارنة بالحد الذي حددته لنفسك.">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <label className="space-y-1 text-sm"><span className="block text-xs text-muted-foreground">الشهر المحلل</span><select aria-label="الشهر المحلل" value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)} className="rounded-2xl border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring">{monthOptions.map((monthOption) => <option key={monthOption.key} value={monthOption.key}>{monthOption.label}</option>)}</select></label>
+          <label className="space-y-1 text-sm"><span className="block text-xs text-muted-foreground">الشهر المحلل</span><Select aria-label="الشهر المحلل" value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)} className="h-auto rounded-2xl px-3 py-2">{monthOptions.map((monthOption) => <option key={monthOption.key} value={monthOption.key}>{monthOption.label}</option>)}</Select></label>
           <div>
             <p className="text-3xl font-semibold tracking-tight">{formatAmount(totalExpenses, budget.currency)}</p>
             <p className="mt-1 text-sm text-muted-foreground">من {formatAmount(budget.monthlyLimit, budget.currency)} — {budgetProgress}% مستخدم</p>
           </div>
           <form onSubmit={saveBudget} className="flex gap-2">
-            <input aria-label="الميزانية الشهرية" type="number" min="0" value={budgetDraft} onChange={(event) => setBudgetDraft(event.target.value)} className="w-32 rounded-2xl border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
-            <button type="submit" className="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">حفظ</button>
+            <Input aria-label="الميزانية الشهرية" type="number" min="0" value={budgetDraft} onChange={(event) => setBudgetDraft(event.target.value)} className="h-auto w-32 rounded-2xl px-3 py-2" />
+            <Button type="submit" className="rounded-2xl px-4 py-2">حفظ</Button>
           </form>
         </div>
         <div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${remaining < 0 ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${budgetProgress}%` }} /></div>
@@ -193,7 +196,7 @@ export function MoneyWorkspace() {
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${dueSoon ? 'bg-warning/20 text-warning-foreground' : 'bg-primary/10 text-primary'}`}><RotateCcw className="h-4 w-4" /></div>
             <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="truncate text-sm font-semibold">{entry.title}</p><span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{entry.recurrence === 'monthly' ? 'شهري' : 'أسبوعي'}</span></div><p className="mt-1 text-xs text-muted-foreground">{formatAmount(entry.amount, budget.currency)} · {entry.category} · {recurringDueLabel(entry)}</p>{(entry.projectId || entry.goalId) && <div className="mt-2 flex flex-wrap gap-2 text-[11px]"><span className="text-muted-foreground">السياق:</span>{entry.projectId && <a href={`/projects#${entry.projectId}`} className="rounded-full bg-primary/10 px-2 py-1 font-medium text-primary hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">مشروع: {projects.find((project) => project.id === entry.projectId)?.title ?? 'فتح المشروع'}</a>}{entry.goalId && <a href={`/goals#${entry.goalId}`} className="rounded-full bg-accent px-2 py-1 font-medium text-accent-foreground hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">هدف: {goals.find((goal) => goal.id === entry.goalId)?.title ?? 'فتح الهدف'}</a>}</div>}</div>
             {dueSoon && <span className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><AlertCircle className="h-3.5 w-3.5" />اقترب الموعد</span>}
-            <button type="button" onClick={() => recordRecurring(entry)} className="rounded-2xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">سجّل اليوم</button>
+            <Button type="button" onClick={() => recordRecurring(entry)} className="rounded-2xl px-3 py-2 text-xs">سجّل اليوم</Button>
           </article>
         })}
         {recurringEntries.length === 0 && <EmptyState icon={RotateCcw} title="لا توجد مصروفات متكررة" description="فعّل التكرار أثناء تسجيل الإيجار أو الاشتراك لتظهر العمليات هنا." />}
@@ -204,26 +207,26 @@ export function MoneyWorkspace() {
       <ContentCard className="lg:col-span-5" title="عملية مالية جديدة" description="خلي التسجيل سريعًا، واربطه بمشروع أو هدف لو كان له سياق.">
         <form onSubmit={createEntry} className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            <select name="kind" defaultValue="expense" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"><option value="expense">مصروف</option><option value="income">دخل</option></select>
-            <input name="amount" type="number" min="1" required className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="المبلغ" />
+            <Select name="kind" defaultValue="expense" className="h-auto rounded-2xl py-3"><option value="expense">مصروف</option><option value="income">دخل</option></Select>
+            <Input name="amount" type="number" min="1" required className="h-auto rounded-2xl py-3" placeholder="المبلغ" />
           </div>
-          <input name="title" required className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="مثال: مشتريات البيت" />
+          <Input name="title" required className="h-auto rounded-2xl px-4 py-3" placeholder="مثال: مشتريات البيت" />
                     <div className="grid grid-cols-2 gap-2">
-            <select name="category" defaultValue="عام" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
-{categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}</select>
-            <input name="localDate" type="date" defaultValue={currentLocalDate()} className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            <Select name="category" defaultValue="عام" className="h-auto rounded-2xl py-3">
+{categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}</Select>
+            <Input name="localDate" type="date" defaultValue={currentLocalDate()} className="h-auto rounded-2xl py-3" />
           </div>
-          <select name="recurrence" defaultValue="none" className="w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+          <Select name="recurrence" defaultValue="none" className="h-auto rounded-2xl py-3">
             <option value="none">بدون تكرار</option>
             <option value="monthly">مصروف شهري</option>
             <option value="weekly">مصروف أسبوعي</option>
-          </select>
+          </Select>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <select name="projectId" defaultValue="" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"><option value="">بدون مشروع</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}</select>
-            <select name="goalId" defaultValue="" className="rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"><option value="">بدون هدف</option>{goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</select>
+            <Select name="projectId" defaultValue="" className="h-auto rounded-2xl py-3"><option value="">بدون مشروع</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}</Select>
+            <Select name="goalId" defaultValue="" className="h-auto rounded-2xl py-3"><option value="">بدون هدف</option>{goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</Select>
           </div>
-          <input name="note" className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="ملاحظة اختيارية" />
-          <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"><Plus className="h-4 w-4" /> تسجيل العملية</button>
+          <Input name="note" className="h-auto rounded-2xl px-4 py-3" placeholder="ملاحظة اختيارية" />
+          <Button type="submit" className="h-auto w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> تسجيل العملية</Button>
         </form>
       </ContentCard>
 
@@ -233,7 +236,7 @@ export function MoneyWorkspace() {
             <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${entry.kind === 'income' ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning-foreground'}`}>{entry.kind === 'income' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4" />}</div>
             <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{entry.title}</p><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{entry.localDate} · {entry.category}</p>{(entry.projectId || entry.goalId) && <div className="mt-2 flex flex-wrap gap-2 text-[11px]"><span className="text-muted-foreground">السياق:</span>{entry.projectId && <a href={`/projects#${entry.projectId}`} className="rounded-full bg-primary/10 px-2 py-1 font-medium text-primary hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">مشروع: {projects.find((project) => project.id === entry.projectId)?.title ?? 'فتح المشروع'}</a>}{entry.goalId && <a href={`/goals#${entry.goalId}`} className="rounded-full bg-accent px-2 py-1 font-medium text-accent-foreground hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">هدف: {goals.find((goal) => goal.id === entry.goalId)?.title ?? 'فتح الهدف'}</a>}</div>}</div>
             <span className={`text-sm font-semibold ${entry.kind === 'income' ? 'text-success' : 'text-foreground'}`}>{entry.kind === 'income' ? '+' : '-'}{formatAmount(entry.amount, budget.currency)}</span>
-            <button type="button" onClick={() => archiveFinanceEntry(entry.id)} aria-label="أرشفة العملية" className="rounded-full p-2 text-muted-foreground hover:bg-warning"><Archive className="h-4 w-4" /></button>
+            <Button type="button" variant="ghost" size="icon-sm" onClick={() => archiveFinanceEntry(entry.id)} aria-label="أرشفة العملية" className="rounded-full p-2 text-muted-foreground hover:bg-warning"><Archive className="h-4 w-4" /></Button>
           </article>)}
           {monthEntries.length === 0 && <EmptyState icon={Wallet} title="لا توجد عمليات هذا الشهر" description="سجّل أول دخل أو مصروف علشان تتابع حركة الشهر." />}
         </div>

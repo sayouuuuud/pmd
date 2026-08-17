@@ -28,6 +28,10 @@ import { authClient } from '@/lib/auth-client'
 import { parseQuickAdd, type ParsedQuickAdd, type QuickAddKind } from '@/lib/quick-add-parser'
 import { GlobalSearchDialog } from '@/components/search/global-search-dialog'
 import { Dialog } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 
 const navItems = [
   { href: '/', label: 'الرئيسية', icon: LayoutGrid },
@@ -180,28 +184,29 @@ export function TopNav() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={openQuickAdd}
               aria-haspopup="dialog"
-              className="flex items-center gap-2 rounded-full bg-card py-1.5 pr-2 pl-4 text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground"
+              className="flex h-auto items-center gap-2 rounded-full bg-card py-1.5 pr-2 pl-4 text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               إضافة سريعة
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
                 <Plus className="h-4 w-4 text-card" />
               </span>
-            </button>
-            <button type="button" aria-label="البحث الشامل" onClick={() => setSearchOpen(true)} className="flex h-10 w-10 items-center justify-center rounded-full bg-card sm:h-11 sm:w-11">
+            </Button>
+            <Button type="button" variant="ghost" size="icon" aria-label="البحث الشامل" onClick={() => setSearchOpen(true)} className="rounded-full bg-card sm:h-11 sm:w-11">
               <Search className="h-4 w-4" />
-            </button>
-            <button type="button" aria-label="التنبيهات" onClick={() => router.push('/reminders')} className="relative flex h-11 w-11 items-center justify-center rounded-full bg-card">
+            </Button>
+            <Button type="button" variant="ghost" size="icon" aria-label="التنبيهات" onClick={() => router.push('/reminders')} className="relative rounded-full bg-card">
               <Bell className="h-4 w-4" />
               {reminders.some((reminder) => reminder.status === 'pending') && <span className="absolute top-2.5 left-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">{Math.min(9, reminders.filter((reminder) => reminder.status === 'pending').length)}</span>}
-            </button>
-            {session && <button type="button" onClick={() => void authClient.signOut({ fetchOptions: { onSuccess: () => { router.push('/login') } } })} className="hidden rounded-full bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted sm:block">خروج</button>}
-            <button type="button" aria-label="القائمة" className="flex h-11 w-11 items-center justify-center rounded-full bg-card">
+            </Button>
+            {session && <Button type="button" variant="ghost" onClick={() => void authClient.signOut({ fetchOptions: { onSuccess: () => { router.push('/login') } } })} className="hidden h-auto rounded-full bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted sm:block">خروج</Button>}
+            <Button type="button" variant="ghost" size="icon" aria-label="القائمة" className="rounded-full bg-card">
               <AlignJustify className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -241,9 +246,9 @@ export function TopNav() {
           <form onSubmit={submitQuickAdd}>
             <div className="grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
               {quickAddTypes.map((item) => (
-                <button key={item.value} type="button" onClick={() => changeType(item.value)} aria-pressed={type === item.value} className={`rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
+                <Button key={item.value} type="button" variant="ghost" onClick={() => changeType(item.value)} aria-pressed={type === item.value} className={`h-auto rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
                   {item.label}
-                </button>
+                </Button>
               ))}
             </div>
 
@@ -252,44 +257,44 @@ export function TopNav() {
                 <label className="mt-5 block text-sm font-medium" htmlFor="quick-add-title">
                   {type === 'task' ? 'اكتب المهمة بصيغتها الطبيعية' : type === 'note' ? 'عنوان الملاحظة' : type === 'finance' ? 'اكتب العملية' : 'اكتب اسم العمل'}
                 </label>
-                <input
+                <Input
                   id="quick-add-title"
                   autoFocus
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="mt-2 h-auto w-full rounded-2xl px-4 py-3"
                   placeholder={type === 'task' ? 'مثال: ضيف مهمة بكرة الساعة ٨ الاتصال بالعميل' : type === 'note' ? 'مثال: فكرة إطلاق المنتج' : type === 'finance' ? 'مثال: سجل مصروف ١٢٠ مواصلات' : 'مثال: فيلم إنترستيلر'}
                 />
-                {type === 'note' && <textarea aria-label="تفاصيل الملاحظة" value={body} onChange={(event) => setBody(event.target.value)} className="mt-3 min-h-24 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="اكتب التفاصيل هنا..." />}
+                {type === 'note' && <Textarea aria-label="تفاصيل الملاحظة" value={body} onChange={(event) => setBody(event.target.value)} className="mt-3 min-h-24 w-full rounded-2xl px-4 py-3" placeholder="اكتب التفاصيل هنا..." />}
                 {type === 'task' && (
                   <label className="mt-3 block text-sm font-medium" htmlFor="quick-add-project">
                     المشروع المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>
-                    <select id="quick-add-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                    <Select id="quick-add-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 h-auto w-full rounded-2xl px-4 py-3">
                       <option value="">بدون مشروع</option>
                       {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
-                    </select>
+                    </Select>
                   </label>
                 )}
                 {type === 'finance' && (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     <label className="block text-sm font-medium" htmlFor="quick-add-finance-project">المشروع المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>
-                      <select id="quick-add-finance-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                      <Select id="quick-add-finance-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 h-auto w-full rounded-2xl px-3 py-3">
                         <option value="">بدون مشروع</option>
                         {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
-                      </select>
+                      </Select>
                     </label>
                     <label className="block text-sm font-medium" htmlFor="quick-add-goal">الهدف المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>
-                      <select id="quick-add-goal" value={goalId} onChange={(event) => setGoalId(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                      <Select id="quick-add-goal" value={goalId} onChange={(event) => setGoalId(event.target.value)} className="mt-2 h-auto w-full rounded-2xl px-3 py-3">
                         <option value="">بدون هدف</option>
                         {goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}
-                      </select>
+                      </Select>
                     </label>
                   </div>
                 )}
                 {error && <p role="alert" className="mt-3 rounded-2xl bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
                 <div className="mt-5 flex justify-end gap-2">
-                  <button type="button" onClick={closeQuickAdd} className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</button>
-                  <button type="submit" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">مراجعة قبل الحفظ</button>
+                  <Button type="button" variant="ghost" onClick={closeQuickAdd} className="h-auto rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</Button>
+                  <Button type="submit" className="h-auto rounded-full px-5 py-2.5 text-sm">مراجعة قبل الحفظ</Button>
                 </div>
               </>
             ) : (
@@ -302,8 +307,8 @@ export function TopNav() {
                 {preview.recurrence && preview.recurrence !== 'none' && <p className="mt-1 text-xs text-muted-foreground">التكرار: {preview.recurrence === 'monthly' ? 'شهري' : 'أسبوعي'}</p>}
                 {(projectId || goalId) && <p className="mt-1 text-xs text-muted-foreground">{projectId ? `المشروع: ${projects.find((project) => project.id === projectId)?.title ?? 'مرتبط'}` : ''}{projectId && goalId ? ' · ' : ''}{goalId ? `الهدف: ${goals.find((goal) => goal.id === goalId)?.title ?? 'مرتبط'}` : ''}</p>}
                 <div className="mt-5 flex justify-end gap-2">
-                  <button type="button" onClick={() => setPreview(null)} className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">تعديل</button>
-                  <button type="button" onClick={confirmQuickAdd} className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">تأكيد وحفظ</button>
+                  <Button type="button" variant="ghost" onClick={() => setPreview(null)} className="h-auto rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">تعديل</Button>
+                  <Button type="button" onClick={confirmQuickAdd} className="h-auto rounded-full px-5 py-2.5 text-sm">تأكيد وحفظ</Button>
                 </div>
               </div>
             )}
