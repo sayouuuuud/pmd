@@ -1353,3 +1353,13 @@
 الأدلة: `verification/onboarding-error-live-region-ar-2026-08-17.md`، `verification/onboarding-error-browser-findings-2026-08-17.md`، `verification/onboarding-error-quality-20260817T1832Z.log`، `verification/onboarding-error-audits-20260817T1833Z.log`، وتحديثات `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 
 **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts العابرة وإنشاء commit مستقل.
+
+## إغلاق دفعة live-region وربط أخطاء المشاريع — 2026-08-17
+أُغلقت فجوة وصول عملية في `components/projects/projects-workspace.tsx`: خمسة أخطاء لنماذج إنشاء المشروع، ومهمة المشروع، وتحديث المشروع، وإضافة الدفعة، وتعديل الدفعة كانت تحتاج خصائص live-region صريحة. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النصوص العربية والمنطق وfallback المحلي وملكية البيانات.
+
+أثناء اختبار المتصفح كُشفت فجوة دلالية في نموذج تحديث المشروع؛ أضيفت `aria-describedby` و`aria-invalid` إلى حقل نص التحديث، وأضيف `noValidate` إلى النموذج. في `http://localhost:3004/projects` أثبت DOM نجاح مسارات إنشاء المشروع ومهمة المشروع وتحديث المشروع: خصائص `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وارتباط الحقول بالأخطاء، وظهور الرسائل العربية دون إنشاء بيانات اختبارية.
+
+بوابات الاعتماد: `pnpm exec tsc --noEmit` PASS، `pnpm lint` PASS، `pnpm build` PASS مع تحذير Next.js المعلوماتي المعتاد بشأن تقادم convention الخاص بـmiddleware؛ ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`، صفر إخفاقات). لم تتغير API أو قاعدة البيانات أو Better Auth أو ملكية البيانات، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/projects-error-live-region-ar-2026-08-17.md`، `verification/projects-error-browser-findings-2026-08-17.md`، `verification/projects-error-quality-20260817T1840Z.log`، `verification/projects-error-audits-20260817T1841Z.log`، وتحديثا `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+**الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts العابرة وإنشاء commit مستقل.

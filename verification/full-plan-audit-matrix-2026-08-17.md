@@ -570,3 +570,19 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 
 الأدلة: `verification/onboarding-error-live-region-ar-2026-08-17.md`، `verification/onboarding-error-browser-findings-2026-08-17.md`، `verification/onboarding-error-quality-20260817T1832Z.log`، `verification/onboarding-error-audits-20260817T1833Z.log`، وتحديث `verification/interaction-smoke-tests.md`.
 **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts العابرة وإنشاء commit مستقل.
+
+## دفعة المشاريع — live-region وربط أخطاء النماذج — 2026-08-17
+
+| المجال | النتيجة |
+|---|---|
+| إنشاء المشروع | `project-title-error` صار live-region صريحًا، والحقل مرتبط عبر `aria-describedby` و`aria-invalid` |
+| مهمة المشروع المرتبطة | `project-task-error` صار live-region صريحًا، والحقل مرتبط دلاليًا |
+| تحديث المشروع | `project-update-error` صار live-region صريحًا، وأضيف ربط `aria-describedby` و`aria-invalid` إلى حقل النص، مع `noValidate` للنموذج |
+| إضافة الدفعة | خصائص live-region صريحة لخطأ التسعير مع الحفاظ على ربط الحقول الحالية |
+| تعديل الدفعة | خصائص live-region صريحة لخطأ التسعير مع الحفاظ على ربط الحقول الحالية |
+| اختبار المتصفح | PASS؛ رسائل عربية وحالات DOM مثبتة دون إنشاء بيانات اختبارية |
+| TypeScript / ESLint / Build | PASS / PASS / PASS |
+| Ownership / Responsive / Accessibility | PASS؛ `45/41/41` و`34/34` و`34/34` بلا إخفاقات |
+| حدود النطاق | لا API أو DB أو Auth أو ownership changes؛ لا secrets؛ لم يُنفذ `drizzle-kit generate` |
+
+**الأدلة:** `verification/projects-error-live-region-ar-2026-08-17.md`، `verification/projects-error-browser-findings-2026-08-17.md`، `verification/projects-error-quality-20260817T1840Z.log`، `verification/projects-error-audits-20260817T1841Z.log`.

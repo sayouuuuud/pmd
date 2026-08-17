@@ -1032,3 +1032,7 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 **البوابات:** TypeScript، ESLint، build، ownership، responsive، accessibility — PASS.
 **الأدلة:** `verification/onboarding-error-browser-findings-2026-08-17.md`، `verification/onboarding-error-quality-20260817T1832Z.log`، `verification/onboarding-error-audits-20260817T1833Z.log`، `verification/onboarding-error-live-region-ar-2026-08-17.md`.
 **النطاق:** تعديل دلالات الإعلان فقط؛ لا تغيير في API أو قاعدة البيانات أو المصادقة أو التخزين المحلي.
+
+## 2026-08-17 — المشاريع: live-region وربط أخطاء النماذج العربية
+
+اختُبرت صفحة `http://localhost:3004/projects` عبر مسارات إنشاء مشروع فارغ، إضافة مهمة مشروع فارغة، وتحديث مشروع فارغ. ظهرت الرسائل العربية، وأثبت DOM أن أخطاء إنشاء المشروع ومهمة المشروع وتحديث المشروع تحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن الحقول مرتبطة عبر `aria-describedby` وتحمل `aria-invalid=true`. اكتُشفت أثناء الاختبار فجوة ربط في حقل نص التحديث؛ أضيفت لها `aria-describedby` و`aria-invalid` وأضيف `noValidate` إلى النموذج، ثم أعيد الفحص ونجح. لم تُنشأ بيانات اختبارية. بوابات TypeScript وESLint وbuild وownership وresponsive وaccessibility: PASS. الأدلة: `verification/projects-error-browser-findings-2026-08-17.md` و`verification/projects-error-live-region-ar-2026-08-17.md` و`verification/projects-error-quality-20260817T1840Z.log` و`verification/projects-error-audits-20260817T1841Z.log`.
