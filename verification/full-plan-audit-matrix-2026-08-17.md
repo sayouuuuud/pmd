@@ -627,3 +627,19 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | حدود النطاق | PASS | تغيير قيمة title فقط؛ لا API أو schema أو migrations أو بيانات أو أسرار |
 
 **الحالة:** مكتملة من حيث التنفيذ والاختبار، وتنتظر تنظيف artifacts والاعتماد في commit مستقل.
+
+## 2026-08-17 — دفعة أخطاء تعديل المهمة والخطوة الفرعية
+
+| البند | النتيجة | الدليل |
+|---|---|---|
+| `task-edit-error` live-region | PASS — `role=alert`، `aria-live=assertive`، `aria-atomic=true` | `components/tasks/tasks-workspace.tsx`، `verification/tasks-error-browser-findings-2026-08-17.md` |
+| `subtask-error` live-region | PASS — `role=alert`، `aria-live=assertive`، `aria-atomic=true` | `components/tasks/tasks-workspace.tsx`، `verification/tasks-error-browser-findings-2026-08-17.md` |
+| ربط الحقول وحالة invalid | PASS — `aria-describedby` و`aria-invalid` في الحالتين | دليل المتصفح وDOM |
+| TypeScript / ESLint / Build | PASS — exit code 0 | `verification/tasks-error-quality-20260817T1906Z.log` |
+| Ownership | PASS — 45 route، 41 session، 41 visible ownership | `verification/tasks-error-audits-20260817T1906Z.log` |
+| Responsive | PASS — 34/34 | `verification/tasks-error-audits-20260817T1906Z.log` |
+| Accessibility | PASS — 34/34، صفر إخفاقات | `verification/tasks-error-audits-20260817T1906Z.log` |
+| Static a11y gap scan | PASS — لم تعد الفجوتان مرصودتين | ناتج `scan_next_a11y.py` |
+| حدود النطاق | لا API أو schema أو migrations أو Auth أو localStorage changes | تقرير الدفعة |
+
+**الحالة:** PASS — التنفيذ والاختبار مكتملان، والدفعة جاهزة للتنظيف والاعتماد في commit مستقل.

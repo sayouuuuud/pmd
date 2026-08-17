@@ -1396,3 +1396,11 @@
 نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`، ونجحت route ownership (`45` route، `41` session، `41` visible ownership)، وresponsive (`34/34`)، وaccessibility (`34/34`، صفر إخفاقات). بقي تحذير Next.js المعلوماتي الخاص بتقادم convention للـmiddleware غير حاجز. الأدلة: `verification/religious-metadata-browser-findings-2026-08-17.md`، `verification/religious-metadata-quality-20260817T1903Z.log`، `verification/religious-metadata-audits-20260817T1903Z.log`، وتحديثا `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 
 **الحالة: PASS — التنفيذ والاختبار مكتملان؛ الدفعة جاهزة للتنظيف والاعتماد في commit مستقل.**
+
+## 2026-08-17 — إغلاق دفعة live-region لأخطاء تعديل المهمة والخطوة الفرعية
+
+تمت معالجة فجوتي الوصول في `components/tasks/tasks-workspace.tsx` بإضافة `aria-live="assertive"` و`aria-atomic="true"` إلى `#task-edit-error` و`#subtask-error`. اختُبر نموذج تعديل المهمة فارغًا، فظهرت الرسالة `اكتب عنوان المهمة والموعد والتصنيف أولًا.`، كما اختُبر نموذج إضافة الخطوة الفرعية فارغًا، فظهرت الرسالة `اكتب الخطوة الفرعية أولًا.`. أثبت DOM في الحالتين `role=alert` وخصائص live-region المطلوبة، مع بقاء الحقول مرتبطة عبر `aria-describedby` وتحمل `aria-invalid=true`.
+
+نجحت بوابات TypeScript وESLint وNext build، ونجحت ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، صفر إخفاقات)، ولم يعد المسح الساكن يرصد الفجوتين. بقي تحذير Next.js المعلوماتي المعتاد بشأن middleware غير حاجز. الأدلة: `verification/tasks-error-live-region-ar-2026-08-17.md`، `verification/tasks-error-browser-findings-2026-08-17.md`، `verification/tasks-error-quality-20260817T1906Z.log`، `verification/tasks-error-audits-20260817T1906Z.log`، وتحديثا `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة: PASS — الدفعة جاهزة للاعتماد في commit مستقل.**

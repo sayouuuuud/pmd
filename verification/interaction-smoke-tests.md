@@ -1057,3 +1057,14 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 صُحح عنوان metadata في `app/religious/page.tsx` من `القسم الديني | مركز القيادة الشخصي` إلى `القسم الديني | مساحتي` ليتطابق مع نمط العناوين العربية الموحد في المنصة. فُتحت `http://localhost:3004/religious` بصريًا، وأكد المتصفح أن `document.title` أصبح `القسم الديني | مساحتي` مع بقاء الصفحة RTL ومحتواها وتصميمها الحاليين. نجحت بوابات TypeScript وESLint وNext build وownership (`45` route، `41` session، `41` visible ownership) وresponsive (`34/34`) وaccessibility (`34/34`، صفر إخفاقات). الأدلة: `verification/religious-metadata-browser-findings-2026-08-17.md`، `verification/religious-metadata-quality-20260817T1903Z.log`، و`verification/religious-metadata-audits-20260817T1903Z.log`.
 
 **الحالة: PASS — الدفعة جاهزة للتنظيف والاعتماد.**
+
+
+## 2026-08-17 — أخطاء تعديل المهمة والخطوة الفرعية: live-region
+
+في `http://localhost:3004/tasks` اختُبر نموذج تعديل المهمة بعد تفريغ العنوان والموعد والتصنيف، فظهرت الرسالة `اكتب عنوان المهمة والموعد والتصنيف أولًا.`. أثبت فحص DOM أن `#task-edit-error` يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن الحقول الثلاثة مرتبطة به عبر `aria-describedby` وتحمل `aria-invalid=true`.
+
+واختُبر نموذج إضافة الخطوة الفرعية بعد فتح خطوات المهمة الأولى وإرساله فارغًا، فظهرت الرسالة `اكتب الخطوة الفرعية أولًا.`. أثبت فحص DOM أن `#subtask-error` يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن حقل الخطوة الفرعية مرتبط به عبر `aria-describedby` ويحمل `aria-invalid=true`.
+
+بوابات الاعتماد: TypeScript PASS، ESLint PASS، Next build PASS، ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`، صفر إخفاقات)، والمسح الساكن لم يعد يرصد فجوتي `task-edit-error` و`subtask-error`. الأدلة: `verification/tasks-error-live-region-ar-2026-08-17.md`، `verification/tasks-error-browser-findings-2026-08-17.md`، `verification/tasks-error-quality-20260817T1906Z.log`، و`verification/tasks-error-audits-20260817T1906Z.log`.
+
+**الحالة: PASS — الدفعة جاهزة للتنظيف والاعتماد.**
