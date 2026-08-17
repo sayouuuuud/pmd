@@ -140,7 +140,7 @@ export function WeeklyReviewWorkspace() {
             <ReflectionField label="ما هدف الأسبوع القادم؟" value={nextGoal} onChange={setNextGoal} placeholder="خطوة واحدة واضحة يمكن تنفيذها..." />
           </div>
           <div className="mt-4 flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-muted-foreground">{weeklyReview.status === 'completed' && !isDirty ? 'تم اعتماد مراجعة هذا الأسبوع.' : isDirty ? 'هناك نص غير محفوظ.' : hasReflection ? 'تم حفظ المسودة ويمكنك العودة إليها لاحقًا.' : 'ابدأ بكتابة أول سطر.'} {weeklyReview.updatedAt !== 'لم تُحفظ بعد' ? `آخر حفظ: ${weeklyReview.updatedAt}` : ''}</p>
+            <p aria-live="polite" className="text-xs text-muted-foreground">{weeklyReview.status === 'completed' && !isDirty ? 'تم اعتماد مراجعة هذا الأسبوع.' : isDirty ? 'هناك نص غير محفوظ.' : hasReflection ? 'تم حفظ المسودة ويمكنك العودة إليها لاحقًا.' : 'ابدأ بكتابة أول سطر.'} {weeklyReview.updatedAt !== 'لم تُحفظ بعد' ? `آخر حفظ: ${weeklyReview.updatedAt}` : ''}</p>
             <div className="flex gap-2">
               <Button type="button" variant="outline" size="lg" onClick={() => save('draft')} className="rounded-full text-xs"><Save className="h-4 w-4" /> حفظ كمسودة</Button>
               <Button type="button" variant="default" size="lg" onClick={() => save('completed')} className="rounded-full text-xs"><CheckCircle2 className="h-4 w-4" /> اعتماد المراجعة</Button>
@@ -152,7 +152,7 @@ export function WeeklyReviewWorkspace() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div><p className="text-xl font-semibold">{nextGoal.trim() || 'حافظ على البساطة: مهمة عميقة واحدة كل صباح.'}</p><p className="mt-2 max-w-2xl text-sm leading-7 text-surface-dark-foreground/60">حوّل القرار إلى خطوة واضحة في قائمة مهام الأسبوع، أو افتح خطة اليوم لتعديل السياق يدويًا.</p></div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-              <Button type="button" variant="ghost" size="lg" onClick={addNextGoalAsTask} disabled={!cleanNextGoal || Boolean(goalTask)} aria-label={goalTask ? 'تمت إضافة قرار الأسبوع إلى المهام' : 'إضافة قرار الأسبوع إلى المهام'} className="rounded-full border border-surface-dark-foreground/20 text-xs text-surface-dark-foreground hover:bg-surface-dark-foreground/10 hover:text-surface-dark-foreground"><ListPlus className="h-4 w-4" />{goalTask ? 'أضيفت إلى المهام' : 'أضف كهمة للأسبوع'}</Button>
+              <Button type="button" variant="ghost" size="lg" onClick={addNextGoalAsTask} disabled={!cleanNextGoal || Boolean(goalTask)} aria-label={goalTask ? 'تمت إضافة قرار الأسبوع إلى المهام' : 'إضافة قرار الأسبوع إلى المهام'} className="rounded-full border border-surface-dark-foreground/20 text-xs text-surface-dark-foreground hover:bg-surface-dark-foreground/10 hover:text-surface-dark-foreground"><ListPlus className="h-4 w-4" />{goalTask ? 'أضيفت إلى المهام' : 'أضف كمهمة للأسبوع'}</Button>
               <Link href="/daily-plan" className="flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground">تعديل خطة اليوم <ArrowLeft className="h-4 w-4" /></Link>
             </div>
           </div>

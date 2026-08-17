@@ -854,3 +854,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **السلوك الدلالي:** كل خطأ مرتبط بالحقل عبر `aria-describedby` و`aria-invalid`، والخطأ العام منفصل عن أخطاء الحقول. لم يُرسل دخول أو إنشاء حساب حقيقي.
 - **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS (`45` route، `41` session، `41` visible ownership)؛ responsive PASS (`34/34`)؛ accessibility PASS (`34/34`، 0 failures).
 - **الأدلة:** `verification/auth-field-errors-ar-2026-08-17.md`، `verification/auth-field-errors-audits-20260817T154857Z.log`، `verification/auth-field-validation-quality-20260817T154708Z.log`.
+
+## 2026-08-17 — المراجعة الأسبوعية: تصحيح النص ودلالة حالة الحفظ
+- **النطاق:** صفحة `/review` ومكوّن `components/review/weekly-review-workspace.tsx`، دون حفظ أو اعتماد فعلي.
+- **التغيير:** تصحيح الإجراء الظاهر إلى `أضف كمهمة للأسبوع` وإضافة `aria-live="polite"` لحالة الحفظ الديناميكية.
+- **التحقق:** أعاد DOM النص المصحح واختفاء النص `أضف كهمة للأسبوع`، مع `lang="ar"` و`dir="rtl"`. أُدخل النص الشكلي `إنجاز تجريبي للمراجعة` في أول حقل؛ ظهرت فورًا رسالة `هناك نص غير محفوظ.` وبقي زرا «حفظ كمسودة» و«اعتماد المراجعة» ظاهرين.
+- **الحماية:** لم يُضغط حفظ أو اعتماد، ولم تُنشأ مهمة ولم يتغير أي سجل دائم.
+- **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS (`45` route، `41` session، `41` visible ownership)؛ responsive PASS (`34/34`)؛ accessibility PASS (`34/34`، 0 failures).
+- **الأدلة:** `components/review/weekly-review-workspace.tsx`، `verification/weekly-review-copy-aria-2026-08-17.md`، `verification/weekly-review-copy-aria-quality-20260817T160030Z.log`، `verification/visual-audit-findings-20260817T1555Z.md`.
