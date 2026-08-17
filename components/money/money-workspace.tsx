@@ -24,6 +24,7 @@ export function MoneyWorkspace() {
   const searchParams = useSearchParams()
   const { financeEntries, budget, projects, goals, addFinanceEntry, archiveFinanceEntry, updateBudget } = useCommandCenter()
   const [budgetDraft, setBudgetDraft] = useState(String(budget.monthlyLimit))
+  const [entryFormError, setEntryFormError] = useState('')
   const [selectedMonth, setSelectedMonth] = useState(currentLocalDate().slice(0, 7))
 
   useEffect(() => {
@@ -103,8 +104,17 @@ export function MoneyWorkspace() {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     const title = String(form.get('title') ?? '').trim()
-    const amount = Number(form.get('amount') ?? 0)
-    if (!title || !Number.isFinite(amount) || amount <= 0) return
+    const rawAmount = String(form.get('amount') ?? '').trim()
+    const amount = Number(rawAmount)
+    if (!title) {
+      setEntryFormError('اكتب اسم العملية أولًا.')
+      return
+    }
+    if (!rawAmount || !Number.isFinite(amount) || amount <= 0) {
+      setEntryFormError('اكتب مبلغًا صحيحًا أكبر من صفر.')
+      return
+    }
+    setEntryFormError('')
     const projectId = String(form.get('projectId') ?? '')
     const goalId = String(form.get('goalId') ?? '')
     addFinanceEntry({
@@ -205,12 +215,12 @@ export function MoneyWorkspace() {
 
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <ContentCard className="lg:col-span-5" title="عملية مالية جديدة" description="خلي التسجيل سريعًا، واربطه بمشروع أو هدف لو كان له سياق.">
-        <form onSubmit={createEntry} className="space-y-3">
+        <form onSubmit={createEntry} noValidate className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <Select name="kind" defaultValue="expense" className="h-auto rounded-2xl py-3"><option value="expense">مصروف</option><option value="income">دخل</option></Select>
-            <Input name="amount" type="number" min="1" required className="h-auto rounded-2xl py-3" placeholder="المبلغ" />
+            <Input name="amount" type="number" min="1" aria-label="مبلغ العملية" aria-invalid={Boolean(entryFormError)} aria-describedby={entryFormError ? 'finance-entry-error' : undefined} onChange={() => { if (entryFormError) setEntryFormError('') }} className="h-auto rounded-2xl py-3" placeholder="المبلغ" />
           </div>
-          <Input name="title" required className="h-auto rounded-2xl px-4 py-3" placeholder="مثال: مشتريات البيت" />
+          <Input name="title" aria-label="عنوان العملية" aria-invalid={Boolean(entryFormError)} aria-describedby={entryFormError ? 'finance-entry-error' : undefined} onChange={() => { if (entryFormError) setEntryFormError('') }} className="h-auto rounded-2xl px-4 py-3" placeholder="مثال: مشتريات البيت" />
                     <div className="grid grid-cols-2 gap-2">
             <Select name="category" defaultValue="عام" className="h-auto rounded-2xl py-3">
 {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}</Select>
@@ -226,6 +236,7 @@ export function MoneyWorkspace() {
             <Select name="goalId" defaultValue="" className="h-auto rounded-2xl py-3"><option value="">بدون هدف</option>{goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</Select>
           </div>
           <Input name="note" className="h-auto rounded-2xl px-4 py-3" placeholder="ملاحظة اختيارية" />
+          {entryFormError && <p id="finance-entry-error" role="alert" className="text-xs text-destructive">{entryFormError}</p>}
           <Button type="submit" className="h-auto w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> تسجيل العملية</Button>
         </form>
       </ContentCard>
