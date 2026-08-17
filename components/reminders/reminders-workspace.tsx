@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bell, CalendarClock, Check, Clock3, Plus, Sparkles, X } from 'lucide-react'
 import { Dialog } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -49,6 +49,7 @@ export function RemindersWorkspace() {
   const { reminders, planItems, habits, financeEntries, addReminder, toggleReminder, snoozeReminder, archiveReminder } = useCommandCenter()
   const [filter, setFilter] = useState<'active' | 'all'>('active')
   const [addOpen, setAddOpen] = useState(false)
+  const addTriggerRef = useRef<HTMLButtonElement>(null)
   const [title, setTitle] = useState('')
   const [titleError, setTitleError] = useState('')
   const [dueAt, setDueAt] = useState('اليوم، ١٨:٠٠')
@@ -122,7 +123,7 @@ export function RemindersWorkspace() {
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">التذكيرات</h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground">خلي الحاجات المهمة قدامك من غير زحمة. التذكيرات هنا مرتبطة بيومك وتفضل قابلة للتأجيل بدل ما تختفي.</p>
         </div>
-        <Button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center justify-center gap-2"><Plus className="h-4 w-4" /> تذكير جديد</Button>
+        <Button ref={addTriggerRef} type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center justify-center gap-2"><Plus className="h-4 w-4" /> تذكير جديد</Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -159,6 +160,7 @@ export function RemindersWorkspace() {
 
       <Dialog
         open={addOpen}
+        triggerRef={addTriggerRef}
         onOpenChange={setAddOpen}
         title="تذكير جديد"
         description="خليه واضح وقابل للتنفيذ."

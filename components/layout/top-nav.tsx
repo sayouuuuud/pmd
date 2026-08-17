@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   AlignJustify,
   Archive,
@@ -99,6 +99,9 @@ export function TopNav() {
   const [preview, setPreview] = useState<ParsedQuickAdd | null>(null)
   const [error, setError] = useState('')
   const [gregorianDate, setGregorianDate] = useState('')
+  const quickAddTriggerRef = useRef<HTMLButtonElement>(null)
+  const searchTriggerRef = useRef<HTMLButtonElement>(null)
+  const menuTriggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     setGregorianDate(formatGregorianDate())
@@ -192,6 +195,7 @@ export function TopNav() {
             <Button
               type="button"
               variant="ghost"
+              ref={quickAddTriggerRef}
               onClick={openQuickAdd}
               aria-haspopup="dialog"
               className="flex h-auto items-center gap-2 rounded-full bg-card py-1.5 pr-2 pl-4 text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground"
@@ -201,7 +205,7 @@ export function TopNav() {
                 <Plus className="h-4 w-4 text-card" />
               </span>
             </Button>
-            <Button type="button" variant="ghost" size="icon" aria-label="البحث الشامل" onClick={() => setSearchOpen(true)} className="rounded-full bg-card sm:h-11 sm:w-11">
+            <Button ref={searchTriggerRef} type="button" variant="ghost" size="icon" aria-label="البحث الشامل" onClick={() => setSearchOpen(true)} className="rounded-full bg-card sm:h-11 sm:w-11">
               <Search className="h-4 w-4" />
             </Button>
             <Button type="button" variant="ghost" size="icon" aria-label="التنبيهات" onClick={() => router.push('/reminders')} className="relative rounded-full bg-card">
@@ -209,7 +213,7 @@ export function TopNav() {
               {reminders.some((reminder) => reminder.status === 'pending') && <span className="absolute top-2.5 left-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">{Math.min(9, reminders.filter((reminder) => reminder.status === 'pending').length)}</span>}
             </Button>
             {session && <Button type="button" variant="ghost" onClick={() => void authClient.signOut({ fetchOptions: { onSuccess: () => { router.push('/login') } } })} className="hidden h-auto rounded-full bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted sm:block">خروج</Button>}
-            <Button type="button" variant="ghost" size="icon" aria-label="القائمة" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} className="rounded-full bg-card">
+            <Button ref={menuTriggerRef} type="button" variant="ghost" size="icon" aria-label="القائمة" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} className="rounded-full bg-card">
               <AlignJustify className="h-4 w-4" />
             </Button>
           </div>
@@ -236,12 +240,13 @@ export function TopNav() {
         </nav>
       </header>
 
-      <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} triggerRef={searchTriggerRef} />
 
       <Dialog
         open={menuOpen}
         onOpenChange={setMenuOpen}
         title="تنقل سريع"
+        triggerRef={menuTriggerRef}
         description="افتح أي مساحة من مساحات المنصة من مكان واحد."
         className="max-w-xl"
       >
@@ -274,6 +279,7 @@ export function TopNav() {
           else closeQuickAdd()
         }}
         title="إضافة سريعة"
+        triggerRef={quickAddTriggerRef}
         description="اكتبها بطريقتك، راجع التفاصيل، وبعدها احفظها."
         className="max-w-lg"
       >

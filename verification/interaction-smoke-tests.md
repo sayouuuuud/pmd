@@ -862,3 +862,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **الحماية:** لم يُضغط حفظ أو اعتماد، ولم تُنشأ مهمة ولم يتغير أي سجل دائم.
 - **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS (`45` route، `41` session، `41` visible ownership)؛ responsive PASS (`34/34`)؛ accessibility PASS (`34/34`، 0 failures).
 - **الأدلة:** `components/review/weekly-review-workspace.tsx`، `verification/weekly-review-copy-aria-2026-08-17.md`، `verification/weekly-review-copy-aria-quality-20260817T160030Z.log`، `verification/visual-audit-findings-20260817T1555Z.md`.
+
+## 2026-08-17 — إدارة تركيز الحوارات وإعادة التركيز إلى المشغّل
+- **النطاق:** `components/ui/dialog.tsx` مع حوارات الإضافة السريعة والبحث والقائمة في `TopNav`، وحوار البحث العام والتذكير.
+- **الفجوة المثبتة:** بعد إغلاق «إضافة سريعة» عبر `Escape` كان التركيز يعود إلى `BODY` بدل زر المشغّل.
+- **التحقق:** فتح «إضافة سريعة» نقل التركيز إلى `quick-add-title`، ثم أعاد `Escape` التركيز إلى زر «إضافة سريعة». اختُبر السلوك نفسه مع البحث الشامل والقائمة السريعة، فعاد التركيز إلى زر البحث وزر القائمة. لم تُنفذ عمليات حفظ أو إنشاء أو حذف.
+- **السلوك الدلالي:** إدارة تركيز عامة، احترام `autoFocus`، حصر `Tab` داخل الحوار، وتمرير `triggerRef` صريح للمشغّلات الرئيسية.
+- **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS (45 route، 41 session، 41 visible ownership)؛ responsive PASS (34/34)؛ accessibility PASS (34/34، 0 failures).
+- **الأدلة:** `verification/dialog-focus-management-ar-2026-08-17.md`، `verification/dialog-focus-quality-20260817T162000Z.log`، `verification/dialog-focus-audits-20260817T162300Z.log`، `verification/visual-audit-findings-20260817T1555Z.md`.

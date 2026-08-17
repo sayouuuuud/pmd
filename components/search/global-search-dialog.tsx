@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type RefObject } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowUpRight, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -24,11 +24,12 @@ type SearchGroup = {
 type GlobalSearchDialogProps = {
   open: boolean
   onClose: () => void
+  triggerRef?: RefObject<HTMLElement | null>
 }
 
 const sectionOrder = ['المهام', 'الملاحظات', 'خطة اليوم', 'التذكيرات', 'المشاريع', 'الأهداف', 'العادات', 'اليوميات', 'الفلوس', 'الترفيه', 'الديني']
 
-export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
+export function GlobalSearchDialog({ open, onClose, triggerRef }: GlobalSearchDialogProps) {
   const router = useRouter()
   const { tasks, notes, goals, projects, financeEntries, planItems, reminders, entertainment, journal, habits, religious } = useCommandCenter()
   const [query, setQuery] = useState('')
@@ -70,7 +71,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) close() }} title="البحث الشامل" hideHeader className="max-w-2xl overflow-hidden p-0">
+    <Dialog triggerRef={triggerRef} open={open} onOpenChange={(nextOpen) => { if (!nextOpen) close() }} title="البحث الشامل" hideHeader className="max-w-2xl overflow-hidden p-0">
       <div className="flex items-center gap-3 border-b border-border px-5 py-4">
         <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
         <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} className="h-auto min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 py-0 text-sm shadow-none outline-none focus-visible:border-0 focus-visible:ring-0" placeholder="ابحث في كل أقسام مساحتك..." aria-label="اكتب كلمة البحث" aria-controls="global-search-results" />
