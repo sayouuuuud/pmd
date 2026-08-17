@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
+import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteProjectUpdate, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, createRemoteProjectPricing, createRemoteProjectUpdate, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteProjectPricing, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
 
 type Priority = 'high' | 'medium' | 'low'
@@ -10,6 +10,8 @@ export type GoalStatus = 'active' | 'paused' | 'completed'
 export type GoalHorizon = 'quarter' | 'year' | 'someday'
 export type ProjectStatus = 'backlog' | 'in-progress' | 'paused' | 'done'
 export type FinanceKind = 'expense' | 'income'
+export type ProjectUpdateKind = 'progress' | 'decision' | 'blocker' | 'info'
+export type ProjectPricingStatus = 'expected' | 'due' | 'received' | 'cancelled'
 export type FinanceRecurrence = 'none' | 'weekly' | 'monthly'
 export type ReminderKind = 'task' | 'habit' | 'prayer' | 'quran' | 'finance'
 export type ReminderStatus = 'pending' | 'done' | 'snoozed'
@@ -55,6 +57,28 @@ export type Project = {
   status: ProjectStatus
   progress: number
   dueLabel: string
+}
+
+export type ProjectUpdate = {
+  id: string
+  projectId: string
+  body: string
+  kind: ProjectUpdateKind
+  createdAt: string
+}
+
+export type ProjectPricing = {
+  id: string
+  projectId: string
+  title: string
+  amount: number
+  currency: string
+  status: ProjectPricingStatus
+  expectedDate?: string
+  receivedAt?: string
+  financeEntryId?: string
+  notes?: string
+  createdAt: string
 }
 
 export type FinanceEntry = {
@@ -251,6 +275,8 @@ type CommandCenterContextValue = {
   planItems: PlanItem[]
   goals: Goal[]
   projects: Project[]
+  projectUpdates: ProjectUpdate[]
+  projectPricings: ProjectPricing[]
   financeEntries: FinanceEntry[]
   budget: Budget
   religious: ReligiousState
@@ -274,6 +300,10 @@ type CommandCenterContextValue = {
   addProject: (input: Pick<Project, 'title' | 'dueLabel'> & Partial<Pick<Project, 'description' | 'goalId' | 'status' | 'progress'>>) => void
   updateProject: (id: string, patch: Partial<Project>) => void
   archiveProject: (id: string) => void
+  addProjectUpdate: (input: Pick<ProjectUpdate, 'projectId' | 'body' | 'kind'>) => void
+  removeProjectUpdate: (id: string) => void
+  addProjectPricing: (input: Pick<ProjectPricing, 'projectId' | 'title' | 'amount' | 'currency'> & Partial<Pick<ProjectPricing, 'status' | 'expectedDate' | 'notes'>>) => void
+  updateProjectPricing: (id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) => void
   addFinanceEntry: (input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId' | 'recurrence'>>) => void
   updateFinanceEntry: (id: string, patch: Partial<FinanceEntry>) => void
   archiveFinanceEntry: (id: string) => void
@@ -432,10 +462,10 @@ const initialJournal: JournalEntry[] = [
 
 const STORAGE_KEY = 'personal-command-center-state-v2'
 const initialWeeklyReview: WeeklyReview = { id: 'weekly-review-current', weekStart: '2026-08-10', weekEnd: '2026-08-16', wentWell: '', blockers: '', nextGoal: '', status: 'draft', updatedAt: 'لم تُحفظ بعد' }
-type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview; archive: ArchivedItem[] }
+type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; projectUpdates: ProjectUpdate[]; projectPricings: ProjectPricing[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview; archive: ArchivedItem[] }
 
 function getDefaultState(): PersistedState {
-  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview, archive: [] }
+  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, projectUpdates: [], projectPricings: [], financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview, archive: [] }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -544,6 +574,8 @@ function normalizeState(value: unknown): PersistedState | null {
     planItems: arrayOr(source.planItems, defaults.planItems).map((item) => ({ ...item, localDate: typeof item.localDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.localDate) ? item.localDate : cairoToday() })),
     goals: arrayOr(source.goals, defaults.goals),
     projects: arrayOr(source.projects, defaults.projects),
+    projectUpdates: arrayOr(source.projectUpdates, defaults.projectUpdates).filter((item) => isRecord(item) && typeof item.id === 'string' && typeof item.projectId === 'string' && typeof item.body === 'string').map((item) => ({ id: item.id, projectId: item.projectId, body: item.body, kind: item.kind === 'decision' || item.kind === 'blocker' || item.kind === 'info' ? item.kind : 'progress', createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() })),
+    projectPricings: arrayOr(source.projectPricings, defaults.projectPricings).filter((item) => isRecord(item) && typeof item.id === 'string' && typeof item.projectId === 'string' && typeof item.title === 'string').map((item) => ({ id: item.id, projectId: item.projectId, title: item.title, amount: Math.max(0, Math.round(Number(item.amount) || 0)), currency: typeof item.currency === 'string' && item.currency.trim() ? item.currency : 'جنيه', status: item.status === 'due' || item.status === 'received' || item.status === 'cancelled' ? item.status : 'expected', expectedDate: typeof item.expectedDate === 'string' ? item.expectedDate : undefined, receivedAt: typeof item.receivedAt === 'string' ? item.receivedAt : undefined, financeEntryId: typeof item.financeEntryId === 'string' ? item.financeEntryId : undefined, notes: typeof item.notes === 'string' ? item.notes : undefined, createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() })),
     financeEntries: arrayOr(source.financeEntries, defaults.financeEntries).map((entry) => ({ ...entry, recurrence: entry.recurrence === 'weekly' || entry.recurrence === 'monthly' ? entry.recurrence : 'none' })),
     budget: { ...defaults.budget, ...budget },
     religious: {
@@ -592,6 +624,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [planItems, setPlanItems] = useState<PlanItem[]>(initial.planItems)
   const [goals, setGoals] = useState<Goal[]>(initial.goals)
   const [projects, setProjects] = useState<Project[]>(initial.projects)
+  const [projectUpdates, setProjectUpdates] = useState<ProjectUpdate[]>(initial.projectUpdates)
+  const [projectPricings, setProjectPricings] = useState<ProjectPricing[]>(initial.projectPricings)
   const [financeEntries, setFinanceEntries] = useState<FinanceEntry[]>(initial.financeEntries)
   const [budget, setBudget] = useState<Budget>(initial.budget)
   const [religious, setReligious] = useState<ReligiousState>(initial.religious)
@@ -612,6 +646,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     setPlanItems(saved.planItems)
     setGoals(saved.goals)
     setProjects(saved.projects)
+    setProjectUpdates(saved.projectUpdates)
+    setProjectPricings(saved.projectPricings)
     setFinanceEntries(saved.financeEntries)
     setBudget(saved.budget)
     setReligious(saved.religious)
@@ -625,19 +661,21 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (!hydrated) return
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive }))
-  }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive }))
+  }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
 
   useEffect(() => {
     if (remoteHydrated.current) return
     remoteHydrated.current = true
-    void hydrateRemoteData().then(({ tasks: remoteTasks, notes: remoteNotes, habits: remoteHabits, planItems: remotePlanItems, goals: remoteGoals, projects: remoteProjects, financeEntries: remoteFinanceEntries, budget: remoteBudget, profile: remoteProfile, religious: remoteReligious, reminders: remoteReminders, entertainment: remoteEntertainment, journal: remoteJournal, weeklyReview: remoteWeeklyReview, archive: remoteArchive }) => {
+    void hydrateRemoteData().then(({ tasks: remoteTasks, notes: remoteNotes, habits: remoteHabits, planItems: remotePlanItems, goals: remoteGoals,     projects: remoteProjects, projectUpdates: remoteProjectUpdates, projectPricings: remoteProjectPricings, financeEntries: remoteFinanceEntries, budget: remoteBudget, profile: remoteProfile, religious: remoteReligious, reminders: remoteReminders, entertainment: remoteEntertainment, journal: remoteJournal, weeklyReview: remoteWeeklyReview, archive: remoteArchive }) => {
       if (remoteTasks) setTasks(remoteTasks)
       if (remoteNotes) setNotes(remoteNotes)
       if (remoteHabits) setHabits(remoteHabits)
       if (remotePlanItems) setPlanItems(remotePlanItems)
       if (remoteGoals) setGoals(remoteGoals)
       if (remoteProjects) setProjects(remoteProjects)
+      if (remoteProjectUpdates) setProjectUpdates(remoteProjectUpdates)
+      if (remoteProjectPricings) setProjectPricings(remoteProjectPricings)
       if (remoteFinanceEntries) setFinanceEntries(remoteFinanceEntries)
       if (remoteBudget) setBudget(remoteBudget)
       if (remoteProfile) setProfile(remoteProfile)
@@ -657,7 +695,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const value = useMemo<CommandCenterContextValue>(() => ({
     profile,
     tasks,
-    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 2, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive } }, null, 2),
+    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 2, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive } }, null, 2),
     importData: (raw) => {
       try {
         const next = normalizeState(JSON.parse(raw))
@@ -669,6 +707,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         setPlanItems(next.planItems)
         setGoals(next.goals)
         setProjects(next.projects)
+        setProjectUpdates(next.projectUpdates)
+        setProjectPricings(next.projectPricings)
         setFinanceEntries(next.financeEntries)
         setBudget(next.budget)
         setReligious(next.religious)
@@ -692,6 +732,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems(defaults.planItems)
       setGoals(defaults.goals)
       setProjects(defaults.projects)
+      setProjectUpdates(defaults.projectUpdates)
+      setProjectPricings(defaults.projectPricings)
       setFinanceEntries(defaults.financeEntries)
       setBudget(defaults.budget)
       setReligious(defaults.religious)
@@ -706,6 +748,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     planItems,
     goals,
     projects,
+    projectUpdates,
+    projectPricings,
     financeEntries,
     budget,
     religious,
@@ -803,7 +847,31 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       if (!item) return
       addArchivedItem('project', item, `المشاريع · ${item.dueLabel}`)
       setProjects((items) => items.filter((project) => project.id !== id))
+      setProjectUpdates((items) => items.filter((update) => update.projectId !== id))
+      setProjectPricings((items) => items.filter((pricing) => pricing.projectId !== id))
       void archiveRemoteProject(id)
+    },
+    addProjectUpdate: (input) => {
+      const body = input.body.trim()
+      if (!body) return
+      const item: ProjectUpdate = { id: `project-update-${Date.now()}`, projectId: input.projectId, body, kind: input.kind, createdAt: new Date().toISOString() }
+      setProjectUpdates((items) => [item, ...items])
+      void createRemoteProjectUpdate(item)
+    },
+    removeProjectUpdate: (id) => {
+      const item = projectUpdates.find((entry) => entry.id === id)
+      setProjectUpdates((items) => items.filter((entry) => entry.id !== id))
+      if (item) void archiveRemoteProjectUpdate(item.projectId, id)
+    },
+    addProjectPricing: (input) => {
+      const item: ProjectPricing = { id: `project-pricing-${Date.now()}`, projectId: input.projectId, title: input.title.trim(), amount: Math.max(0, Math.round(input.amount)), currency: input.currency.trim() || 'جنيه', status: input.status ?? 'expected', expectedDate: input.expectedDate, notes: input.notes?.trim() || undefined, createdAt: new Date().toISOString() }
+      if (!item.title) return
+      setProjectPricings((items) => [item, ...items])
+      void createRemoteProjectPricing(item)
+    },
+    updateProjectPricing: (id, patch) => {
+      setProjectPricings((items) => items.map((item) => item.id === id ? { ...item, ...patch, amount: patch.amount === undefined ? item.amount : Math.max(0, Math.round(patch.amount)), title: patch.title === undefined ? item.title : patch.title.trim(), currency: patch.currency === undefined ? item.currency : patch.currency.trim() || item.currency } : item))
+      void updateRemoteProjectPricing(id, patch)
     },
     addFinanceEntry: (input) => {
       const entry: FinanceEntry = { id: `finance-${Date.now()}`, ...input, recurrence: input.recurrence ?? 'none', amount: Math.max(0, input.amount) }
@@ -1269,7 +1337,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'pending' } : item))
       void updateRemotePlanItem(id, { status: 'pending' })
     },
-  }), [profile, tasks, notes, habits, planItems, goals, projects, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
+  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

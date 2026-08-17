@@ -1,4 +1,4 @@
-import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, MemorizationSurahStatus, Note, PlanItem, PrayerHistoryDay, PrayerLog, Profile, Project, QuranFavoriteAyah, QuranPlaylist, QuranPosition, Reminder, ReligiousState, SunnahKey, Task, WeeklyReview } from './command-center-store'
+import type { ArchiveKind, ArchivedItem, EntertainmentItem, FinanceEntry, Goal, Habit, JournalEntry, MemorizationSurahStatus, Note, PlanItem, PrayerHistoryDay, PrayerLog, Profile, Project, ProjectPricing, ProjectUpdate, QuranFavoriteAyah, QuranPlaylist, QuranPosition, Reminder, ReligiousState, SunnahKey, Task, WeeklyReview } from './command-center-store'
 import { normalizeReminderRepeatLabel } from './reminder-utils'
 
 type RemoteProfile = {
@@ -82,6 +82,28 @@ type RemoteProject = {
   status: string
   progress: number
   dueLabel: string
+}
+
+type RemoteProjectUpdate = {
+  id: string
+  projectId: string
+  body: string
+  kind: string
+  createdAt: string | Date
+}
+
+type RemoteProjectPricing = {
+  id: string
+  projectId: string
+  title: string
+  amount: number
+  currency: string
+  status: string
+  expectedDate: string | null
+  receivedAt: string | Date | null
+  financeEntryId: string | null
+  notes: string | null
+  createdAt: string | Date
 }
 
 type RemoteFinanceEntry = {
@@ -264,6 +286,22 @@ export function mapRemoteProject(item: RemoteProject): Project {
   return { id: item.id, title: item.title, description: item.description, goalId: item.goalId ?? undefined, status: asProjectStatus(item.status), progress: Math.max(0, Math.min(100, item.progress)), dueLabel: item.dueLabel }
 }
 
+function asProjectUpdateKind(value: string): ProjectUpdate['kind'] {
+  return value === 'decision' || value === 'blocker' || value === 'info' ? value : 'progress'
+}
+
+function asProjectPricingStatus(value: string): ProjectPricing['status'] {
+  return value === 'due' || value === 'received' || value === 'cancelled' ? value : 'expected'
+}
+
+export function mapRemoteProjectUpdate(item: RemoteProjectUpdate): ProjectUpdate {
+  return { id: item.id, projectId: item.projectId, body: item.body, kind: asProjectUpdateKind(item.kind), createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toISOString() }
+}
+
+export function mapRemoteProjectPricing(item: RemoteProjectPricing): ProjectPricing {
+  return { id: item.id, projectId: item.projectId, title: item.title, amount: Math.max(0, Number(item.amount) || 0), currency: item.currency || 'جنيه', status: asProjectPricingStatus(item.status), expectedDate: item.expectedDate ?? undefined, receivedAt: item.receivedAt ? (typeof item.receivedAt === 'string' ? item.receivedAt : new Date(item.receivedAt).toISOString()) : undefined, financeEntryId: item.financeEntryId ?? undefined, notes: item.notes ?? undefined, createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toISOString() }
+}
+
 function asFinanceKind(value: string): FinanceEntry['kind'] {
   return value === 'income' ? 'income' : 'expense'
 }
@@ -415,13 +453,15 @@ export function mapRemoteReligious(item: RemoteReligious): ReligiousState {
 }
 
 export async function hydrateRemoteData() {
-  const [tasks, notes, habits, planItems, goals, projects, finance, budgetResponse, profileResponse, religiousResponse, reminders, entertainment, journal, reviewResponse, archive] = await Promise.all([
+  const [tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, finance, budgetResponse, profileResponse, religiousResponse, reminders, entertainment, journal, reviewResponse, archive] = await Promise.all([
     request<{ items: RemoteTask[] }>('/api/tasks'),
     request<{ items: RemoteNote[] }>('/api/notes'),
     request<{ items: RemoteHabit[] }>('/api/habits'),
     request<{ items: RemotePlanItem[] }>('/api/daily-plan'),
     request<{ items: RemoteGoal[] }>('/api/goals'),
     request<{ items: RemoteProject[] }>('/api/projects'),
+    request<{ items: RemoteProjectUpdate[] }>('/api/projects/updates'),
+    request<{ items: RemoteProjectPricing[] }>('/api/projects/pricing'),
     request<{ items: RemoteFinanceEntry[] }>('/api/finance'),
     request<{ budget: RemoteBudget }>('/api/finance/budget'),
     request<{ user: { name: string }; profile: RemoteProfile }>('/api/profile'),
@@ -439,6 +479,8 @@ export async function hydrateRemoteData() {
     planItems: planItems?.items?.map(mapRemotePlanItem) ?? null,
     goals: goals?.items?.map(mapRemoteGoal) ?? null,
     projects: projects?.items?.map(mapRemoteProject) ?? null,
+    projectUpdates: projectUpdates?.items?.map(mapRemoteProjectUpdate) ?? null,
+    projectPricings: projectPricings?.items?.map(mapRemoteProjectPricing) ?? null,
     financeEntries: finance?.items?.map(mapRemoteFinanceEntry) ?? null,
     budget: budgetResponse?.budget ? { monthlyLimit: Math.max(0, budgetResponse.budget.monthlyLimit), currency: budgetResponse.budget.currency || 'جنيه' } : null,
     profile: profileResponse?.profile
@@ -582,6 +624,22 @@ export function updateRemoteProject(id: string, patch: Partial<Project>) {
 
 export function archiveRemoteProject(id: string) {
   return request<{ item: RemoteProject }>(`/api/projects/${id}`, { method: 'DELETE' })
+}
+
+export function createRemoteProjectUpdate(input: ProjectUpdate) {
+  return request<{ item: RemoteProjectUpdate }>(`/api/projects/${input.projectId}/updates`, { method: 'POST', body: JSON.stringify({ id: input.id, body: input.body, kind: input.kind }) })
+}
+
+export function archiveRemoteProjectUpdate(projectId: string, updateId: string) {
+  return request<{ ok: boolean }>(`/api/projects/${projectId}/updates?updateId=${encodeURIComponent(updateId)}`, { method: 'DELETE' })
+}
+
+export function createRemoteProjectPricing(input: ProjectPricing) {
+  return request<{ item: RemoteProjectPricing }>(`/api/projects/${input.projectId}/pricing`, { method: 'POST', body: JSON.stringify({ id: input.id, title: input.title, amount: input.amount, currency: input.currency, status: input.status, expectedDate: input.expectedDate, notes: input.notes }) })
+}
+
+export function updateRemoteProjectPricing(id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) {
+  return request<{ item: RemoteProjectPricing }>(`/api/projects/pricing/${id}`, { method: 'PATCH', body: JSON.stringify(patch) })
 }
 
 export function createRemoteFinanceEntry(input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId' | 'recurrence'>>) {
