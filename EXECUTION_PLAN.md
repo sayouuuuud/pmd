@@ -994,3 +994,7 @@
 لم تُضف فهرسة العملاء أو مساحات العمل في هذه الدفعة لأنهما يعيشان في عقد حالة مستقل داخل `workspace-workspace.tsx` و`workspace-types.ts` وليس في `useCommandCenter`; إبقاؤهما خارج البحث الحالي يمنع مزج مصادر الحالة أو تجاوز نطاق مساحة العمل.
 
 المرجع التفصيلي: `verification/global-search-audit-2026-08-17.md`. نجحت TypeScript وESLint و`git diff --check` و`python3 scripts/scan_direct_colors.py` و`next build`، وسُجلت المخرجات في `verification/global-search-quality-run-2026-08-17.txt`.
+
+## إعادة اعتماد فحوص الحماية والاستجابة والإتاحة بعد دفعة البحث — 2026-08-17
+
+أُعيد تشغيل الفحوص الثلاثة بعد تعديل `global-search-dialog.tsx`: فحص ownership وجد `45` Route Handler و`41` مسارًا بجلسة وملكية ظاهرة مع `ownership_audit=PASS`؛ فحص responsive نجح في `34` حالة بلا فشل؛ وفحص accessibility نجح في `34` حالة مع `failures=0`. جرى القياس من `2026-08-17T13:19:59Z` إلى `2026-08-17T13:21:17Z` وفق ساعة النظام. حُفظ السجل الخام في `verification/search-final-audits-2026-08-17.txt`، وأُعيدت ملفات screenshots وJSON المولدة إلى نسخها السابقة لتجنب فروق غير دلالية.
