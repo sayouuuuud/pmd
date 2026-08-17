@@ -1,0 +1,102 @@
+Habits error live-region quality gates — 2026-08-17T18:21Z
+--- TypeScript ---
+--- ESLint ---
+$ eslint .
+--- Next build ---
+$ next build
+▲ Next.js 16.3.0 (Turbopack)
+✓ Running next.config.mjs took 8ms
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.1s
+  Running TypeScript ...
+  Finished TypeScript in 3.2s ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/27) ...
+  Generating static pages using 5 workers (6/27)
+  Generating static pages using 5 workers (13/27)
+  Generating static pages using 5 workers (20/27)
+✓ Generating static pages using 5 workers (27/27) in 333ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /account
+├ ƒ /api/account
+├ ƒ /api/account/export
+├ ƒ /api/archive
+├ ƒ /api/archive/[kind]/[id]
+├ ƒ /api/auth/[...all]
+├ ƒ /api/calendar-events
+├ ƒ /api/calendar-events/[id]
+├ ƒ /api/clients
+├ ƒ /api/clients/[id]
+├ ƒ /api/clients/[id]/restore
+├ ƒ /api/daily-plan
+├ ƒ /api/daily-plan/[id]
+├ ƒ /api/entertainment
+├ ƒ /api/entertainment/[id]
+├ ƒ /api/finance
+├ ƒ /api/finance/[id]
+├ ƒ /api/finance/budget
+├ ƒ /api/goals
+├ ƒ /api/goals/[id]
+├ ƒ /api/habits
+├ ƒ /api/habits/[id]
+├ ƒ /api/journal
+├ ƒ /api/journal/[id]
+├ ƒ /api/notes
+├ ƒ /api/notes/[id]
+├ ƒ /api/profile
+├ ƒ /api/projects
+├ ƒ /api/projects/[id]
+├ ƒ /api/projects/[id]/pricing
+├ ƒ /api/projects/[id]/updates
+├ ƒ /api/projects/pricing
+├ ƒ /api/projects/pricing/[pricingId]
+├ ƒ /api/projects/updates
+├ ƒ /api/religious
+├ ƒ /api/religious/quran
+├ ƒ /api/religious/reciters
+├ ƒ /api/religious/timings
+├ ƒ /api/reminders
+├ ƒ /api/reminders/[id]
+├ ƒ /api/review
+├ ƒ /api/tasks
+├ ƒ /api/tasks/[id]
+├ ƒ /api/tasks/[id]/subtasks
+├ ƒ /api/tasks/[id]/subtasks/[subtaskId]
+├ ƒ /api/workspaces
+├ ○ /archive
+├ ○ /board
+├ ○ /calendar
+├ ○ /daily-plan
+├ ○ /design-system
+├ ○ /entertainment
+├ ○ /goals
+├ ○ /habits
+├ ○ /journal
+├ ○ /login
+├ ○ /money
+├ ○ /notes
+├ ○ /offline
+├ ○ /onboarding
+├ ○ /projects
+├ ○ /religious
+├ ○ /reminders
+├ ○ /review
+├ ○ /tasks
+└ ○ /workspace
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

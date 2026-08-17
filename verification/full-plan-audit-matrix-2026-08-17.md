@@ -536,3 +536,15 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 **النطاق:** لا تغييرات API أو DB أو Better Auth أو التصميم أو الأسرار، ولم تُنفذ `drizzle-kit generate`. الأدلة: `verification/goals-error-live-region-ar-2026-08-17.md`، `verification/goals-error-browser-findings-2026-08-17.md`، `verification/goals-error-quality-20260817T1816Z.log`، `verification/goals-error-audits-20260817T1817Z.log`.
 
 **الحكم:** PASS — جاهزة للاعتماد بعد تنظيف artifacts.
+
+## 2026-08-17 — دفعة live-region لخطأ اسم العادة
+
+أُغلقت فجوة دلالية في `components/habits/habits-workspace.tsx`: رسالة خطأ اسم العادة كانت تحمل `role="alert"` دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي، والتحقق، و`aria-invalid` و`aria-describedby`، ومنطق العادات والروابط السياقية وfallback المحلي.
+
+في `/habits` أُرسل نموذج إضافة عادة فارغًا؛ ظهرت الرسالة العربية `اكتب اسم العادة أولًا.`. أثبت DOM أن عنصر الخطأ يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن الحقل يحمل `aria-invalid=true` ويرتبط بالرسالة عبر `aria-describedby=habit-form-error`. لم تُنشأ بيانات جديدة.
+
+نجحت TypeScript وESLint وNext build، ثم ownership (`45` route، `41` session، `41` visible ownership، دون مسارات ناقصة)، responsive (`34/34` دون إخفاقات)، وaccessibility (`34/34`، `0` إخفاق). لم تتغير عقود API أو قاعدة البيانات أو Better Auth أو ملكية البيانات، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/habits-error-live-region-ar-2026-08-17.md`، `verification/habits-error-browser-findings-2026-08-17.md`، `verification/habits-error-quality-20260817T1821Z.log`، و`verification/habits-error-audits-20260817T1822Z.log`.
+
+**الحالة:** PASS؛ الدفعة جاهزة للاعتماد بعد تنظيف artifacts العابرة.

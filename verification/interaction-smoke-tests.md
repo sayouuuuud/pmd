@@ -1013,3 +1013,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 في `/goals` أُرسل نموذج إنشاء هدف فارغًا؛ ظهرت `اكتب اسم الهدف أولًا`، وأثبت DOM `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، مع `aria-invalid="true"` و`aria-describedby="goal-title-error"` في حقل العنوان. ثم فُتح هدف قائم مرتبط بمشاريع وأُرسل نموذج إضافة مهمة فارغًا؛ ظهرت `اكتب مهمة الهدف أولًا.`، وأثبت DOM الخصائص نفسها مع `aria-describedby="goal-task-error"`. لم تُنشأ بيانات جديدة. نجحت TypeScript وESLint وNext build وownership (`45` route، `41` session، `41` visible ownership) وresponsive (`34/34`) وaccessibility (`34/34`، صفر إخفاقات).
 
 الحكم: PASS.
+
+## 2026-08-17 — العادات: live-region لخطأ اسم العادة
+
+في `/habits` فُتح نموذج «إضافة عادة جديدة»، أُبقي حقل اسم العادة فارغًا وأُرسل النموذج. ظهرت الرسالة العربية `اكتب اسم العادة أولًا.`، وأثبت DOM أن عنصر الخطأ يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`. ارتبطت الرسالة بحقل الاسم عبر `aria-describedby="habit-form-error"`، وحمل الحقل `aria-invalid="true"`. لم تُنشأ بيانات جديدة. نجحت TypeScript وESLint وNext build وownership (`45` route، `41` session، `41` visible ownership) وresponsive (`34/34`) وaccessibility (`34/34`، صفر إخفاقات).
+
+الحكم: PASS.
