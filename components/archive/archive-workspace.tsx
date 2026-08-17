@@ -234,7 +234,7 @@ export function ArchiveWorkspace() {
         </div>
       </div>
 
-      {message && <div role="status" className="flex items-center gap-2 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary"><Check className="size-4" aria-hidden="true" />{message}</div>}
+      {message && <div role="status" aria-live="polite" aria-atomic="true" className="flex items-center gap-2 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary"><Check className="size-4" aria-hidden="true" />{message}</div>}
 
       {!ready ? (
         <div className="grid gap-4 md:grid-cols-2" aria-label="جارٍ تحميل الأرشيف" aria-busy="true">{[1, 2, 3, 4].map((item) => <div key={item} className="h-36 animate-pulse rounded-2xl border border-border/60 bg-muted/50" />)}</div>

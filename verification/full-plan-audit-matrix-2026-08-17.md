@@ -402,3 +402,16 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 - **الجودة:** TypeScript PASS، ESLint PASS، Next build PASS، ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`، `0` failures)، و`git diff --check` PASS بعد تنظيف artifacts.
 - **الحدود:** لا تغيير في user ownership أو عقود API/DB أو localStorage fallback أو الأسرار، ولم تُنفذ `drizzle-kit generate`.
 - **الأدلة:** `verification/journal-metadata-ar-2026-08-17.md`، `verification/journal-metadata-quality-20260817T170700Z.log`، `verification/journal-metadata-audits-20260817T170800Z.log`.
+
+## 2026-08-17 — الأرشيف: إعلان نتائج الاستعادة بالعربية
+| البند | النتيجة | الدليل |
+|---|---|---|
+| الفجوة | إشعار الاستعادة كان يحمل `role="status"` دون `aria-live` و`aria-atomic` مكتملتين | `components/archive/archive-workspace.tsx` قبل الإصلاح |
+| الإصلاح | إضافة `aria-live="polite"` و`aria-atomic="true"` إلى إشعار الأرشيف مع إبقاء النص والتصميم ومنطق الاستعادة وfallback المحلي كما هي | `components/archive/archive-workspace.tsx` |
+| اختبار المتصفح | استعادة عنصر اختبار غير حساس من `/archive`؛ DOM التقط `تمت استعادة «يوم هادئ للتجربة» إلى اليوميات.` بالقيم `role=status`, `aria-live=polite`, `aria-atomic=true`؛ ثم أُعيدت التدوينة إلى الأرشيف | `verification/archive-live-region-ar-2026-08-17.md` |
+| TypeScript / ESLint / Build | PASS؛ تحذير middleware deprecated معلوماتي فقط | `verification/archive-live-quality-20260817T171220Z.log` |
+| Ownership | PASS: `45` route، `41` session، `41` visible ownership، بلا مسارات ناقصة | `verification/archive-live-audits-20260817T171220Z.final.log` |
+| Responsive | PASS: `34/34`، بلا failures | `verification/archive-live-audits-20260817T171220Z.final.log` |
+| Accessibility | PASS: `34/34`، `0` failures | `verification/archive-live-audits-20260817T171220Z.final.log` |
+| الحدود | لم يتغير API/DB أو user ownership أو الأسرار، ولم تُنفذ `drizzle-kit generate`؛ اتصال Neon والجلسة الإنتاجية خارج نطاق إثبات localStorage fallback | تقرير الدفعة |
+| القرار | دفعة مكتملة وقابلة للاعتماد | تقرير الدفعة وسجلات الجودة |
