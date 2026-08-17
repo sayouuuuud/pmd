@@ -2,6 +2,7 @@ import { and, eq, isNotNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { client, entertainmentItem, financeEntry, goal, habit, journalEntry, note, project, reminder, task } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
+import { getWorkspaceForMember } from '@/server/workspaces/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,7 +49,16 @@ export async function PATCH(request: Request, context: RouteContext) {
       const [updated] = await db.update(entertainmentItem).set({ archivedAt: null, updatedAt: new Date() }).where(and(eq(entertainmentItem.id, id), eq(entertainmentItem.userId, currentUser.id), isNotNull(entertainmentItem.archivedAt))).returning()
       item = updated
     } else if (kind === 'client') {
-      const [updated] = await db.update(client).set({ archivedAt: null, status: 'active', updatedAt: new Date() }).where(and(eq(client.id, id), eq(client.createdBy, currentUser.id), isNotNull(client.archivedAt))).returning()
+      const [archivedClient] = await db.select({ id: client.id, workspaceId: client.workspaceId })
+        .from(client)
+        .where(and(eq(client.id, id), eq(client.createdBy, currentUser.id), isNotNull(client.archivedAt)))
+        .limit(1)
+      if (archivedClient && !(await getWorkspaceForMember(db, archivedClient.workspaceId, currentUser.id))) {
+        return json({ error: 'مساحة العمل غير متاحة.' }, { status: 403 })
+      }
+      const [updated] = await db.update(client).set({ archivedAt: null, status: 'active', updatedAt: new Date() })
+        .where(and(eq(client.id, id), eq(client.createdBy, currentUser.id), isNotNull(client.archivedAt)))
+        .returning()
       item = updated
     } else {
       return json({ error: 'نوع الأرشيف غير معروف.' }, { status: 400 })
