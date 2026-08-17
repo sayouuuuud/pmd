@@ -65,6 +65,138 @@ export const userProfile = pgTable('user_profile', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
+export const workspace = pgTable('workspace', {
+  id: text('id').primaryKey(),
+  ownerId: text('owner_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  kind: text('kind').notNull().default('personal'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  workspaceOwnerIndex: uniqueIndex('workspace_owner_updated_idx').on(table.ownerId, table.updatedAt),
+}))
+
+export const workspaceMember = pgTable('workspace_member', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  role: text('role').notNull().default('member'),
+  status: text('status').notNull().default('active'),
+  joinedAt: timestamp('joined_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  workspaceMemberUniqueIndex: uniqueIndex('workspace_member_workspace_user_idx').on(table.workspaceId, table.userId),
+}))
+
+export const workspaceInvitation = pgTable('workspace_invitation', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  invitedBy: text('invited_by').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  invitedEmail: text('invited_email').notNull(),
+  role: text('role').notNull().default('member'),
+  tokenHash: text('token_hash').notNull(),
+  status: text('status').notNull().default('pending'),
+  expiresAt: timestamp('expires_at').notNull(),
+  acceptedAt: timestamp('accepted_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  invitationTokenIndex: uniqueIndex('workspace_invitation_token_idx').on(table.tokenHash),
+}))
+
+export const client = pgTable('client', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  createdBy: text('created_by').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  company: text('company'),
+  email: text('email'),
+  phone: text('phone'),
+  notes: text('notes'),
+  status: text('status').notNull().default('active'),
+  archivedAt: timestamp('archived_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const clientCredential = pgTable('client_credential', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  clientId: text('client_id').notNull().references(() => client.id, { onDelete: 'cascade' }),
+  createdBy: text('created_by').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  platform: text('platform').notNull(),
+  label: text('label').notNull(),
+  username: text('username'),
+  loginUrl: text('login_url'),
+  secretValue: text('secret_value'),
+  notes: text('notes'),
+  isExperimental: boolean('is_experimental').notNull().default(true),
+  archivedAt: timestamp('archived_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const calendarEvent = pgTable('calendar_event', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  createdBy: text('created_by').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  description: text('description'),
+  kind: text('kind').notNull().default('general'),
+  startsAt: timestamp('starts_at').notNull(),
+  endsAt: timestamp('ends_at'),
+  timezone: text('timezone').notNull().default('Africa/Cairo'),
+  sourceType: text('source_type'),
+  sourceId: text('source_id'),
+  status: text('status').notNull().default('planned'),
+  archivedAt: timestamp('archived_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const libraryResource = pgTable('library_resource', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  createdBy: text('created_by').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  clientId: text('client_id').references(() => client.id, { onDelete: 'set null' }),
+  projectId: text('project_id'),
+  type: text('type').notNull().default('link'),
+  title: text('title').notNull(),
+  url: text('url'),
+  description: text('description'),
+  tags: jsonb('tags').notNull().default([]),
+  archivedAt: timestamp('archived_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const activitySession = pgTable('activity_session', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  source: text('source').notNull().default('windows-agent'),
+  appName: text('app_name').notNull(),
+  windowTitle: text('window_title'),
+  browserDomain: text('browser_domain'),
+  startedAt: timestamp('started_at').notNull(),
+  endedAt: timestamp('ended_at'),
+  idleSeconds: integer('idle_seconds').notNull().default(0),
+  metadata: jsonb('metadata').notNull().default({}),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+export const secondFactorSetting = pgTable('second_factor_setting', {
+  userId: text('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
+  status: text('status').notNull().default('disabled'),
+  method: text('method').notNull().default('totp'),
+  secret: text('secret'),
+  recoveryCodes: jsonb('recovery_codes').notNull().default([]),
+  isExperimental: boolean('is_experimental').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
 export const religiousSettings = pgTable('religious_settings', {
   userId: text('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
   city: text('city').notNull().default('القاهرة'),
@@ -96,6 +228,7 @@ export const goal = pgTable('goal', {
 export const project = pgTable('project', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  workspaceId: text('workspace_id').references(() => workspace.id, { onDelete: 'set null' }),
   goalId: text('goal_id').references(() => goal.id, { onDelete: 'set null' }),
   title: text('title').notNull(),
   description: text('description').notNull().default(''),
@@ -107,7 +240,50 @@ export const project = pgTable('project', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
   projectUserUpdatedIndex: uniqueIndex('project_user_updated_idx').on(table.userId, table.updatedAt),
+  projectWorkspaceUpdatedIndex: uniqueIndex('project_workspace_updated_idx').on(table.workspaceId, table.updatedAt),
 }))
+
+export const projectUpdate = pgTable('project_update', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  projectId: text('project_id').notNull().references(() => project.id, { onDelete: 'cascade' }),
+  createdBy: text('created_by').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  body: text('body').notNull(),
+  kind: text('kind').notNull().default('progress'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const projectPricing = pgTable('project_pricing', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  projectId: text('project_id').notNull().references(() => project.id, { onDelete: 'cascade' }),
+  clientId: text('client_id').references(() => client.id, { onDelete: 'set null' }),
+  createdBy: text('created_by').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  amount: integer('amount').notNull(),
+  currency: text('currency').notNull().default('جنيه'),
+  status: text('status').notNull().default('expected'),
+  expectedDate: text('expected_date'),
+  receivedAt: timestamp('received_at'),
+  financeEntryId: text('finance_entry_id'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const projectShare = pgTable('project_share', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  projectId: text('project_id').notNull().references(() => project.id, { onDelete: 'cascade' }),
+  createdBy: text('created_by').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  memberUserId: text('member_user_id').references(() => user.id, { onDelete: 'cascade' }),
+  invitedEmail: text('invited_email'),
+  role: text('role').notNull().default('viewer'),
+  status: text('status').notNull().default('active'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
 
 export const task = pgTable('task', {
   id: text('id').primaryKey(),
@@ -302,6 +478,18 @@ export const schema = {
   habitLog,
   dailyPlanItem,
   weeklyReview,
+  workspace,
+  workspaceMember,
+  workspaceInvitation,
+  client,
+  clientCredential,
+  calendarEvent,
+  libraryResource,
+  activitySession,
+  secondFactorSetting,
+  projectUpdate,
+  projectPricing,
+  projectShare,
   financeEntry,
   budget,
   reminder,
@@ -311,6 +499,13 @@ export const schema = {
 
 export type GoalRecord = typeof goal.$inferSelect
 export type ProjectRecord = typeof project.$inferSelect
+export type WorkspaceRecord = typeof workspace.$inferSelect
+export type WorkspaceMemberRecord = typeof workspaceMember.$inferSelect
+export type ClientRecord = typeof client.$inferSelect
+export type ClientCredentialRecord = typeof clientCredential.$inferSelect
+export type CalendarEventRecord = typeof calendarEvent.$inferSelect
+export type LibraryResourceRecord = typeof libraryResource.$inferSelect
+export type ActivitySessionRecord = typeof activitySession.$inferSelect
 export type TaskRecord = typeof task.$inferSelect
 export type NoteRecord = typeof note.$inferSelect
 export type UserProfileRecord = typeof userProfile.$inferSelect

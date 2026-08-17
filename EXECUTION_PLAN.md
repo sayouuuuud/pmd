@@ -850,3 +850,12 @@
 - **التوثيق:** `verification/final-shared-controls-audit.md` و`verification/interaction-smoke-tests.md`.
 - **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build`، مع تحذير تقادم convention الخاص بـmiddleware من Next.js باعتباره معلوماتيًا وغير حاجز.
 - **الحالة:** مكتملة وجاهزة للـcommit والـpush.
+
+
+## سجل تنفيذ 2026-08-17 — Foundation readiness وWorkspace vertical slice
+
+أُنجزت أول دفعة من الخطة المدمجة الجديدة دون تشغيل `drizzle-kit generate`، وشملت إضافة عقود Workspace والعملاء والتعاون التجريبي والتقويم والمكتبة والنشاط و2FA والمشاريع الموسعة إلى Drizzle، وإنشاء migration يدوية `0010_workspace_work_system_experimental.sql` مع الحفاظ على مشكلة journal دون تغيير. أُضيفت طبقة وصول موحدة تتحقق من جلسة المستخدم وعضويته، وواجهتا `/api/workspaces` و`/api/clients`، وواجهة عربية `/workspace` مع رابط في TopNav.
+
+الـvertical slice يدعم إنشاء المساحات والعملاء عبر قاعدة البيانات عند توفر الإعدادات، ويدعم localStorage fallback عند غياب `DATABASE_URL` أو `BETTER_AUTH_SECRET`. تم اختبار إنشاء مساحة وعميل تجريبي، عزل العميل عن المساحة الشخصية، ثم تنظيف بيانات الاختبار. نجحت TypeScript وESLint و`git diff --check` و`next build`، وظهر التحذير المعلوماتي المعتاد الخاص بـmiddleware فقط. التفاصيل الكاملة في `docs/foundation-readiness-audit.md`.
+
+الحالة: جاهز للـcommit والدفع، ثم الانتقال إلى توسعة APIs وواجهة العميل والمشاريع والتحديثات والتسعير.
