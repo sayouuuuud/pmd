@@ -1074,3 +1074,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 اختُبرت صفحة `http://localhost:3004/workspace` محليًا في وضع البيانات المحلية المؤقتة. أُرسل نموذج إنشاء مساحة العمل فارغًا، فظهرت الرسالة العربية `اكتب اسم مساحة العمل أولًا.`، وأثبت DOM أن `#workspace-name-error` يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن حقل «اسم مساحة العمل الجديدة» مرتبط عبر `aria-describedby` ويحمل `aria-invalid=true`. أُرسل كذلك نموذج إضافة العميل فارغًا، فظهرت الرسالة `اكتب اسم العميل أولًا.`، وأثبت DOM أن `#client-form-error` يحمل الخصائص نفسها، وأن حقلي «اسم العميل» و«البريد الإلكتروني» مرتبطان بالرسالة ويحملان `aria-invalid=true`. لم تُحفظ بيانات جديدة أثناء الاختبار. الأدلة: `verification/workspace-error-live-region-ar-2026-08-17.md`، `verification/workspace-error-browser-findings-2026-08-17.md`، `verification/workspace-error-quality-20260817T191239Z.log`، و`verification/workspace-error-audits-20260817T191239Z.log`.
 
 **الحالة: PASS — نتائج التفاعل وDOM موثقة؛ الدفعة جاهزة للاعتماد بعد اكتمال المصفوفة وخطة التنفيذ.**
+
+## 2026-08-17 — تدقيق إغلاق فجوات validation live-region
+
+أُعيد تشغيل الفاحص الساكن بعد اعتماد دفعة مساحة العمل؛ لم يُصدر أي `missing=...`، وأظهر فقط عناوين metadata الحالية للقسم الديني والمال والتذكيرات. أُعيد تشغيل TypeScript وESLint وNext build وownership وresponsive وaccessibility، فنجحت جميعها: الملكية `45/41/41`، responsive `34/34`، وaccessibility `34/34` مع صفر إخفاقات. استُثني `app/error.tsx` عمدًا من نطاق رسائل التحقق لأنه خطأ عام على مستوى التطبيق، لا خطأ نموذج عربي.
+
+**الحالة: PASS — لا توجد فجوات validation live-region عملية متبقية في نطاق الفاحص الحالي.** الدليل: `verification/a11y-validation-gap-closure-2026-08-17.md` و`verification/a11y-closure-quality-20260817T191705Z.log`.
