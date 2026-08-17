@@ -95,6 +95,7 @@ function GoalCard({ goal, projects, tasks, progress, taskCount, completedTasks, 
   const [description, setDescription] = useState(goal.description)
   const [targetLabel, setTargetLabel] = useState(goal.targetLabel)
   const [taskTitle, setTaskTitle] = useState('')
+  const [taskError, setTaskError] = useState('')
   const isPaused = goal.status === 'paused'
   const linkedTasks = tasks.filter((task) => task.projectId && projects.some((project) => project.id === task.projectId))
   const firstProject = projects[0]
@@ -106,7 +107,12 @@ function GoalCard({ goal, projects, tasks, progress, taskCount, completedTasks, 
 
   function createTask(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!firstProject || !taskTitle.trim()) return
+    if (!firstProject) return
+    if (!taskTitle.trim()) {
+      setTaskError('اكتب مهمة الهدف أولًا.')
+      return
+    }
+    setTaskError('')
     onAddTask(firstProject.id, taskTitle.trim())
     setTaskTitle('')
   }
@@ -129,7 +135,7 @@ function GoalCard({ goal, projects, tasks, progress, taskCount, completedTasks, 
       {editing && <div className="space-y-2 rounded-2xl bg-background p-3"><Textarea value={description} onChange={(event) => setDescription(event.target.value)} aria-label="وصف الهدف" className="min-h-20 w-full rounded-xl px-3 py-2 text-xs" placeholder="وصف الهدف" /><Input value={targetLabel} onChange={(event) => setTargetLabel(event.target.value)} aria-label="موعد الهدف" className="w-full rounded-xl px-3 py-2 text-xs" placeholder="موعد تقريبي" /><Button type="button" size="sm" onClick={saveDetails} className="rounded-xl"><Save className="h-3.5 w-3.5" />حفظ التعديلات</Button></div>}
       <div className="space-y-2"><p className="text-xs font-semibold text-muted-foreground">المشاريع الحاملة للهدف</p>{projects.length ? projects.map((project) => <div key={project.id} className="flex items-center justify-between rounded-xl bg-background px-3 py-2 text-xs"><span className="font-medium">{project.title}</span><span className="text-muted-foreground">{project.progress}% · {project.status === 'done' ? 'مكتمل' : project.status === 'in-progress' ? 'شغال' : project.status === 'paused' ? 'متوقف' : 'أفكار'}</span></div>) : <div className="rounded-xl bg-background px-3 py-3 text-xs text-muted-foreground">اربط مشروعًا بهذا الهدف من صفحة المشاريع.</div>}</div>
       <div className="space-y-2"><div className="flex items-center justify-between"><p className="text-xs font-semibold text-muted-foreground">المهام المرتبطة</p><span className="text-xs text-muted-foreground">{linkedTasks.length} مهام</span></div>{linkedTasks.length ? linkedTasks.map((task) => <Button type="button" variant="ghost" key={task.id} onClick={() => onToggleTask(task.id)} className="h-auto w-full justify-start gap-2 rounded-xl bg-background px-3 py-2 text-right text-xs hover:bg-accent">{task.status === 'done' ? <CheckCircle2 className="h-4 w-4 shrink-0 text-success" /> : <Circle className="h-4 w-4 shrink-0 text-muted-foreground" />}<span className={task.status === 'done' ? 'text-muted-foreground line-through' : 'font-medium'}>{task.title}</span></Button>) : <div className="rounded-xl bg-background px-3 py-3 text-xs text-muted-foreground">لا توجد مهام بعد لهذا الهدف.</div>}</div>
-      {firstProject && <form onSubmit={createTask} className="flex gap-2"><Input value={taskTitle} onChange={(event) => setTaskTitle(event.target.value)} aria-label="مهمة جديدة للهدف" placeholder={`أضف مهمة إلى ${firstProject.title}`} className="min-w-0 flex-1 rounded-xl px-3 py-2 text-xs" /><Button type="submit" size="sm" className="shrink-0 rounded-xl"><Plus className="h-3.5 w-3.5" />مهمة</Button></form>}
+      {firstProject && <form onSubmit={createTask} noValidate className="flex flex-wrap gap-2"><Input value={taskTitle} onChange={(event) => { setTaskTitle(event.target.value); if (taskError) setTaskError('') }} aria-label="مهمة جديدة للهدف" aria-invalid={Boolean(taskError)} aria-describedby={taskError ? 'goal-task-error' : undefined} placeholder={`أضف مهمة إلى ${firstProject.title}`} className="min-w-0 flex-1 rounded-xl px-3 py-2 text-xs" />{taskError && <p id="goal-task-error" role="alert" className="basis-full text-xs text-destructive">{taskError}</p>}<Button type="submit" size="sm" className="shrink-0 rounded-xl"><Plus className="h-3.5 w-3.5" />مهمة</Button></form>}
     </div>}
   </article>
 }

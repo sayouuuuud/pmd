@@ -1108,3 +1108,9 @@
 | إضافة الخطوة الفرعية | إضافة `noValidate` ورفض عربي مرئي وARIA للحقل الفارغ، مع مسح الخطأ أثناء الكتابة | رفض النموذج الفارغ، مسح الخطأ بعد إدخال `تجهيز ملخص اليوم`، إضافة الخطوة بنجاح، ثم حذفها وعودة عداد الخطوات إلى الصفر | نفس بوابات الجودة والملكية أعلاه | نفس نتائج responsive وaccessibility أعلاه | PASS | `components/tasks/tasks-workspace.tsx`، `verification/tasks-validation-ar-2026-08-17.md`، `verification/tasks-validation-audits-20260817T152404Z.log` |
 
 النتيجة: **PASS** — أُغلقت فجوة التحقق المرئي في نموذجي تعديل المهمة وإضافة الخطوة الفرعية مع بقاء بيانات الحالة الأصلية دون أثر تجريبي.
+
+## 2026-08-17 — الأهداف: تحقق عربي لإضافة مهمة مرتبطة بالهدف
+| النطاق | التنفيذ والتحقق | Ownership | Responsive | Accessibility | Quality gates | الحالة | الأدلة |
+|---|---|---:|---:|---:|---|---|---|
+| مهمة الهدف | إضافة `noValidate` وARIA ورسالة `اكتب مهمة الهدف أولًا.` عند الإرسال الفارغ، مع مسح الخطأ أثناء الكتابة والحفاظ على parser ومسار CRUD والتصميم | PASS — 45 route، 41 session، 41 visible ownership | PASS — 34/34 | PASS — 34/34، 0 failures | TypeScript، ESLint، diff check، Next build PASS | PASS | `components/goals/goals-workspace.tsx`، `verification/goals-validation-ar-2026-08-17.md`، `verification/goals-validation-quality-20260817T152817Z.log`، `verification/goals-validation-audits-verified-20260817T153128Z.log` |
+| اختبار المتصفح والتنظيف | رفض فارغ، مسح الخطأ، إضافة `مراجعة خطة الإطلاق`، ثم حذفها وحدها وإعادة التحميل؛ عاد العداد من `0/2` إلى `0/1` دون أثر للتجربة | PASS | PASS | PASS | موثق في التقرير المستقل | PASS | `verification/goals-validation-ar-2026-08-17.md` |

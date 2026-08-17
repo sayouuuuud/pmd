@@ -824,3 +824,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **التنظيف:** حُذفت الخطوة التجريبية، وعاد عداد الخطوات إلى الصفر والحالة الأصلية.
 - **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS؛ responsive `34/34`؛ accessibility `34/34` و0 failures.
 - **الأدلة:** `verification/tasks-validation-ar-2026-08-17.md`، `verification/tasks-validation-quality-20260817T152030Z.log`، `verification/tasks-validation-audits-20260817T152404Z.log`.
+
+## 2026-08-17 — الأهداف: إضافة مهمة مرتبطة بالهدف
+
+- **الرفض المرئي:** فُتح تفاصيل الهدف الأول وأُرسل نموذج `مهمة جديدة للهدف` دون عنوان؛ ظهرت `اكتب مهمة الهدف أولًا.` داخل `role="alert"` مع ARIA، ولم تُنشأ مهمة.
+- **مسح الخطأ:** أُدخلت `مراجعة خطة الإطلاق`، فاختفت الرسالة فور الكتابة وبقي النموذج صالحًا للإرسال.
+- **الحفظ والتنظيف:** حُفظت المهمة العربية مؤقتًا، ثم أُزيلت وحدها من الحالة المحلية وأُعيد تحميل `/goals`؛ عاد عداد الهدف إلى `0/1` دون بقاء عنوان التجربة.
+- **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership `45` route و`41` session و`41` visible ownership؛ responsive `34/34`؛ accessibility `34/34` و0 failures.
+- **الأدلة:** `components/goals/goals-workspace.tsx`، `verification/goals-validation-ar-2026-08-17.md`، `verification/goals-validation-quality-20260817T152817Z.log`، `verification/goals-validation-audits-verified-20260817T153128Z.log`.
