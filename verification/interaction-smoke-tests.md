@@ -870,3 +870,10 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **السلوك الدلالي:** إدارة تركيز عامة، احترام `autoFocus`، حصر `Tab` داخل الحوار، وتمرير `triggerRef` صريح للمشغّلات الرئيسية.
 - **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS (45 route، 41 session، 41 visible ownership)؛ responsive PASS (34/34)؛ accessibility PASS (34/34، 0 failures).
 - **الأدلة:** `verification/dialog-focus-management-ar-2026-08-17.md`، `verification/dialog-focus-quality-20260817T162000Z.log`، `verification/dialog-focus-audits-20260817T162300Z.log`، `verification/visual-audit-findings-20260817T1555Z.md`.
+
+## 2026-08-17 — الحساب: حوارات التأكيد وإدارة التركيز
+- **النطاق:** `components/account/account-workspace.tsx`؛ استبدال native confirm في «مسح بيانات الجهاز» و«حذف الحساب والبيانات» بحوارات عربية منسقة.
+- **التحقق:** فتح حوار مسح البيانات ثم إغلاقه بـ Escape أعاد التركيز إلى زر «مسح بيانات الجهاز» دون تنفيذ المسح. فتح حوار حذف الحساب ثم إغلاقه بـ Escape أعاد التركيز إلى زر «حذف الحساب والبيانات» دون إرسال DELETE.
+- **الحماية:** لم تُنفذ عملية مسح أو حذف أو تصدير أو استعادة؛ بقيت العمليات خلف تأكيد صريح.
+- **البوابات:** TypeScript وESLint وNext build PASS؛ ownership PASS (45 route، 41 session، 41 visible ownership)؛ responsive PASS (34/34)؛ accessibility PASS (34/34، 0 failures).
+- **الأدلة:** `verification/account-confirm-dialog-ar-2026-08-17.md`، `verification/account-confirm-dialog-quality-20260817T163000Z.log`، `verification/account-confirm-dialog-audits-20260817T163100Z.log`، `verification/visual-audit-findings-20260817T1555Z.md`.

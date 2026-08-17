@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Check, CloudDownload, Download, FileSpreadsheet, ShieldCheck, Trash2, Upload, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
+import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useCommandCenter } from '@/lib/command-center-store'
@@ -42,6 +43,9 @@ export function AccountWorkspace() {
   const [dataMessage, setDataMessage] = useState('')
   const [dataBusy, setDataBusy] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const clearLocalTriggerRef = useRef<HTMLButtonElement>(null)
+  const deleteAccountTriggerRef = useRef<HTMLButtonElement>(null)
+  const [confirmAction, setConfirmAction] = useState<'clear-local' | 'delete-account' | null>(null)
 
   useEffect(() => {
     setForm(profile)
@@ -113,17 +117,23 @@ export function AccountWorkspace() {
     }
   }
 
-  function clearLocalData() {
-    if (!window.confirm('سيتم استبدال البيانات المحلية بالبيانات الافتراضية. هل تريد المتابعة؟')) return
-    resetLocalData()
-    setDataMessage('تمت إعادة البيانات المحلية إلى الحالة الافتراضية. بيانات الحساب البعيدة لم تتأثر.')
+  function requestClearLocalData() {
+    setConfirmAction('clear-local')
   }
 
-  async function deleteAccount() {
-    const warning = session
-      ? 'سيتم حذف الحساب وكل بياناته المرتبطة من قاعدة البيانات نهائيًا. لا يمكن التراجع عن هذه العملية. هل أنت متأكد؟'
-      : 'سيتم حذف البيانات المحلية من هذا المتصفح فقط. هل أنت متأكد؟'
-    if (!window.confirm(warning)) return
+  function requestDeleteAccount() {
+    setConfirmAction('delete-account')
+  }
+
+  async function confirmDestructiveAction() {
+    const action = confirmAction
+    setConfirmAction(null)
+    if (!action) return
+    if (action === 'clear-local') {
+      resetLocalData()
+      setDataMessage('تمت إعادة البيانات المحلية إلى الحالة الافتراضية. بيانات الحساب البعيدة لم تتأثر.')
+      return
+    }
 
     setDataBusy(true)
     try {
@@ -208,7 +218,7 @@ export function AccountWorkspace() {
             <Upload className="h-5 w-5 shrink-0" />
             <span><strong className="block text-sm">استعادة نسخة</strong><small className="mt-1 block text-xs text-muted-foreground">استبدال الحالة المحلية بملف JSON</small></span>
           </Button>
-          <Button type="button" onClick={clearLocalData} disabled={dataBusy} variant="outline" className="h-auto justify-start gap-3 rounded-2xl p-4 text-start">
+          <Button ref={clearLocalTriggerRef} type="button" onClick={requestClearLocalData} disabled={dataBusy} variant="outline" className="h-auto justify-start gap-3 rounded-2xl p-4 text-start">
             <Trash2 className="h-5 w-5 shrink-0" />
             <span><strong className="block text-sm">مسح بيانات الجهاز</strong><small className="mt-1 block text-xs text-muted-foreground">لا يحذف حسابك البعيد</small></span>
           </Button>
@@ -220,9 +230,25 @@ export function AccountWorkspace() {
         </div>
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
           <p className="max-w-2xl text-xs text-muted-foreground">حذف الحساب البعيد عملية نهائية. ستُحذف بياناتك من Neon، بينما تُحذف البيانات المحلية عند نجاح العملية.</p>
-          <Button type="button" onClick={deleteAccount} disabled={dataBusy} variant="destructive" size="sm" className="shrink-0 rounded-full">حذف الحساب والبيانات</Button>
+          <Button ref={deleteAccountTriggerRef} type="button" onClick={requestDeleteAccount} disabled={dataBusy} variant="destructive" size="sm" className="shrink-0 rounded-full">حذف الحساب والبيانات</Button>
         </div>
       </ContentCard>
+      <Dialog
+        open={Boolean(confirmAction)}
+        onOpenChange={(open) => { if (!open) setConfirmAction(null) }}
+        triggerRef={confirmAction === 'delete-account' ? deleteAccountTriggerRef : clearLocalTriggerRef}
+        title={confirmAction === 'delete-account' ? 'تأكيد حذف البيانات' : 'تأكيد مسح بيانات الجهاز'}
+        description={confirmAction === 'delete-account'
+          ? (session ? 'سيُحذف الحساب وكل بياناته المرتبطة من قاعدة البيانات نهائيًا. لا يمكن التراجع عن هذه العملية.' : 'ستُحذف البيانات المحلية من هذا المتصفح فقط. بيانات الحساب البعيد لن تتأثر.')
+          : 'ستُستبدل البيانات المحلية بالبيانات الافتراضية. بيانات الحساب البعيدة لن تتأثر.'}
+      >
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button type="button" variant="outline" onClick={() => setConfirmAction(null)} className="rounded-full">إلغاء</Button>
+          <Button type="button" variant="destructive" onClick={() => void confirmDestructiveAction()} disabled={dataBusy} className="rounded-full">
+            {confirmAction === 'delete-account' ? 'حذف نهائي' : 'مسح بيانات الجهاز'}
+          </Button>
+        </div>
+      </Dialog>
     </div>
   )
 }
