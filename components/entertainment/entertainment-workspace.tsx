@@ -28,6 +28,7 @@ export function EntertainmentWorkspace() {
   const [onlyRecommended, setOnlyRecommended] = useState(false)
   const [onlyDownloads, setOnlyDownloads] = useState(false)
   const [dismissedSuggestionId, setDismissedSuggestionId] = useState<string | undefined>()
+  const [itemFormError, setItemFormError] = useState('')
 
   const filteredItems = useMemo(() => entertainment.filter((item) => {
     const matchesQuery = !query.trim() || `${item.title} ${item.genre} ${item.note ?? ''}`.toLocaleLowerCase('ar').includes(query.trim().toLocaleLowerCase('ar'))
@@ -78,7 +79,15 @@ export function EntertainmentWorkspace() {
     const form = new FormData(event.currentTarget)
     const title = String(form.get('title') ?? '').trim()
     const genre = String(form.get('genre') ?? '').trim()
-    if (!title || !genre) return
+    if (!title) {
+      setItemFormError('اكتب اسم الفيلم أو المسلسل أولًا.')
+      return
+    }
+    if (!genre) {
+      setItemFormError('اكتب تصنيف العمل أولًا.')
+      return
+    }
+    setItemFormError('')
     const yearValue = Number(form.get('year') ?? 0)
     addEntertainment({
       title,
@@ -137,12 +146,13 @@ export function EntertainmentWorkspace() {
     </ContentCard>
 
     {showForm && <ContentCard title="إضافة فيلم أو مسلسل" description="أضف التفاصيل الأساسية، وبعد المشاهدة يمكنك تسجيل التقييم والانطباع.">
-      <form onSubmit={createItem} className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <Input name="title" required aria-label="اسم الفيلم أو المسلسل" placeholder="اسم الفيلم أو المسلسل" className="rounded-2xl px-4 py-3" />
+      <form onSubmit={createItem} noValidate className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <Input name="title" aria-label="اسم الفيلم أو المسلسل" aria-invalid={Boolean(itemFormError)} aria-describedby={itemFormError ? 'entertainment-item-error' : undefined} onChange={() => { if (itemFormError) setItemFormError('') }} placeholder="اسم الفيلم أو المسلسل" className="rounded-2xl px-4 py-3" />
         <Select name="type" aria-label="نوع العمل" defaultValue="movie" className="rounded-2xl px-4 py-3"><option value="movie">فيلم</option><option value="series">مسلسل</option></Select>
-        <Input name="genre" required aria-label="تصنيف العمل" placeholder="التصنيف، مثال: دراما" className="rounded-2xl px-4 py-3" />
+        <Input name="genre" aria-label="تصنيف العمل" aria-invalid={Boolean(itemFormError)} aria-describedby={itemFormError ? 'entertainment-item-error' : undefined} onChange={() => { if (itemFormError) setItemFormError('') }} placeholder="التصنيف، مثال: دراما" className="rounded-2xl px-4 py-3" />
         <Input name="year" type="number" min="1888" max="2100" aria-label="سنة الإصدار الاختيارية" placeholder="سنة الإصدار (اختياري)" className="rounded-2xl px-4 py-3" />
         <Textarea name="note" aria-label="ملاحظة العمل" placeholder="ملاحظة شخصية أو سبب الإضافة" className="min-h-24 rounded-2xl px-4 py-3 md:col-span-2" />
+        {itemFormError && <p id="entertainment-item-error" role="alert" className="text-xs text-destructive md:col-span-2">{itemFormError}</p>}
         <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><Checkbox name="recommend" />أريد ترشيحه لشخص</label>
         <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><Checkbox name="downloadWanted" />أضيفه لقائمة التحميل</label>
         <div className="flex gap-2 md:col-span-2"><Button type="submit" className="rounded-2xl px-5 py-3 text-sm font-semibold">حفظ في عايز أتفرج</Button><Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="rounded-2xl bg-muted px-5 py-3 text-sm font-medium">إلغاء</Button></div>

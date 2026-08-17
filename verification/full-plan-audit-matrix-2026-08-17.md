@@ -214,3 +214,8 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 اكتمل اختبار نتيجة صلاة فعلية بالاستعلام «الفجر». كشفت الجولة أن النتيجة كانت تُفهرس تحت «الديني» لكنها تنتقل إلى `/religious` العام، رغم وجود بطاقة ثابتة بــ`id="prayer-tracker"`. أُصلحت الفجوة في `components/search/global-search-dialog.tsx` بتوجيه نتائج `religious.prayerLogs` إلى `/religious#prayer-tracker`. أُعيد الاختبار في المتصفح ونجح الانتقال إلى الرابط العميق وتموضع بطاقة «صلوات اليوم». كما عُدّل وصف البحث وplaceholder لذكر الأقسام المفهرسة فعليًا، دون تغيير البيانات أو الهوية البصرية.
 
 حالة تغطية البحث التفاعلية الحالية: العادات، الملاحظات، المهام، خطة اليوم، المشاريع، الأهداف، الفلوس، الترفيه، والديني مجتازة بروابط عميقة. التذكيرات واليوميات تحتاج فقط إلى إعادة اختبار مباشر منفصل إذا لم تكن قد سُجلت في جولة سابقة.
+
+
+## 2026-08-17 — دفعة التحقق العربي في الترفيه
+
+أُضيف تحقق عربي يدوي لنموذج إضافة فيلم أو مسلسل داخل `components/entertainment/entertainment-workspace.tsx`، مع `noValidate` و`role="alert"` و`aria-invalid` و`aria-describedby`. اختُبرت حالة النموذج الفارغ، الاسم دون تصنيف، تصحيح الحقل، الحفظ الصحيح، والأرشفة والتنظيف. نجحت بوابات TypeScript وESLint و`git diff --check` وNext build، ثم أُعيدت فحوص ownership وresponsive وaccessibility: 45 route و41 مسارًا بملكية ظاهرة — PASS؛ 34 حالة responsive بلا فشل — PASS؛ 34 حالة accessibility بلا فشل — PASS. التفاصيل في `verification/entertainment-validation-ar-2026-08-17.md`.

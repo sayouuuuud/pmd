@@ -998,3 +998,13 @@
 ## إعادة اعتماد فحوص الحماية والاستجابة والإتاحة بعد دفعة البحث — 2026-08-17
 
 أُعيد تشغيل الفحوص الثلاثة بعد تعديل `global-search-dialog.tsx`: فحص ownership وجد `45` Route Handler و`41` مسارًا بجلسة وملكية ظاهرة مع `ownership_audit=PASS`؛ فحص responsive نجح في `34` حالة بلا فشل؛ وفحص accessibility نجح في `34` حالة مع `failures=0`. جرى القياس من `2026-08-17T13:19:59Z` إلى `2026-08-17T13:21:17Z` وفق ساعة النظام. حُفظ السجل الخام في `verification/search-final-audits-2026-08-17.txt`، وأُعيدت ملفات screenshots وJSON المولدة إلى نسخها السابقة لتجنب فروق غير دلالية.
+
+## دفعة إصلاح التحقق العربي في الترفيه — 2026-08-17
+
+أُغلقت فجوة UX في نموذج إضافة فيلم أو مسلسل داخل `components/entertainment/entertainment-workspace.tsx`. أُلغي الاعتماد على رسائل HTML الافتراضية عبر `noValidate`، وأضيفت رسالة عربية مخصصة تميّز بين غياب اسم العمل وغياب التصنيف، مع `role="alert"` وربط `aria-invalid` و`aria-describedby`. أُزيلت الرسالة تلقائيًا عند بدء تصحيح الحقول دون تغيير منطق التخزين أو الهوية البصرية.
+
+اختُبرت عبر المتصفح حالات الإرسال الفارغ، الاسم دون تصنيف، تصحيح الحقل، الحفظ الصحيح، ثم أرشفة السجل الاختباري وإعادة النموذج لحالة نظيفة. نجحت بوابات TypeScript وESLint و`git diff --check` وNext build بين `2026-08-17T13:27:16Z` و`2026-08-17T13:27:40Z`. وأُعيد تشغيل ownership وresponsive وaccessibility بين `2026-08-17T13:28:27Z` و`2026-08-17T13:29:45Z`: ownership PASS لـ45 route، responsive PASS لـ34 حالة، accessibility PASS لـ34 حالة.
+
+المرجع: `verification/entertainment-validation-ar-2026-08-17.md` و`verification/interaction-smoke-tests.md`. لم تُشغّل migrations ولم تُضف أسرارًا.
+
+**الحالة:** مكتمل — جاهز للاعتماد في commit.
