@@ -683,3 +683,6 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 ## تدقيق architecture والأمان والإتاحة والأداء والاستجابة — 2026-08-17
 
 اكتمل فحص ownership الساكن لمسارات API، وأعيد تدقيق responsive وaccessibility على `34/34` حالة؛ لم يظهر overflow أو فشل تحميل أو فجوة أسماء وصول بعد الإصلاحات. شُدّدت ملكية أحداث التقويم داخل عمليات PATCH وDELETE، وأضيفت استعادة العملاء المؤرشفين مع تحقق الجلسة ومساحة العمل وfallback محلي. قياس الإنتاج أظهر `.next/static` بحجم `1.8M`، مع lazy loading للأقسام الثقيلة المعروفة. نجحت بوابات TypeScript وESLint و`git diff --check` وNext production build، وبقي تحذير middleware convention معلوماتيًا وغير حاجز. التفاصيل في `verification/architecture-security-a11y-audit-2026-08-17.md` و`verification/quality-gates-2026-08-17.md`.
+
+## 2026-08-17 — توحيد أرشيف العملاء
+أضيفت سجلات العملاء المؤرشفين إلى عقد الأرشيف العام، وأصبح الاسترجاع البعيد يستخدم `PATCH /api/archive/client/:id` مع `createdBy` و`archivedAt` بدل الاعتماد على عقد خاص فقط. أزيل تكرار بطاقات العملاء عند دمج نتائج الأرشيف العام ومصدر العملاء الخاص. نجحت بوابات `tsc --noEmit` وESLint و`git diff --check` و`next build`، وحُمّلت صفحة `/archive` دون أخطاء React أو console جديدة. اختبار fallback المحلي لدورة العميل الكاملة كان ناجحًا في الجولة السابقة؛ اختبار Neon البعيد الكامل ما زال غير منفذ لغياب credentials تشغيلية.

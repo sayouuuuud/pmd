@@ -978,3 +978,6 @@
 بوابات `tsc --noEmit` وESLint و`git diff --check` و`next build` ناجحة. تحذير middleware convention معلوماتي وغير حاجز. المراجع: `verification/architecture-security-a11y-audit-2026-08-17.md` و`verification/quality-gates-2026-08-17.md`.
 
 **Commits:** `f2a7da2` و`01519ae` و`84c8776`.
+
+### دفعة 2026-08-17 — توحيد أرشيف العملاء
+أضيف العملاء المؤرشفون إلى عقد `GET /api/archive`، وأضيفت استعادة `client` إلى `PATCH /api/archive/client/:id` مع قيد `createdBy` وحالة الأرشفة. حدّثت واجهة الأرشيف لتستخدم العقد الموحد للاستعادة البعيدة وتمنع تكرار بطاقات العميل عند وصول البيانات من أكثر من مصدر، مع الإبقاء على fallback المحلي ومسار التوافق القديم. نجحت TypeScript وESLint و`git diff --check` و`next build`، وثُبتت الدفعة في commit `67a87d9`.
