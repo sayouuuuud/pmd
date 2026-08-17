@@ -183,35 +183,35 @@ export function AccountWorkspace() {
 
       <ContentCard className="lg:col-span-2" title="بياناتي ونسختي الاحتياطية" description="صدّر بياناتك، استعد نسخة سابقة، أو افصل بياناتك عن هذا الجهاز.">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <button type="button" onClick={exportLocalBackup} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/30">
+          <Button type="button" onClick={exportLocalBackup} variant="outline" className="h-auto justify-start gap-3 rounded-2xl p-4 text-start">
             <Download className="h-5 w-5 shrink-0" />
             <span><strong className="block text-sm">تنزيل نسخة محلية</strong><small className="mt-1 block text-xs text-muted-foreground">كل ما هو محفوظ في هذا المتصفح</small></span>
-          </button>
-          <button type="button" onClick={exportRemoteBackup} disabled={dataBusy || !session} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/30 disabled:cursor-not-allowed disabled:opacity-50">
+          </Button>
+          <Button type="button" onClick={exportRemoteBackup} disabled={dataBusy || !session} variant="outline" className="h-auto justify-start gap-3 rounded-2xl p-4 text-start">
             <CloudDownload className="h-5 w-5 shrink-0" />
             <span><strong className="block text-sm">تصدير بيانات الحساب</strong><small className="mt-1 block text-xs text-muted-foreground">نسخة من Neon عند تسجيل الدخول</small></span>
-          </button>
-          <button type="button" onClick={exportLocalCsv} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/30">
+          </Button>
+          <Button type="button" onClick={exportLocalCsv} variant="outline" className="h-auto justify-start gap-3 rounded-2xl p-4 text-start">
             <FileSpreadsheet className="h-5 w-5 shrink-0" />
             <span><strong className="block text-sm">تصدير CSV</strong><small className="mt-1 block text-xs text-muted-foreground">ملف قابل للفتح في Sheets وExcel</small></span>
-          </button>
-          <button type="button" onClick={() => fileInputRef.current?.click()} disabled={dataBusy} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/30 disabled:cursor-not-allowed disabled:opacity-50">
+          </Button>
+          <Button type="button" onClick={() => fileInputRef.current?.click()} disabled={dataBusy} variant="outline" className="h-auto justify-start gap-3 rounded-2xl p-4 text-start">
             <Upload className="h-5 w-5 shrink-0" />
             <span><strong className="block text-sm">استعادة نسخة</strong><small className="mt-1 block text-xs text-muted-foreground">استبدال الحالة المحلية بملف JSON</small></span>
-          </button>
-          <button type="button" onClick={clearLocalData} disabled={dataBusy} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/30 disabled:cursor-not-allowed disabled:opacity-50">
+          </Button>
+          <Button type="button" onClick={clearLocalData} disabled={dataBusy} variant="outline" className="h-auto justify-start gap-3 rounded-2xl p-4 text-start">
             <Trash2 className="h-5 w-5 shrink-0" />
             <span><strong className="block text-sm">مسح بيانات الجهاز</strong><small className="mt-1 block text-xs text-muted-foreground">لا يحذف حسابك البعيد</small></span>
-          </button>
+          </Button>
         </div>
-        <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={restoreBackup} className="hidden" />
+        <Input ref={fileInputRef} type="file" accept="application/json,.json" onChange={restoreBackup} className="hidden" />
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-muted/60 p-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> لا تتضمن النسخ المحلية كلمات المرور أو رموز الجلسات.</span>
           {dataMessage && <span className="font-medium text-foreground">{dataMessage}</span>}
         </div>
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
           <p className="max-w-2xl text-xs text-muted-foreground">حذف الحساب البعيد عملية نهائية. ستُحذف بياناتك من Neon، بينما تُحذف البيانات المحلية عند نجاح العملية.</p>
-          <button type="button" onClick={deleteAccount} disabled={dataBusy} className="shrink-0 rounded-full border border-destructive/40 px-4 py-2 text-xs font-semibold text-destructive transition hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50">حذف الحساب والبيانات</button>
+          <Button type="button" onClick={deleteAccount} disabled={dataBusy} variant="destructive" size="sm" className="shrink-0 rounded-full">حذف الحساب والبيانات</Button>
         </div>
       </ContentCard>
     </div>

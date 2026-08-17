@@ -74,6 +74,6 @@ export function AuthForm() {
       <Button type="submit" disabled={loading} className="h-12 w-full rounded-2xl px-4 text-sm font-semibold">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}{mode === 'signin' ? 'دخول إلى حسابي' : 'إنشاء الحساب'}</Button>
     </form>
 
-    <button type="button" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError('') }} className="mt-6 w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground">{mode === 'signin' ? 'لسه معندكش حساب؟ أنشئ حساب جديد' : 'عندك حساب بالفعل؟ سجل الدخول'}</button>
+    <Button type="button" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError('') }} variant="ghost" className="mt-6 h-auto w-full rounded-2xl py-2 text-center text-sm text-muted-foreground hover:text-foreground">{mode === 'signin' ? 'لسه معندكش حساب؟ أنشئ حساب جديد' : 'عندك حساب بالفعل؟ سجل الدخول'}</Button>
   </div>
 }

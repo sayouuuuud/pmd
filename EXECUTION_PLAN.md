@@ -806,3 +806,11 @@
 - **التوثيق:** أُنشئ `verification/dashboard-shared-controls-browser.md` وأُضيف السيناريو إلى `verification/interaction-smoke-tests.md`.
 - **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build` بعد تحديث التوثيق؛ تحذير تقادم convention الخاص بـmiddleware من Next.js معلوماتي وغير حاجز.
 - **الحالة:** مكتملة وجاهزة للـcommit والـpush.
+
+
+## دفعة المكونات المشتركة — الحساب والمصادقة والعادات — 2026-08-17
+- **النطاق:** ترحيل أزرار النسخ الاحتياطي وحذف الحساب وحقل رفع الملف في `components/account/account-workspace.tsx`، وزر تبديل وضع المصادقة في `components/auth/auth-form.tsx`، وأزرار نموذج العادة والإكمال والأرشفة والتكرار في `components/habits/habits-workspace.tsx` إلى `Button` و`Input` المشتركتين، مع الحفاظ على handlers والحالة المحلية وسلوك Better Auth.
+- **التحقق المتصفحي:** فُتحت `/account` وتحقق DOM من `data-slot` للمكونات المشتركة مع اختبار بصري لأزرار النسخ الاحتياطي دون تنفيذ عملية حساسة. فُتحت `/habits` وفُتح نموذج عادة جديدة وأُدخل اسم مؤقت واختير تكرار أسبوعي ثم أُلغي دون حفظ. فُتحت `/login` واختُبر التبديل بين تسجيل الدخول وإنشاء الحساب ثم العودة، دون إدخال بيانات اعتماد أو إرسال النموذج.
+- **الحفاظ على السلوك:** لم تُضف migrations أو secrets، ولم تُنفذ عمليات حذف أو رفع أو مصادقة فعلية، وبقي RTL والتصميم الحالي وlocalStorage fallback كما هي.
+- **التوثيق:** `verification/account-auth-habits-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+- **الحالة:** الترحيل والتحقق المتصفحي وبوابات TypeScript وESLint و`git diff --check` و`next build` مكتملة؛ الدفعة جاهزة للـcommit والـpush.
