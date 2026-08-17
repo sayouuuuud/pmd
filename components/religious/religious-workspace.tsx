@@ -136,6 +136,9 @@ export function ReligiousWorkspace() {
   const [quran, setQuran] = useState<QuranResponse | null>(null)
   const [quranRetryToken, setQuranRetryToken] = useState(0)
   const [reciters, setReciters] = useState<Reciter[]>([])
+  const [reciterState, setReciterState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [reciterMessage, setReciterMessage] = useState('')
+  const [reciterRetryToken, setReciterRetryToken] = useState(0)
   const [selectedReciter, setSelectedReciter] = useState<Reciter | null>(null)
   const [audioUrl, setAudioUrl] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
@@ -282,20 +285,29 @@ export function ReligiousWorkspace() {
 
   useEffect(() => {
     let active = true
+    setReciterState('loading')
+    setReciterMessage('جاري تحميل قائمة القراء…')
     fetch('/api/religious/reciters', { cache: 'no-store' })
       .then(async (response) => {
         const payload = await response.json() as RecitersResponse
-        if (!response.ok) throw new Error(payload.error || 'تعذر جلب القراء.')
-        if (active && payload.reciters?.length) {
+        if (!response.ok || !payload.reciters?.length) throw new Error(payload.error || 'تعذر تحميل قائمة القراء.')
+        if (active) {
           setReciters(payload.reciters)
           setSelectedReciter(payload.reciters[0])
+          setReciterState('success')
+          setReciterMessage(`المصدر: ${payload.source}`)
         }
       })
-      .catch(() => {
-        if (active) setQuranMessage((message) => message || 'تعذر تحميل كتالوج التلاوات؛ يمكنك الاستمرار في القراءة.')
+      .catch((error: unknown) => {
+        if (active) {
+          setReciters([])
+          setSelectedReciter(null)
+          setReciterState('error')
+          setReciterMessage(error instanceof Error ? error.message : 'تعذر تحميل قائمة القراء.')
+        }
       })
     return () => { active = false }
-  }, [])
+  }, [reciterRetryToken])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -473,7 +485,7 @@ export function ReligiousWorkspace() {
         <div className="grid gap-3 md:grid-cols-[auto_1fr_1fr_auto]">
           <label className="space-y-2 text-sm font-medium"><span>طريقة التصفح</span><Select aria-label="طريقة تصفح المصحف" value={quranMode} onChange={(event) => setQuranMode(event.currentTarget.value as 'surah' | 'juz')}><option value="surah">سورة</option><option value="juz">جزء</option></Select></label>
           {quranMode === 'juz' ? <label className="space-y-2 text-sm font-medium"><span>الجزء</span><Select aria-label="الجزء" value={selectedJuz} onChange={(event) => setSelectedJuz(Number(event.currentTarget.value))}>{Array.from({ length: 30 }, (_, index) => index + 1).map((juz) => <option key={juz} value={juz}>الجزء {juz}</option>)}</Select></label> : <label className="space-y-2 text-sm font-medium"><span>السورة</span><Select aria-label="السورة" value={selectedSurah} onChange={(event) => setSelectedSurah(Number(event.currentTarget.value))}>{surahOptions.map((surah) => <option key={surah.number} value={surah.number}>{surah.number} — {surah.name.replace(/^سُورَةُ\s*/, '')}</option>)}</Select></label>}
-          <label className="space-y-2 text-sm font-medium"><span>القارئ</span><Select value={selectedReciter?.id ?? ''} onChange={(event) => setSelectedReciter(reciters.find((reciter) => reciter.id === Number(event.target.value)) ?? null)} disabled={!reciters.length}><option value="">{reciters.length ? 'اختر قارئًا' : 'جاري تحميل القراء…'}</option>{reciters.map((reciter) => <option key={reciter.id} value={reciter.id}>{reciter.name}</option>)}</Select></label>
+          <label className="space-y-2 text-sm font-medium"><span>القارئ</span><Select value={selectedReciter?.id ?? ''} onChange={(event) => setSelectedReciter(reciters.find((reciter) => reciter.id === Number(event.target.value)) ?? null)} disabled={reciterState === 'loading' || !reciters.length} aria-describedby="reciter-status"><option value="">{reciterState === 'loading' ? 'جاري تحميل القراء…' : reciterState === 'error' ? 'تعذر تحميل القراء' : reciters.length ? 'اختر قارئًا' : 'لا توجد تلاوات متاحة'}</option>{reciters.map((reciter) => <option key={reciter.id} value={reciter.id}>{reciter.name}</option>)}</Select><span id="reciter-status" role={reciterState === 'error' ? 'alert' : 'status'} className={`text-xs ${reciterState === 'error' ? 'text-destructive' : 'text-muted-foreground'}`}>{reciterMessage}</span>{reciterState === 'error' && <Button type="button" size="sm" variant="outline" onClick={() => setReciterRetryToken((token) => token + 1)}>إعادة تحميل القراء</Button>}</label>
           <div className="flex items-end"><Button onClick={() => playSelectedSurah()} disabled={!selectedReciter || quranState === 'loading'}><Play className="ms-1 h-4 w-4" /> تشغيل السورة</Button></div>
         </div>
         {quranMode === 'surah' && <p className="mt-2 text-xs text-muted-foreground" role="status">{surahCatalogState === 'loading' ? 'جاري تحميل فهرس السور الكامل…' : surahCatalogMessage || 'يمكنك اختيار أي سورة من الفهرس الكامل.'}</p>}

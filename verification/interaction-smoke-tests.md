@@ -877,3 +877,10 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **الحماية:** لم تُنفذ عملية مسح أو حذف أو تصدير أو استعادة؛ بقيت العمليات خلف تأكيد صريح.
 - **البوابات:** TypeScript وESLint وNext build PASS؛ ownership PASS (45 route، 41 session، 41 visible ownership)؛ responsive PASS (34/34)؛ accessibility PASS (34/34، 0 failures).
 - **الأدلة:** `verification/account-confirm-dialog-ar-2026-08-17.md`، `verification/account-confirm-dialog-quality-20260817T163000Z.log`، `verification/account-confirm-dialog-audits-20260817T163100Z.log`، `verification/visual-audit-findings-20260817T1555Z.md`.
+
+## 2026-08-17 — القسم الديني: حالة تحميل القراء وإعادة المحاولة
+اختُبرت `/religious` في الحالة الطبيعية، فظهرت قائمة القراء الفعلية بدل حالة تحميل ثابتة، مع قارئ افتراضي ومصدر `MP3Quran`. لا تُشغّل التلاوة تلقائيًا ولا تُحفظ بيانات عند فتح الصفحة.
+
+اعترض الاختبار طلب `/api/religious/reciters` اعتراضًا مؤقتًا ومحدودًا. عند الفشل ظهرت رسالة عربية `تعذر تحميل قائمة القراء` وزر `إعادة تحميل القراء`، مع ربط الحالة بالقائمة عبر `aria-describedby="reciter-status"` و`role="status"`. بعد إزالة الاعتراض وتشغيل إعادة المحاولة، ظهرت 31 خانة قارئ فعلية، اختفى زر الفشل، وعاد مصدر `MP3Quran` في حالة النجاح. لم تُشغّل التلاوة ولم تُنشأ قائمة ولم يُحفظ أي تقدم.
+
+البوابات: TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS (`45` route، `41` session، `41` visible ownership)؛ responsive PASS (`34/34`)؛ accessibility PASS (`34/34`، 0 failures). الأدلة: `verification/religious-reciter-retry-ar-2026-08-17.md`، `verification/religious-reciter-quality-20260817T163700Z.log`، `verification/religious-reciter-audits-20260817T163800Z.log`، `verification/visual-audit-findings-20260817T1555Z.md`.
