@@ -1022,3 +1022,11 @@
 ## دفعة إصلاح التحقق العربي في الأهداف — 2026-08-17
 أُغلقت فجوة UX في نموذج إنشاء الهدف داخل `components/goals/goals-workspace.tsx`. أُلغي الاعتماد على رسالة المتصفح الافتراضية عبر `noValidate`، وأضيفت رسالة عربية مخصصة `اكتب اسم الهدف أولًا` مع `role="alert"` وربط `aria-invalid` و`aria-describedby`. اختُبرت حالة الإرسال الفارغ، ثم إدخال اسم هدف صحيح وحفظه وأرشفته من الواجهة المرئية مع تنظيف السجل الاختباري، دون تغيير الملكية أو التخزين أو الهوية البصرية. نجحت TypeScript وESLint و`git diff --check` وNext build بين `2026-08-17T13:39:45Z` و`2026-08-17T13:40:07Z`. كما نجحت فحوص ownership بـ45 Route Handler و`ownership_audit=PASS`، وresponsive بـ34/34 بلا فشل، وaccessibility بـ34/34 بلا فشل. التقرير: `verification/goals-validation-ar-2026-08-17.md`.
 **الحالة:** مكتمل — لا توجد migrations أو أسرار جديدة.
+
+
+## دفعة التحقق العربي في التذكيرات — 2026-08-17
+أضيف تحقق عربي inline إلى نموذج إنشاء التذكير في `components/reminders/reminders-workspace.tsx` مع ربط ARIA ومسح الخطأ أثناء الكتابة، دون تغيير CRUD أو الهوية البصرية. اختُبر الإرسال الفارغ، ثم إدخال عنوان `اختبار تحقق التذكير`، والحفظ، والأرشفة والتنظيف عبر الواجهة. التقرير: `verification/reminders-validation-ar-2026-08-17.md`، وسجل التفاعل محدث. وقت القياس: `2026-08-17T13:44:44Z`. بوابات TypeScript وESLint وdiff check وNext build وفحوص ownership/responsive/accessibility مطلوبة قبل commit.
+
+
+### إغلاق دفعة التذكيرات
+اكتملت بوابات الدفعة في `2026-08-17T13:45:42Z`–`2026-08-17T13:46:05Z` بنجاح: TypeScript وESLint و`git diff --check` وNext build. وأُعيدت فحوص ownership وresponsive وaccessibility في `2026-08-17T13:46:12Z`–`2026-08-17T13:47:31Z` وكانت النتائج PASS: 45 route handlers، و34/34 responsive، و34/34 accessibility. نُظفت artifacts المولدة، والدفعة جاهزة للاعتماد المحلي.
