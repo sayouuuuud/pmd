@@ -599,3 +599,17 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 
 ## 2026-08-17 — إغلاق دفعة المال: live-region وmetadata العربية
 أُغلقت فجوة الوصول في `components/money/money-workspace.tsx` بإضافة `aria-live="assertive"` و`aria-atomic="true"` إلى خطأ الميزانية وخطأ العملية المالية، مع الحفاظ على النصوص العربية وربط الحقول عبر `aria-describedby` وحالة `aria-invalid`. كما صُحح عنوان metadata في `app/money/page.tsx` إلى الصيغة العربية الموحدة في المنصة. اختبار المتصفح على `http://localhost:3004/money` أثبت مسار الميزانية الفارغة ومسار العملية المالية الفارغة في DOM: `role=alert`، و`aria-live=assertive`، و`aria-atomic=true`، مع `budget-error` للميزانية و`finance-entry-error` لحقلي العملية المالية. نجحت TypeScript وESLint وNext build، ونجحت ownership (`45` route، `41` session، `41` visible ownership)، وresponsive (`34/34`)، وaccessibility (`34/34`، صفر إخفاقات). لم تتغير API أو schema أو migrations أو Better Auth أو localStorage fallback، ولم تُنشأ بيانات اختبارية. الأدلة: `verification/money-error-live-region-ar-2026-08-17.md`، `verification/money-error-quality-20260817T184912Z.log`، و`verification/money-error-audits-20260817T184941Z.log`.
+
+## 2026-08-17 — دفعة القسم الديني: live-region لأخطاء الدعاء المحفوظ وقائمة التلاوة
+
+| المجال | النتيجة | الدليل |
+|---|---|---|
+| الإصلاح | PASS | إضافة `aria-live="assertive"` و`aria-atomic="true"` إلى `saved-dua-error` و`quran-playlist-error` في `components/religious/religious-workspace.tsx` |
+| اختبار المتصفح وDOM | PASS | الرسالتان ظهرتا عند إرسال النموذجين فارغين؛ `role=alert` و`aria-live=assertive` و`aria-atomic=true`؛ الحقول تحمل `aria-describedby` و`aria-invalid=true` |
+| TypeScript / ESLint / build | PASS | `verification/religious-error-quality-20260817T1855Z.log` |
+| Ownership | PASS | `verification/religious-error-audits-20260817T1855Z.log`: 45 route، 41 session، 41 visible ownership |
+| Responsive | PASS | السجل نفسه: 34/34 |
+| Accessibility | PASS | السجل نفسه: 34/34، صفر إخفاقات |
+| حدود النطاق | PASS | لا تغيير في API أو schema أو migrations أو Better Auth أو localStorage fallback؛ لا أسرار ولا بيانات اختبارية |
+
+**الحالة:** مكتملة من حيث التنفيذ والاختبار، وتنتظر تنظيف artifacts والاعتماد في commit مستقل.
