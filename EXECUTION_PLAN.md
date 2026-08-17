@@ -1230,3 +1230,15 @@
 شُغّل build إنتاجي وخادم Next على `http://localhost:3005/`، وتحققت الصفحة من اللغة العربية والسياق الآمن ووجود Service Worker controller. جرت محاولة محاكاة `beforeinstallprompt`، لكن Chromium لم يعرض prompt الأصلي؛ لذلك سُجلت النتيجة كدليل متصفح محدود لا كإثبات ظهور حالة التثبيت الأصلية. الفحص الساكن يثبت خصائص live-region الثلاث على عنصر الإشعار. نجحت TypeScript وESLint وNext build، ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، `0` failures)، و`git diff --check` بعد تنظيف artifacts وإيقاف خادم الإنتاج المؤقت.
 الأدلة: `verification/pwa-live-region-ar-2026-08-17.md`، `verification/pwa-live-browser-test-2026-08-17.md`، `verification/pwa-live-quality-20260817T172300Z.log`، `verification/pwa-live-audits-20260817T172400Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 **الحالة:** الإصلاح مكتمل وقابل للاعتماد مع إبقاء قيد اختبار prompt الحقيقي موثقًا؛ لا تغيير في API/DB أو ownership أو الأسرار، ولم تُنفذ `drizzle-kit generate`.
+
+## 2026-08-17 — إغلاق دفعة دلالة أخطاء المصادقة العربية
+
+أُغلقت فجوة دلالية في `components/auth/auth-form.tsx`: كانت أخطاء الاسم والبريد الإلكتروني وكلمة المرور والخطأ العام تحمل `role="alert"` دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` دون تغيير التحقق العربي، `aria-invalid`، `aria-describedby`، نصوص الواجهة، Better Auth، أو تدفق الجلسة.
+
+في `http://localhost:3004/login` أُرسل النموذج الفارغ، فظهرت الرسالة `اكتب البريد الإلكتروني أولًا.`. أثبت فحص DOM أن الرسالة تحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن حقل البريد يحمل `aria-invalid="true"` ويرتبط بالرسالة عبر `aria-describedby="auth-email-error"`. لم تُستخدم بيانات اعتماد حقيقية ولم يُرسل طلب مصادقة خارجيًا؛ الاختبار توقف عند التحقق المحلي.
+
+نجحت TypeScript وESLint وNext build مع تحذير middleware المعلوماتي المعتاد. نجح ownership (`45` route handlers، `41` session، `41` visible ownership، دون نقص)، وresponsive (`34/34` دون إخفاق)، وaccessibility (`34/34`، `0` إخفاق). أزيلت artifacts العابرة وأُعيدت ملفات نتائج الفحوص إلى حالة المستودع قبل staging، ولم تتغير عقود API أو قاعدة البيانات أو الملكية، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/auth-live-region-ar-2026-08-17.md`، `verification/auth-live-quality-20260817T172800Z.log`، `verification/auth-live-audits-20260817T172900Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة:** مكتملة وقابلة للاعتماد بعد إنشاء commit مستقل.

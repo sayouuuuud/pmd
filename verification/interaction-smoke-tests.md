@@ -952,3 +952,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 **الدليل:** `verification/pwa-live-region-ar-2026-08-17.md`، `verification/pwa-live-browser-test-2026-08-17.md`، `verification/pwa-live-quality-20260817T172300Z.log`، `verification/pwa-live-audits-20260817T172400Z.log`.
 
 **القرار:** الإصلاح مكتمل وقابل للاعتماد مع تصنيف اختبار prompt التفاعلي كاختبار محدود.
+
+## 2026-08-17 — دلالة أخطاء المصادقة العربية
+
+راجعت `components/auth/auth-form.tsx` وأضفت `aria-live="assertive"` و`aria-atomic="true"` إلى أخطاء الاسم والبريد الإلكتروني وكلمة المرور والخطأ العام، مع إبقاء التحقق العربي ومنطق Better Auth كما هو. في `http://localhost:3004/login` أُرسل النموذج الفارغ، فظهرت `اكتب البريد الإلكتروني أولًا.`؛ وأثبت فحص DOM أن العنصر يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن الحقل يحمل `aria-invalid="true"` ويرتبط بالخطأ عبر `aria-describedby="auth-email-error"`. لم تُستخدم بيانات اعتماد حقيقية. نجحت TypeScript وESLint وNext build، ونجحت ownership (`45` مسارًا، دون نقص)، وresponsive (`34/34` دون إخفاق)، وaccessibility (`34/34` دون إخفاق). التقرير: `verification/auth-live-region-ar-2026-08-17.md`؛ سجلا الجودة والتدقيق: `verification/auth-live-quality-20260817T172800Z.log` و`verification/auth-live-audits-20260817T172900Z.log`.
+
+---

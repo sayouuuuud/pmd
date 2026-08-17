@@ -428,3 +428,15 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Accessibility | PASS: `34/34`، `0` failures | `verification/pwa-live-audits-20260817T172400Z.log` |
 | الحدود | لا يثبت الاختبار ظهور prompt الحقيقي على كل متصفح؛ يثبت تعديل live-region والبوابات فقط. لا تغييرات API/DB أو ownership أو الأسرار، ولم تُنفذ `drizzle-kit generate` | `verification/pwa-live-region-ar-2026-08-17.md` |
 | القرار | الإصلاح مكتمل وقابل للاعتماد، مع إبقاء قيد اختبار prompt موثقًا | تقرير الدفعة وسجلات الجودة |
+
+## 2026-08-17 — دلالة أخطاء المصادقة العربية
+
+- **النطاق:** `components/auth/auth-form.tsx`، أخطاء الاسم والبريد الإلكتروني وكلمة المرور والخطأ العام.
+- **الفجوة:** كانت أخطاء الحقول والخطأ العام تحمل `role="alert"` دون `aria-live` و`aria-atomic` صريحين.
+- **الإصلاح:** أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي، التحقق، `aria-describedby`، `aria-invalid`، وتدفق Better Auth.
+- **اختبار المتصفح:** على `/login` أُرسل النموذج الفارغ؛ ظهرت `اكتب البريد الإلكتروني أولًا.`. أثبت DOM أن العنصر يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن `#auth-email` يحمل `aria-invalid="true"` و`aria-describedby="auth-email-error"`.
+- **البوابات:** TypeScript PASS؛ ESLint PASS؛ Next build PASS مع تحذير middleware المعلوماتي؛ ownership PASS (`45` route handlers، دون نقص)؛ responsive PASS (`34` حالة، دون إخفاق)؛ accessibility PASS (`34` حالة، `0` إخفاق).
+- **التنظيف:** أزيل `tsconfig.tsbuildinfo` وأعيدت artifacts الخاصة بفحوص العرض والوصول إلى حالة المستودع. لم تُستخدم بيانات اعتماد أو أسرار، ولم يتغير API أو schema أو منطق الجلسة.
+- **التقرير:** `verification/auth-live-region-ar-2026-08-17.md`.
+
+---
