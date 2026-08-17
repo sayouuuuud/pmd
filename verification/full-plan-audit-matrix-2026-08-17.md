@@ -234,3 +234,15 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 ## دفعة إصلاح التحقق العربي في التذكيرات — 2026-08-17
 أُغلقت فجوة UX في نموذج إنشاء التذكير داخل `components/reminders/reminders-workspace.tsx`. أُلغي الاعتماد على رسالة المتصفح الافتراضية، وأضيفت رسالة عربية inline لعنوان التذكير مع ربط ARIA ومسح الخطأ أثناء الكتابة، دون تغيير منطق التخزين أو الهوية البصرية. اختُبرت حالة الإرسال الفارغ، ثم إدخال `اختبار تحقق التذكير` وحفظ السجل وأرشفته عبر الواجهة المرئية، وعاد العدد إلى حالته السابقة. التقرير المستقل: `verification/reminders-validation-ar-2026-08-17.md`. وقت القياس الأساسي: `2026-08-17T13:44:44Z`. يلزم اعتماد بوابات الجودة وفحوص ownership وresponsive وaccessibility قبل commit.
 **الحالة:** اختبار المتصفح مكتمل؛ بوابات الاعتماد قيد التنفيذ.
+
+## إعادة التدقيق المرحلي الشامل — 2026-08-17
+
+أُعيد تشغيل بوابات ownership وresponsive وaccessibility على الشجرة النظيفة بعد آخر دفعات التحقق العربي والبحث والديني. القياس الفعلي من ساعة النظام: `2026-08-17T13:50:19Z`–`2026-08-17T13:51:37Z`.
+
+| البوابة | النتيجة |
+|---|---|
+| Ownership | PASS — 45 Route Handler؛ 41 لها session وvisible ownership |
+| Responsive | PASS — 34/34 حالة، `failures: []` |
+| Accessibility | PASS — 34/34 حالة، 0 failures، `failureSummary: []` |
+
+المرجع الخام: `verification/final-review-audits-2026-08-17.log`. التقرير: `verification/final-review-audit-2026-08-17.md`. أُعيدت artifacts المولدة من responsive إلى النسخ الملتزمة بعد حفظ القياس النصي.

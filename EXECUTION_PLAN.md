@@ -1030,3 +1030,9 @@
 
 ### إغلاق دفعة التذكيرات
 اكتملت بوابات الدفعة في `2026-08-17T13:45:42Z`–`2026-08-17T13:46:05Z` بنجاح: TypeScript وESLint و`git diff --check` وNext build. وأُعيدت فحوص ownership وresponsive وaccessibility في `2026-08-17T13:46:12Z`–`2026-08-17T13:47:31Z` وكانت النتائج PASS: 45 route handlers، و34/34 responsive، و34/34 accessibility. نُظفت artifacts المولدة، والدفعة جاهزة للاعتماد المحلي.
+
+## اعتماد إعادة التدقيق المرحلي الشامل — 2026-08-17
+
+أُعيد تشغيل ownership وresponsive وaccessibility على الشجرة النظيفة بعد دفعات البحث والديني والتحقق العربي. القياس الفعلي: `2026-08-17T13:50:19Z`–`2026-08-17T13:51:37Z`. نجح ownership لـ45 Route Handler، ونجح responsive في 34/34 حالة، ونجحت accessibility في 34/34 حالة. السجل الخام هو `verification/final-review-audits-2026-08-17.log` والتقرير هو `verification/final-review-audit-2026-08-17.md`. أُعيدت artifacts المتغيرة من responsive إلى النسخ الملتزمة، ولم تُشغّل migrations ولم تُضف أسرار.
+
+**الحالة:** بوابات إعادة التدقيق المرحلي PASS؛ الدفعة جاهزة للاعتماد في commit توثيقي مستقل.
