@@ -508,3 +508,17 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 **النطاق:** لا تغييرات API أو DB أو Better Auth أو التصميم أو الأسرار، ولم تُنفذ `drizzle-kit generate`. الأدلة: `verification/daily-plan-error-live-region-ar-2026-08-17.md`، `verification/daily-plan-error-quality-20260817T1805Z.log`، `verification/daily-plan-error-audits-20260817T1806Z.log`.
 
 **الحكم:** PASS — جاهزة للاعتماد بعد تنظيف artifacts.
+
+## 2026-08-17 — الترفيه: live-region لخطأ نموذج إضافة عمل
+
+**الفجوة:** رسالة `entertainment-item-error` في `components/entertainment/entertainment-workspace.tsx` كانت تستخدم `role="alert"` دون `aria-live` و`aria-atomic` صريحين.
+
+**الإصلاح:** أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي، والتحقق، و`aria-invalid` و`aria-describedby`، والملكية وfallback المحلي.
+
+**الاختبار:** في `/entertainment` أُرسل نموذج إضافة فيلم أو مسلسل فارغًا؛ ظهرت `اكتب اسم الفيلم أو المسلسل أولًا.`. أثبت DOM `role=alert` و`aria-live=assertive` و`aria-atomic=true`، مع ارتباط حقل الاسم وحقل التصنيف عبر `aria-describedby="entertainment-item-error"` و`aria-invalid=true`.
+
+**البوابات:** TypeScript وESLint وNext build وownership وresponsive وaccessibility — PASS. ownership: `45` route handlers، `41` session، `41` visible ownership، دون نقص. responsive: `34/34`. accessibility: `34/34` و`0` إخفاقات.
+
+**النطاق:** لا تغييرات API أو DB أو Better Auth أو التصميم أو الأسرار، ولم تُنفذ `drizzle-kit generate`. الأدلة: `verification/entertainment-error-live-region-ar-2026-08-17.md`، `verification/entertainment-error-browser-findings-2026-08-17.md`، `verification/entertainment-error-quality-20260817T1810Z.log`، `verification/entertainment-error-audits-20260817T1811Z.log`.
+
+**الحكم:** PASS — جاهزة للاعتماد بعد تنظيف artifacts.

@@ -1298,3 +1298,13 @@
 الأدلة: `verification/daily-plan-error-live-region-ar-2026-08-17.md`، `verification/daily-plan-error-quality-20260817T1805Z.log`، `verification/daily-plan-error-audits-20260817T1806Z.log`، و`verification/daily-plan-error-browser-findings-2026-08-17.md`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 
 **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإنشاء commit مستقل.
+
+## 2026-08-17 — إغلاق دفعة live-region لخطأ نموذج الترفيه
+
+أُغلقت فجوة دلالية في `components/entertainment/entertainment-workspace.tsx`: رسالة `#entertainment-item-error` كانت تحمل `role="alert"` دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي، والتحقق، و`aria-invalid` و`aria-describedby`، ومنطق قائمة الترفيه وfallback المحلي.
+
+في `http://localhost:3004/entertainment` فُتح نموذج «إضافة فيلم أو مسلسل»، أُبقي اسم العمل فارغًا وأُرسل النموذج؛ ظهرت الرسالة `اكتب اسم الفيلم أو المسلسل أولًا.`. أثبت فحص DOM أن عنصر الخطأ يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن حقلي الاسم والتصنيف يحملان `aria-invalid=true` ويرتبطان عبر `aria-describedby=entertainment-item-error`. لم تُنشأ بيانات جديدة. نجحت بوابات TypeScript وESLint وNext build، ثم ownership (`45` route، `41` session، `41` visible ownership، دون نقص)، responsive (`34/34` دون إخفاقات)، وaccessibility (`34/34`، `0` إخفاق). لم تتغير عقود API أو قاعدة البيانات أو Better Auth أو الملكية، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/entertainment-error-live-region-ar-2026-08-17.md`، `verification/entertainment-error-browser-findings-2026-08-17.md`، `verification/entertainment-error-quality-20260817T1810Z.log`، و`verification/entertainment-error-audits-20260817T1811Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإنشاء commit مستقل.

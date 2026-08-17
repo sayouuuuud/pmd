@@ -152,7 +152,7 @@ export function EntertainmentWorkspace() {
         <Input name="genre" aria-label="تصنيف العمل" aria-invalid={Boolean(itemFormError)} aria-describedby={itemFormError ? 'entertainment-item-error' : undefined} onChange={() => { if (itemFormError) setItemFormError('') }} placeholder="التصنيف، مثال: دراما" className="rounded-2xl px-4 py-3" />
         <Input name="year" type="number" min="1888" max="2100" aria-label="سنة الإصدار الاختيارية" placeholder="سنة الإصدار (اختياري)" className="rounded-2xl px-4 py-3" />
         <Textarea name="note" aria-label="ملاحظة العمل" placeholder="ملاحظة شخصية أو سبب الإضافة" className="min-h-24 rounded-2xl px-4 py-3 md:col-span-2" />
-        {itemFormError && <p id="entertainment-item-error" role="alert" className="text-xs text-destructive md:col-span-2">{itemFormError}</p>}
+        {itemFormError && <p id="entertainment-item-error" role="alert" aria-live="assertive" aria-atomic="true" className="text-xs text-destructive md:col-span-2">{itemFormError}</p>}
         <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><Checkbox name="recommend" />أريد ترشيحه لشخص</label>
         <label className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm"><Checkbox name="downloadWanted" />أضيفه لقائمة التحميل</label>
         <div className="flex gap-2 md:col-span-2"><Button type="submit" className="rounded-2xl px-5 py-3 text-sm font-semibold">حفظ في عايز أتفرج</Button><Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="rounded-2xl bg-muted px-5 py-3 text-sm font-medium">إلغاء</Button></div>

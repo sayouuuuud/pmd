@@ -1001,3 +1001,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 في `/daily-plan` فُتح نموذج تعديل عنصر، أُفرغ العنوان وأُرسل النموذج. ظهرت الرسالة العربية `اكتب عنوان العنصر أولًا.`، وأثبت DOM أن عنصر الخطأ يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، بينما يحمل الحقل `aria-invalid="true"` و`aria-describedby` إلى الرسالة. أضيفت الخصائص نفسها إلى خطأ نقل العنصر إلى تاريخ آخر. نجحت TypeScript وESLint وNext build، ونجحت ownership (45 route handlers دون نقص)، وresponsive (34/34)، وaccessibility (34/34، دون إخفاقات). لم تُحفظ بيانات اختبار جديدة ولم تتغير عقود API أو ملكية البيانات.
 
 الحكم: PASS.
+
+## 2026-08-17 — الترفيه: live-region لخطأ نموذج إضافة عمل
+
+في `/entertainment` فُتح نموذج «إضافة فيلم أو مسلسل»، أُبقي اسم العمل فارغًا وأُرسل النموذج. ظهرت الرسالة العربية `اكتب اسم الفيلم أو المسلسل أولًا.`، وأثبت DOM أن عنصر الخطأ يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`. ارتبطت الرسالة بحقل الاسم وحقل التصنيف عبر `aria-describedby="entertainment-item-error"`، وحمل كلاهما `aria-invalid="true"`. لم تُنشأ بيانات جديدة. نجحت TypeScript وESLint وNext build وownership (`45` route، `41` session، `41` visible ownership) وresponsive (`34/34`) وaccessibility (`34/34`، صفر إخفاقات).
+
+الحكم: PASS.
