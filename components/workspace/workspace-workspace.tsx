@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { BriefcaseBusiness, Building2, Plus, RefreshCw, Users } from 'lucide-react'
+import { Archive, BriefcaseBusiness, Building2, Pencil, Plus, RefreshCw, Search, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Input } from '@/components/ui/input'
@@ -56,6 +56,8 @@ export function WorkspaceWorkspace() {
   const [clientCompany, setClientCompany] = useState('')
   const [clientEmail, setClientEmail] = useState('')
   const [clientNotes, setClientNotes] = useState('')
+  const [clientSearch, setClientSearch] = useState('')
+  const [editingClientId, setEditingClientId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -64,7 +66,12 @@ export function WorkspaceWorkspace() {
     () => data.workspaces.find((item) => item.id === activeWorkspaceId) ?? data.workspaces[0],
     [activeWorkspaceId, data.workspaces],
   )
-  const clients = activeWorkspace ? data.clientsByWorkspace[activeWorkspace.id] ?? [] : []
+  const clients = useMemo(() => activeWorkspace ? data.clientsByWorkspace[activeWorkspace.id] ?? [] : [], [activeWorkspace, data.clientsByWorkspace])
+  const visibleClients = useMemo(() => {
+    const query = clientSearch.trim().toLocaleLowerCase('ar')
+    if (!query) return clients
+    return clients.filter((item) => [item.name, item.company, item.email, item.notes].filter(Boolean).some((value) => value?.toLocaleLowerCase('ar').includes(query)))
+  }, [clientSearch, clients])
 
   function persist(next: WorkspaceFallback) {
     setData(next)
@@ -138,6 +145,75 @@ export function WorkspaceWorkspace() {
     setSaving(false)
   }
 
+  function resetClientEditor() {
+    setEditingClientId(null)
+    setClientName('')
+    setClientCompany('')
+    setClientEmail('')
+    setClientNotes('')
+  }
+
+  function beginEditClient(item: Client) {
+    setEditingClientId(item.id)
+    setClientName(item.name)
+    setClientCompany(item.company ?? '')
+    setClientEmail(item.email ?? '')
+    setClientNotes(item.notes ?? '')
+    setNotice('')
+  }
+
+  async function updateClient() {
+    if (!editingClientId || !clientName.trim() || !activeWorkspace || saving) return
+    setSaving(true)
+    setNotice('')
+    const payload = { name: clientName.trim(), company: clientCompany, email: clientEmail, notes: clientNotes }
+    if (backendAvailable && !editingClientId.startsWith('local-')) {
+      try {
+        const response = await fetch(`/api/clients/${encodeURIComponent(editingClientId)}`, {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!response.ok) throw new Error('update-client-failed')
+        resetClientEditor()
+        await loadData()
+        setNotice('تم تحديث بيانات العميل.')
+        setSaving(false)
+        return
+      } catch {
+        setBackendAvailable(false)
+      }
+    }
+    const nextClients = clients.map((item) => item.id === editingClientId ? { ...item, name: payload.name, company: payload.company || null, email: payload.email || null, notes: payload.notes || null } : item)
+    persist({ ...data, clientsByWorkspace: { ...data.clientsByWorkspace, [activeWorkspace.id]: nextClients } })
+    resetClientEditor()
+    setNotice('تم تحديث العميل محليًا.')
+    setSaving(false)
+  }
+
+  async function archiveClient(item: Client) {
+    if (!activeWorkspace || saving) return
+    setSaving(true)
+    setNotice('')
+    if (backendAvailable && !item.id.startsWith('local-')) {
+      try {
+        const response = await fetch(`/api/clients/${encodeURIComponent(item.id)}`, { method: 'DELETE' })
+        if (!response.ok) throw new Error('archive-client-failed')
+        if (editingClientId === item.id) resetClientEditor()
+        await loadData()
+        setNotice('تمت أرشفة العميل.')
+        setSaving(false)
+        return
+      } catch {
+        setBackendAvailable(false)
+      }
+    }
+    persist({ ...data, clientsByWorkspace: { ...data.clientsByWorkspace, [activeWorkspace.id]: clients.filter((clientItem) => clientItem.id !== item.id) } })
+    if (editingClientId === item.id) resetClientEditor()
+    setNotice('تمت أرشفة العميل محليًا.')
+    setSaving(false)
+  }
+
   async function createClient() {
     const name = clientName.trim()
     if (!name || !activeWorkspace || saving) return
@@ -152,10 +228,7 @@ export function WorkspaceWorkspace() {
           body: JSON.stringify(payload),
         })
         if (!response.ok) throw new Error('create-client-failed')
-        setClientName('')
-        setClientCompany('')
-        setClientEmail('')
-        setClientNotes('')
+        resetClientEditor()
         await loadData()
         setNotice('تمت إضافة العميل.')
         setSaving(false)
@@ -170,10 +243,7 @@ export function WorkspaceWorkspace() {
       ...data,
       clientsByWorkspace: { ...data.clientsByWorkspace, [activeWorkspace.id]: [...clients, created] },
     })
-    setClientName('')
-    setClientCompany('')
-    setClientEmail('')
-    setClientNotes('')
+    resetClientEditor()
     setNotice('تم حفظ العميل محليًا.')
     setSaving(false)
   }
@@ -229,20 +299,34 @@ export function WorkspaceWorkspace() {
         </ContentCard>
 
         <ContentCard title={activeWorkspace ? `عملاء ${activeWorkspace.name}` : 'العملاء'} description="ملفات عميل خفيفة مرتبطة بمساحة العمل الحالية.">
+          <div className="relative mb-4">
+            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={clientSearch} onChange={(event) => setClientSearch(event.target.value)} placeholder="ابحث في العملاء" aria-label="البحث في العملاء" className="pr-9" />
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            {clients.map((item) => (
+            {visibleClients.map((item) => (
               <div key={item.id} className="rounded-2xl border border-border bg-muted/20 p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    {item.company ? <p className="mt-1 text-xs text-muted-foreground">{item.company}</p> : null}
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{item.name}</p>
+                    {item.company ? <p className="mt-1 truncate text-xs text-muted-foreground">{item.company}</p> : null}
                   </div>
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                  <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </div>
-                {item.email ? <p className="mt-3 text-xs text-muted-foreground">{item.email}</p> : null}
+                {item.email ? <p className="mt-3 truncate text-xs text-muted-foreground">{item.email}</p> : null}
+                <div className="mt-4 flex items-center gap-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => beginEditClient(item)} disabled={saving} aria-label={`تعديل ${item.name}`}>
+                    <Pencil className="h-4 w-4" />
+                    تعديل
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => void archiveClient(item)} disabled={saving} aria-label={`أرشفة ${item.name}`}>
+                    <Archive className="h-4 w-4" />
+                    أرشفة
+                  </Button>
+                </div>
               </div>
             ))}
-            {!loading && clients.length === 0 ? <p className="text-sm text-muted-foreground sm:col-span-2">لا يوجد عملاء في هذه المساحة بعد.</p> : null}
+            {!loading && visibleClients.length === 0 ? <p className="text-sm text-muted-foreground sm:col-span-2">{clients.length ? 'لا توجد نتائج مطابقة للبحث.' : 'لا يوجد عملاء في هذه المساحة بعد.'}</p> : null}
           </div>
           <div className="mt-5 space-y-3 border-t border-border pt-4">
             <Input value={clientName} onChange={(event) => setClientName(event.target.value)} placeholder="اسم العميل" aria-label="اسم العميل" />
@@ -251,10 +335,13 @@ export function WorkspaceWorkspace() {
               <Input type="email" value={clientEmail} onChange={(event) => setClientEmail(event.target.value)} placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني" />
             </div>
             <Textarea value={clientNotes} onChange={(event) => setClientNotes(event.target.value)} placeholder="ملاحظات أولية (اختياري)" aria-label="ملاحظات العميل" />
-            <Button type="button" onClick={() => void createClient()} disabled={!clientName.trim() || !activeWorkspace || saving}>
-              <Plus className="h-4 w-4" />
-              إضافة عميل
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" onClick={() => void (editingClientId ? updateClient() : createClient())} disabled={!clientName.trim() || !activeWorkspace || saving}>
+                {editingClientId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                {editingClientId ? 'حفظ التعديل' : 'إضافة عميل'}
+              </Button>
+              {editingClientId ? <Button type="button" variant="outline" onClick={resetClientEditor} disabled={saving}><X className="h-4 w-4" />إلغاء</Button> : null}
+            </div>
           </div>
         </ContentCard>
       </div>

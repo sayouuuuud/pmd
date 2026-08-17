@@ -614,3 +614,8 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - بوابات TypeScript وESLint و`git diff --check` و`next build` نجحت.
 
 النتيجة: ناجح، ولا توجد بيانات اختبار دائمة.
+
+
+## دفعة مساحة العمل والعملاء — 17 أغسطس 2026
+
+نجحت دورة العميل المحلية كاملة: إضافة عميل عربي مؤقت، البحث باسم الشركة، فتح المحرر، تعديل الملاحظات فقط، ثم الأرشفة وإعادة القائمة النشطة إلى الحالة الفارغة. أُضيفت مصفوفة حماية لمسارات العملاء؛ أعادت `GET /api/clients` و`PATCH /api/clients/test-id` و`DELETE /api/clients/test-id` الحالة `401` دون جلسة. نجحت بوابات TypeScript وESLint و`git diff --check` و`next build`، وسُجلت النتائج في `verification/workspace-clients-browser-audit.md` و`verification/workspace-clients-quality-run.txt`.
