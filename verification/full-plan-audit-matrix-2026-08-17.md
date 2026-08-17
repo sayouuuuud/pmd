@@ -297,3 +297,10 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | مسح الخطأ والحفظ | يمسح الإدخال العربي الخطأ أثناء الكتابة؛ النجاح يظل بإعلان `polite` | أُدخل عنوان ونص عربيان، فارتفع العداد من 1 إلى 2 وظهرت التدوينة | `verification/journal-validation-quality-20260817T145949Z.log` | PASS |
 | الأرشفة والاستعادة | لا حذف نهائي؛ أُرشفت التدوينة التجريبية وأعيدت الحالة الأصلية | عاد العداد إلى 1 وبقيت التدوينة الأصلية وحدها بعد إعادة التحميل | `verification/journal-validation-ar-2026-08-17.md` | PASS |
 | الملكية والاستجابة والوصول | لم تتغير مسارات البيانات أو تصميم RTL؛ الفحوص العامة بعد التعديل | ownership: `45` route، `41` session، `41` visible؛ responsive `34/34`؛ accessibility `34/34` | `verification/journal-validation-audits-20260817T150228Z.log` | PASS |
+
+## 2026-08-17 — القسم الديني: تحقق عربي للنماذج
+
+| النطاق | التغيير | اختبار التفاعل | Build / ownership | Responsive / accessibility | الحالة | الأدلة |
+|---|---|---|---|---|---|---|
+| الأدعية المحفوظة | إضافة تحقق عربي مرئي للحقل الفارغ مع `noValidate` و`role="alert"` وARIA ومسح الخطأ أثناء الكتابة | رفض فارغ، مسح الخطأ، حفظ دعاء عربي تجريبي، ثم حذف العنصر وإعادة الحالة الأصلية | TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership `45` route، `41` session، `41` visible ownership | responsive `34/34`؛ accessibility `34/34` و0 failures | PASS | `components/religious/religious-workspace.tsx`، `verification/religious-validation-ar-2026-08-17.md`، `verification/religious-validation-quality-20260817T150746Z.log` |
+| قوائم التلاوة | إضافة تحقق عربي مرئي لاسم القائمة الفارغ مع `noValidate` و`role="alert"` وARIA ومسح الخطأ أثناء الكتابة | رفض فارغ، مسح الخطأ، إنشاء `قائمة تلاوة تجريبية`، ثم إزالة القائمة دون بيانات متبقية | نفس بوابات الجودة والملكية أعلاه | نفس نتائج responsive وaccessibility أعلاه | PASS | `components/religious/religious-workspace.tsx`، `verification/religious-validation-audits-20260817T151007Z.log` |

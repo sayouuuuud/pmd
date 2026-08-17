@@ -798,3 +798,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **التنظيف:** أُرشِفت التدوينة التجريبية، فعاد العداد إلى 1 وبقيت التدوينة الأصلية وحدها بعد إعادة التحميل. إشعارات النجاح والأرشفة بقيت `aria-live="polite"` دون alert.
 - **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS في `verification/journal-validation-quality-20260817T145949Z.log`؛ ownership `45` route و`41` session و`41` visible ownership؛ responsive `34/34`؛ accessibility `34/34` في `verification/journal-validation-audits-20260817T150228Z.log`.
 - **النتيجة:** PASS، فجوة رفض اليوميات العربية مغلقة دون تغيير الهوية البصرية أو RTL ودون بيانات اختبار متبقية.
+
+## دفعة القسم الديني — تحقق عربي للنماذج — 2026-08-17
+- **النطاق:** `components/religious/religious-workspace.tsx`، نموذج الأدعية المحفوظة ونموذج قوائم التلاوة.
+- **الدعاء:** إرسال الحقل فارغًا أظهر `اكتب دعاءً أولًا.` inline بدور `alert` مع `aria-invalid` و`aria-describedby`، ثم مسحت الكتابة العربية الخطأ ونجح حفظ `دعاء تجريبي للتحقق`.
+- **قائمة التلاوة:** إرسال الاسم فارغًا أظهر `اكتب اسم القائمة أولًا.` inline، ثم مسحت الكتابة العربية الخطأ ونجح إنشاء `قائمة تلاوة تجريبية`.
+- **التنظيف:** حُذف الدعاء التجريبي وأُزيلت قائمة التلاوة التجريبية، وعادت الواجهة إلى الحالة الأصلية دون بيانات اختبار متبقية.
+- **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS في `verification/religious-validation-quality-20260817T150746Z.log`؛ ownership `45` route و`41` session و`41` visible ownership؛ responsive `34/34`؛ accessibility `34/34` في `verification/religious-validation-audits-20260817T151007Z.log`.
+- **النتيجة:** PASS، أُغلقت فجوة الرفض الصامت في النموذجين مع الحفاظ على RTL والهوية البصرية وإشعارات النجاح الهادئة.
