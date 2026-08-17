@@ -1249,3 +1249,13 @@
 نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`. محاولة `pnpm typecheck` الأولية لم تكن بوابة صالحة لأن script غير معرّف، وتمت إعادة التنفيذ بالأمر الصحيح. نجح ownership (`45` route، `41` session، `41` visible ownership، دون نقص)، responsive (`34/34` دون إخفاق)، وaccessibility (`34/34`، `0` إخفاق). أزيلت artifacts العابرة قبل الاعتماد، ولم تتغير عقود API أو قاعدة البيانات أو الملكية، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
 الأدلة: `verification/quickadd-atomic-ar-2026-08-17.md`، `verification/quickadd-atomic-quality-final-20260817T173500Z.log`، `verification/quickadd-atomic-audits-20260817T173600Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 **الحالة:** مكتملة وقابلة للاعتماد بعد staging نظيف وإنشاء commit مستقل.
+
+## 2026-08-17 — إغلاق دفعة live-region لخطأ نموذج التقويم
+أُغلقت فجوة دلالية في `components/calendar/calendar-workspace.tsx`: كان عنصر خطأ نموذج الحدث يحمل `role="alert"` ويرتبط بالحقول عبر `aria-describedby`، دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي، التصميم، التحقق، الحفظ المحلي، وعقود البيانات.
+
+في `http://localhost:3004/calendar` فُتح نموذج «حدث جديد» وأُرسل فارغًا، فظهرت الرسالة `اكتب عنوان الحدث أولًا.`. أثبت فحص DOM أن العنصر يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن الحقول ترتبط به عبر `aria-describedby="calendar-event-error"`. لم تُنشأ بيانات اختبار.
+
+نجحت بوابات TypeScript وESLint وNext build. نجح ownership (`45` route، `41` session، `41` visible ownership، دون نقص)، responsive (`34/34` دون إخفاق)، وaccessibility (`34/34`، `0` إخفاق). أزيلت artifacts العابرة قبل الاعتماد، ولم تتغير عقود API أو قاعدة البيانات أو الملكية، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/calendar-error-live-region-ar-2026-08-17.md`، `verification/calendar-error-live-browser-test-2026-08-17.md`، `verification/calendar-error-quality-20260817T174100Z.log`، `verification/calendar-error-audits-20260817T174200Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+**الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإنشاء commit مستقل.

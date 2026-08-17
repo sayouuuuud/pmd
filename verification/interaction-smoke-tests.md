@@ -967,3 +967,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 السجلات الخام: `verification/quickadd-atomic-quality-final-20260817T173500Z.log` و`verification/quickadd-atomic-audits-20260817T173600Z.log`.
 
 ## نهاية دفعة Quick Add
+
+## 2026-08-17 — التقويم: دلالة خطأ نموذج الحدث
+
+- **النطاق:** خطأ التحقق العربي في نموذج إضافة/تعديل حدث التقويم.
+- **الإصلاح:** إضافة `aria-live="assertive"` و`aria-atomic="true"` إلى عنصر `#calendar-event-error` مع الحفاظ على `role="alert"` و`aria-describedby` ومنطق التحقق.
+- **اختبار المتصفح:** إرسال نموذج الحدث فارغًا أظهر `اكتب عنوان الحدث أولًا.`، وأعاد DOM: `role=alert`, `aria-live=assertive`, `aria-atomic=true`، مع ارتباط الحقول عبر `aria-describedby`. **PASS**.
+- **البوابات:** TypeScript وESLint وNext build وownership وresponsive وaccessibility — **PASS**؛ responsive: 34 حالة دون إخفاقات، accessibility: 34 حالة دون إخفاقات.
+- **حدود التحقق:** لم تتغير بيانات المستخدم أو عقود API أو منطق fallback المحلي؛ التعديل يخص دلالة رسالة الخطأ فقط.

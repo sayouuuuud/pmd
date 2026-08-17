@@ -453,3 +453,10 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Accessibility | PASS: `34/34`، `0` failures | `verification/quickadd-atomic-audits-20260817T173600Z.log` |
 | الحدود | الاختبار استخدم إدخالًا فارغًا ولم ينشئ بيانات؛ لم يتغير API/DB أو ownership أو الأسرار، ولم تُنفذ `drizzle-kit generate` | تقرير الدفعة |
 | القرار | الدفعة مكتملة وقابلة للاعتماد بعد staging نظيف وفحص diff | تقرير الدفعة وسجلات الجودة |
+
+## 2026-08-17 — التقويم: live-region لخطأ نموذج الحدث
+
+| المجال | الفجوة | الإصلاح | الإثبات | النتيجة |
+|---|---|---|---|---|
+| الوصول العربي في التقويم | عنصر خطأ النموذج كان يملك `role=alert` وارتباط `aria-describedby` دون `aria-live` و`aria-atomic` صريحين | إضافة `aria-live="assertive"` و`aria-atomic="true"` إلى `#calendar-event-error` دون تغيير النص أو التحقق أو الحفظ | إرسال نموذج الحدث فارغًا في `/calendar`، ثم فحص DOM: `اكتب عنوان الحدث أولًا.`، `role=alert`، `aria-live=assertive`، `aria-atomic=true` | PASS |
+| بوابات المشروع | — | — | TypeScript وESLint وNext build وownership وresponsive وaccessibility | PASS؛ responsive 34/34، accessibility 34/34 |
