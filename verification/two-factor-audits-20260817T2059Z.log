@@ -1,0 +1,1312 @@
+timestamp=20260817T2059Z
+=== OWNERSHIP ===
+route_count=45
+routes_with_session=41
+routes_with_visible_ownership=41
+missing_session_routes:
+missing_visible_ownership_routes:
+ownership_audit=PASS
+=== RESPONSIVE ===
+{
+  "total": 34,
+  "failures": [
+    {
+      "viewport": "mobile",
+      "route": "/",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-home.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 3455,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/daily-plan",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-daily-plan.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/daily-plan\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 1952,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/tasks",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-tasks.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/tasks\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 3077,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/notes",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-notes.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/notes\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 1457,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/habits",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-habits.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/habits\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 2114,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/projects",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-projects.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/projects\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 2503,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/goals",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-goals.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/goals\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 1484,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/journal",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-journal.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/journal\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 2281,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/money",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-money.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/money\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 4079,
+        "title": "الفلوس | مساحتي"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/entertainment",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-entertainment.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/entertain...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 2683,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/religious",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-religious.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/religious\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 6608,
+        "title": "القسم الديني | مساحتي"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/account",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-account.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/account\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 2113,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/board",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-board.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/board\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 2254,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/reminders",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-reminders.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/reminders\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 1830,
+        "title": "التذكيرات | مساحتي"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/review",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-review.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/review\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 4131,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/login",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-login.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/login\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 844,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "mobile",
+      "route": "/onboarding",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/mobile-onboarding.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/onboarding\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "innerHeight": 844,
+        "bodyScrollHeight": 812,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-home.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 3357,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/daily-plan",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-daily-plan.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/daily-plan\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 1515,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/tasks",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-tasks.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/tasks\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 2382,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/notes",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-notes.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/notes\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 1216,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/habits",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-habits.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/habits\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 1588,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/projects",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-projects.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/projects\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 2239,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/goals",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-goals.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/goals\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 1092,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/journal",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-journal.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/journal\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 2047,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/money",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-money.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/money\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 2832,
+        "title": "الفلوس | مساحتي"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/entertainment",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-entertainment.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/entertain...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 2433,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/religious",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-religious.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/religious\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 5366,
+        "title": "القسم الديني | مساحتي"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/account",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-account.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/account\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 1643,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/board",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-board.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/board\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 1700,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/reminders",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-reminders.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/reminders\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 966,
+        "title": "التذكيرات | مساحتي"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/review",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-review.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/review\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 3179,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/login",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-login.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/login\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 1024,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": "tablet",
+      "route": "/onboarding",
+      "screenshot": "/home/ubuntu/pmd/docs/responsive-screenshots/tablet-onboarding.png",
+      "consoleErrors": [
+        "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/onboarding\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <LoadingBoundaryProvider loading={[...]}>\n                      <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                        <SegmentTrieNode>\n                        <link>\n                        <script>\n                        <script>\n                        <RootLayout>\n                          <html\n                            lang=\"ar\"\n                            dir=\"rtl\"\n                            className=\"bg-background\"\n-                           style={{color-scheme:\"light\"}}\n                          >\n                  ...\n"
+      ],
+      "expectedResourceErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "status": 200,
+      "metrics": {
+        "innerWidth": 768,
+        "bodyScrollWidth": 768,
+        "documentScrollWidth": 768,
+        "innerHeight": 1024,
+        "bodyScrollHeight": 992,
+        "title": "المساحة الشخصية | مركز القيادة"
+      },
+      "horizontalOverflow": false
+    }
+  ],
+  "reportPath": "/home/ubuntu/pmd/docs/responsive-audit-results.json"
+}
+=== ACCESSIBILITY ===
+{
+  "total": 34,
+  "failures": 0,
+  "reportPath": "/home/ubuntu/pmd/docs/accessibility-audit-results.json",
+  "failureSummary": []
+}

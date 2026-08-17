@@ -1,0 +1,15 @@
+=== REMAINING WORK SESSION BASELINE ===
+start_utc=2026-08-17T20:51:41Z
+start_epoch=1786999901
+deadline_utc=2026-08-18T08:51:41Z
+deadline_epoch=1787043101
+=== GIT ===
+## [32mmain[m...[31morigin/main[m
+[31m??[m verification/remaining-work-session-baseline-2026-08-17.log
+[33mb443648[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m docs: compare merged roadmap with repository state
+=== PLAN CHECKS ===
+114
+0
+=== PROJECT ===
+v22.13.0
+11.21.0
