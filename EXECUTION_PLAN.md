@@ -1277,3 +1277,14 @@
 **الحدود:** لم تُنشأ بيانات سبورة فعلية؛ اقتصر اختبار المتصفح على حالة التحقق الفارغة غير الحساسة. لا تشمل الدفعة تغييرات API أو قاعدة البيانات أو التصميم.
 
 **الحكم:** PASS — الدفعة جاهزة للاعتماد كـcommit مستقل.
+
+
+## 2026-08-17 — إغلاق دفعة live-region لخطأ اسم الحساب
+
+أُغلقت فجوة دلالية في `components/account/account-workspace.tsx`: كانت رسالة خطأ الاسم `#profile-name-error` تحمل `role="alert"` وترتبط بالحقل، دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي، والتحقق، و`aria-invalid` و`aria-describedby`، ومنطق الحفظ المحلي والremote sync وملكية المستخدم.
+
+في `http://localhost:3004/account` أُفرغ حقل الاسم وأُرسل نموذج تفضيلات الحساب، فظهرت الرسالة `اكتب اسمك أولًا.`. أثبت فحص DOM أن العنصر يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن الحقل يحمل `aria-invalid=true` ويرتبط عبر `aria-describedby=profile-name-error`. نجحت بوابات TypeScript وESLint وNext build، ثم ownership (`45` route، `41` session، `41` visible ownership، دون نقص)، responsive (`34/34` دون إخفاق)، وaccessibility (`34/34`، `0` إخفاق). لم تتغير عقود API أو قاعدة البيانات أو الملكية، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/account-error-live-region-ar-2026-08-17.md`، `verification/account-error-quality-20260817T1758Z.log`، `verification/account-error-audits-20260817T1759Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإنشاء commit مستقل.

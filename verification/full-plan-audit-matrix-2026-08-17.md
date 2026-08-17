@@ -478,3 +478,19 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | أخطاء إنشاء السبورة والمجموعة والورقة | `role="alert"` دون `aria-live` و`aria-atomic` صريحين | إضافة `aria-live="assertive"` و`aria-atomic="true"` مع إبقاء النصوص والتحقق و`aria-describedby` ومنطق الملكية وfallback المحلي | اختبار `/board` بإرسال نموذج سبورة فارغًا؛ DOM أكد `alert/assertive/true` وارتباط `new-board-title-error` بالحقل | PASS |
 | بوابات الجودة | خطر regression في النوع والبناء والتخطيط والوصول | تشغيل TypeScript وESLint وNext build وownership وresponsive وaccessibility | 45 route ownership، و34 حالة responsive، و34 حالة accessibility بلا إخفاقات | PASS |
 | النطاق | لا تغييرات في API أو قاعدة البيانات أو التصميم | تعديل دلالي محدود ورسائل عربية قائمة | التقرير `verification/board-error-live-region-ar-2026-08-17.md` وسجلَا الجودة والتدقيق | PASS |
+
+
+## 2026-08-17 — دفعة دلالة الحساب: خطأ اسم الحساب
+
+| البند | النتيجة |
+|---|---|
+| الفجوة | رسالة `profile-name-error` كانت تستخدم `role="alert"` دون `aria-live` و`aria-atomic` صريحة |
+| الإصلاح | إضافة `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النص العربي والارتباط بالحقل |
+| اختبار المتصفح | PASS — إفراغ الاسم وإرسال النموذج أظهر `اكتب اسمك أولًا.`، وDOM أثبت `role=alert` و`aria-live=assertive` و`aria-atomic=true` و`aria-invalid=true` و`aria-describedby=profile-name-error` |
+| TypeScript / ESLint / Build | PASS |
+| Ownership | PASS — 45 route handlers، و41 مسارًا بجلسة ومرئية ملكية، دون مسارات ناقصة |
+| Responsive | PASS — 34 حالة، دون إخفاقات |
+| Accessibility | PASS — 34 حالة، و0 إخفاقات |
+| الأمان والنطاق | لا أسرار، لا تغييرات في queries أو session ownership أو Better Auth |
+
+الحكم: **PASS — الدفعة موثقة وجاهزة للاعتماد.**

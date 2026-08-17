@@ -176,7 +176,7 @@ export function AccountWorkspace() {
         <form onSubmit={save} noValidate className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-medium">الاسم
             <Input value={form.name} onChange={(event) => { updateField('name', event.target.value); if (profileError) setProfileError('') }} aria-invalid={Boolean(profileError)} aria-describedby={profileError ? 'profile-name-error' : undefined} className="mt-2 rounded-2xl px-4 py-3" />
-            {profileError && <p id="profile-name-error" role="alert" className="mt-2 text-xs text-destructive">{profileError}</p>}
+            {profileError && <p id="profile-name-error" role="alert" aria-live="assertive" aria-atomic="true" className="mt-2 text-xs text-destructive">{profileError}</p>}
           </label>
           <label className="block text-sm font-medium">المدينة
             <Input value={form.city} onChange={(event) => updateField('city', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" />

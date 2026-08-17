@@ -989,3 +989,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **التنظيف:** أُعيدت artifacts العابرة إلى حالتها المتتبعة وحُذف `tsconfig.tsbuildinfo` وسجلا المحاولات الفاشلة، مع إبقاء سجل الجودة وسجل التدقيق الناجح والتقرير المستقل.
 - **التقرير:** `verification/board-error-live-region-ar-2026-08-17.md`.
 - **الحدود:** اقتصر الاختبار على التحقق الفارغ ولم تُنشأ بيانات سبورة فعلية.
+
+## 2026-08-17 — الحساب: live-region لخطأ اسم الحساب
+
+اختُبر نموذج تفضيلات الحساب على `http://localhost:3004/account` بإفراغ حقل الاسم وإرسال النموذج. ظهرت الرسالة العربية `اكتب اسمك أولًا.` كعنصر `role="alert"` مع `aria-live="assertive"` و`aria-atomic="true"`، وبقي الحقل مرتبطًا عبر `aria-invalid="true"` و`aria-describedby="profile-name-error"`. نجحت بوابات TypeScript وESLint وNext build، كما نجحت ownership (45 route handlers، دون مسارات ناقصة)، وresponsive (34/34)، وaccessibility (34/34، دون إخفاقات). لم يتضمن الاختبار بيانات حساسة أو تغييرًا في تدفق Better Auth.
+
+الحكم: PASS.
