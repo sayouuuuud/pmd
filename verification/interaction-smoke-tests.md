@@ -790,3 +790,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **الاستعادة:** حُفظت الحالة المحلية الأصلية قبل الاختبار، ثم أُعيدت بعد النجاح وأُعيد تحميل الصفحة؛ عادت الصفحة إلى الحالة الأصلية ولم تبقَ بيانات اختبار.
 - **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS في `verification/onboarding-validation-quality-20260817T144336Z.log`؛ ownership `45/45` مع `41` session و`41` visible ownership؛ responsive `34/34`؛ accessibility `34/34` في `verification/onboarding-validation-audits-20260817T145455Z.log`.
 - **النتيجة:** PASS، فجوة onboarding العربية مغلقة دون تغيير الهوية البصرية أو RTL.
+
+## دفعة اليوميات — تحقق عربي ورسائل وصول — 2026-08-17
+- **النطاق:** `components/journal/journal-workspace.tsx`، محرر عنوان اليوم ومساحته الحرة.
+- **الرفض المرئي:** إرسال العنوان والنص فارغين أظهر `اكتب عنوانًا أو سطرًا واحدًا على الأقل قبل الحفظ.` كرسالة inline عربية بدور `alert` و`aria-live="assertive"`، مع `aria-invalid` و`aria-describedby` على الحقلين، ولم تُنشأ تدوينة.
+- **التصحيح والحفظ:** إدخال `يوم هادئ للتجربة` مسح الخطأ فورًا. ثم حُفظت تدوينة عربية بنص `كتبت اليوم ملاحظة قصيرة عن أولوياتي، وسأحافظ على هذه العادة بهدوء.` وظهر العداد من 1 إلى 2 والتدوينة الجديدة في دفتر الأيام.
+- **التنظيف:** أُرشِفت التدوينة التجريبية، فعاد العداد إلى 1 وبقيت التدوينة الأصلية وحدها بعد إعادة التحميل. إشعارات النجاح والأرشفة بقيت `aria-live="polite"` دون alert.
+- **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS في `verification/journal-validation-quality-20260817T145949Z.log`؛ ownership `45` route و`41` session و`41` visible ownership؛ responsive `34/34`؛ accessibility `34/34` في `verification/journal-validation-audits-20260817T150228Z.log`.
+- **النتيجة:** PASS، فجوة رفض اليوميات العربية مغلقة دون تغيير الهوية البصرية أو RTL ودون بيانات اختبار متبقية.

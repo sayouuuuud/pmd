@@ -288,3 +288,12 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 الأدلة: `verification/onboarding-validation-ar-2026-08-17.md`، `verification/onboarding-validation-quality-20260817T144336Z.log`، `verification/onboarding-validation-audits-20260817T145455Z.log`.
 
 النتيجة: **PASS** — TypeScript، ESLint، `git diff --check`، Next build؛ ownership `45` Route Handler (`41` session و`41` visible ownership)؛ responsive `34/34`؛ accessibility `34/34`.
+
+## 2026-08-17 — اليوميات: تحقق عربي ورسائل وصول
+
+| البند | التنفيذ | التحقق | الأدلة | الحالة |
+|---|---|---|---|---|
+| رفض اليوميات الفارغة | رسالة `اكتب عنوانًا أو سطرًا واحدًا على الأقل قبل الحفظ.` inline مع `role="alert"` و`aria-live="assertive"`، و`aria-invalid`/`aria-describedby` | أُرسل النموذج فارغًا في `/journal` ولم تُنشأ تدوينة | `components/journal/journal-workspace.tsx`، `verification/journal-validation-ar-2026-08-17.md` | PASS |
+| مسح الخطأ والحفظ | يمسح الإدخال العربي الخطأ أثناء الكتابة؛ النجاح يظل بإعلان `polite` | أُدخل عنوان ونص عربيان، فارتفع العداد من 1 إلى 2 وظهرت التدوينة | `verification/journal-validation-quality-20260817T145949Z.log` | PASS |
+| الأرشفة والاستعادة | لا حذف نهائي؛ أُرشفت التدوينة التجريبية وأعيدت الحالة الأصلية | عاد العداد إلى 1 وبقيت التدوينة الأصلية وحدها بعد إعادة التحميل | `verification/journal-validation-ar-2026-08-17.md` | PASS |
+| الملكية والاستجابة والوصول | لم تتغير مسارات البيانات أو تصميم RTL؛ الفحوص العامة بعد التعديل | ownership: `45` route، `41` session، `41` visible؛ responsive `34/34`؛ accessibility `34/34` | `verification/journal-validation-audits-20260817T150228Z.log` | PASS |

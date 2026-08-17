@@ -59,6 +59,7 @@ export function JournalWorkspace() {
   const [body, setBody] = useState('')
   const [mood, setMood] = useState<JournalEntry['mood']>('محايد')
   const [notice, setNotice] = useState('')
+  const [noticeIsError, setNoticeIsError] = useState(false)
 
   const entries = useMemo(() => [...journal].sort((a, b) => b.localDate.localeCompare(a.localDate) || b.updatedAt.localeCompare(a.updatedAt)), [journal])
   const selectedEntry = journal.find((entry) => entry.localDate === selectedDate)
@@ -98,6 +99,7 @@ export function JournalWorkspace() {
     setBody(selectedEntry?.body ?? '')
     setMood(selectedEntry?.mood ?? 'محايد')
     setNotice('')
+    setNoticeIsError(false)
   }, [selectedDate, selectedEntry?.body, selectedEntry?.id, selectedEntry?.mood, selectedEntry?.title, selectedEntry?.updatedAt])
 
   function selectDate(date: string) {
@@ -107,6 +109,7 @@ export function JournalWorkspace() {
   function save() {
     if (!title.trim() && !body.trim()) {
       setNotice('اكتب عنوانًا أو سطرًا واحدًا على الأقل قبل الحفظ.')
+      setNoticeIsError(true)
       return
     }
     if (selectedEntry) {
@@ -115,6 +118,7 @@ export function JournalWorkspace() {
       saveJournalEntry({ localDate: selectedDate, title: title.trim() || 'يومياتي', body, mood })
     }
     setNotice('تم حفظ يومياتك محليًا، وستتم مزامنتها تلقائيًا عند توفر الحساب.')
+    setNoticeIsError(false)
   }
 
   function archive() {
@@ -124,6 +128,7 @@ export function JournalWorkspace() {
     setBody('')
     setMood('محايد')
     setNotice('تم نقل التدوينة إلى الأرشيف.')
+    setNoticeIsError(false)
   }
 
   return (
@@ -169,12 +174,12 @@ export function JournalWorkspace() {
               })}
             </div>
 
-            <label className="block space-y-2"><span className="text-sm font-semibold">عنوان اليوم</span><Input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder="ما العنوان الذي يلخص يومك؟" className="rounded-2xl px-3 py-3 text-sm" /></label>
-            <label className="block space-y-2"><span className="text-sm font-semibold">مساحة حرة</span><Textarea value={body} onChange={(event) => setBody(event.target.value)} maxLength={6000} rows={10} placeholder="اكتب ما يدور في بالك… لا تحتاج أن تكون مثاليًا أو مرتبًا." className="min-h-0 rounded-2xl px-3 py-3 text-sm leading-8" /></label>
+            <label className="block space-y-2"><span className="text-sm font-semibold">عنوان اليوم</span><Input value={title} onChange={(event) => { setTitle(event.target.value); if (noticeIsError) { setNotice(''); setNoticeIsError(false) } }} aria-invalid={noticeIsError} aria-describedby={noticeIsError ? 'journal-form-error' : undefined} maxLength={120} placeholder="ما العنوان الذي يلخص يومك؟" className="rounded-2xl px-3 py-3 text-sm" /></label>
+            <label className="block space-y-2"><span className="text-sm font-semibold">مساحة حرة</span><Textarea value={body} onChange={(event) => { setBody(event.target.value); if (noticeIsError) { setNotice(''); setNoticeIsError(false) } }} aria-invalid={noticeIsError} aria-describedby={noticeIsError ? 'journal-form-error' : undefined} maxLength={6000} rows={10} placeholder="اكتب ما يدور في بالك… لا تحتاج أن تكون مثاليًا أو مرتبًا." className="min-h-0 rounded-2xl px-3 py-3 text-sm leading-8" /></label>
 
             <div className="space-y-2"><span className="text-sm font-semibold">كيف كان مزاجك؟</span><div className="grid grid-cols-2 gap-2 sm:grid-cols-5">{moods.map((option) => <Button key={option} type="button" variant="ghost" onClick={() => setMood(option)} className={`h-auto rounded-2xl border px-2 py-2.5 text-xs font-semibold transition ${mood === option ? moodStyles[option].className : 'border-border bg-background text-muted-foreground hover:border-primary/40'}`}><span className="mb-1 block text-base">{moodStyles[option].icon}</span>{option}</Button>)}</div></div>
 
-            <div className="flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between"><p aria-live="polite" className="text-xs text-muted-foreground">{notice || (selectedEntry ? `آخر تحديث: ${selectedEntry.updatedAt}` : 'هذه المساحة تخص هذا التاريخ فقط.')}</p><div className="flex gap-2"><Button type="button" variant="outline" onClick={archive} disabled={!selectedEntry} className="flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold"><Trash2 className="h-4 w-4" /> أرشفة</Button><Button type="button" onClick={save} className="flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold"><Save className="h-4 w-4" /> حفظ التدوينة</Button></div></div>
+            <div className="flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between"><p id={noticeIsError ? 'journal-form-error' : undefined} role={noticeIsError ? 'alert' : undefined} aria-live={noticeIsError ? 'assertive' : 'polite'} className={`text-xs ${noticeIsError ? 'text-destructive' : 'text-muted-foreground'}`}>{notice || (selectedEntry ? `آخر تحديث: ${selectedEntry.updatedAt}` : 'هذه المساحة تخص هذا التاريخ فقط.')}</p><div className="flex gap-2"><Button type="button" variant="outline" onClick={archive} disabled={!selectedEntry} className="flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold"><Trash2 className="h-4 w-4" /> أرشفة</Button><Button type="button" onClick={save} className="flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold"><Save className="h-4 w-4" /> حفظ التدوينة</Button></div></div>
           </div>
         </ContentCard>
 

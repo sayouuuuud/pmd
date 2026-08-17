@@ -1088,3 +1088,8 @@
 الأدلة: `verification/onboarding-validation-ar-2026-08-17.md`، `verification/onboarding-validation-quality-20260817T144336Z.log`، و`verification/onboarding-validation-audits-20260817T145455Z.log`.
 
 البوابات: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS؛ ownership PASS (`45` Route Handler، `41` مع session و`41` بملكية ظاهرة)؛ responsive PASS (`34/34`، failures فارغة)؛ accessibility PASS (`34/34`، failures `0`). **الحالة: دفعة onboarding مكتملة وجاهزة للاعتماد.**
+
+## 2026-08-17 — دفعة اليوميات: تحقق عربي ورسائل وصول
+أُغلقت فجوة الرفض الصامت في `components/journal/journal-workspace.tsx`. عند محاولة حفظ العنوان والنص الفارغين تظهر الرسالة العربية `اكتب عنوانًا أو سطرًا واحدًا على الأقل قبل الحفظ.` كخطأ inline مع `role="alert"` و`aria-live="assertive"`، ويرتبط الحقلان بـ`aria-invalid` و`aria-describedby`. يُمسح الخطأ أثناء الكتابة، بينما تبقى رسائل النجاح والأرشفة بإعلان هادئ `aria-live="polite"`.
+اختُبر المسار في المتصفح على `http://localhost:3004/journal`: رفض فارغ، مسح الخطأ، حفظ تدوينة عربية، ثم أرشفة التدوينة التجريبية وإعادة الحالة الأصلية. عادت البيانات إلى تدوينة المستخدم الأصلية الوحيدة دون أثر للاختبار.
+الأدلة: `verification/journal-validation-ar-2026-08-17.md`، `verification/journal-validation-quality-20260817T145949Z.log`، `verification/journal-validation-audits-20260817T150228Z.log`. النتيجة: **PASS** — TypeScript، ESLint، `git diff --check`، Next build؛ ownership `45` Route Handler (`41` session و`41` visible ownership)؛ responsive `34/34`؛ accessibility `34/34`.
