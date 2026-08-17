@@ -814,3 +814,12 @@
 - **الحفاظ على السلوك:** لم تُضف migrations أو secrets، ولم تُنفذ عمليات حذف أو رفع أو مصادقة فعلية، وبقي RTL والتصميم الحالي وlocalStorage fallback كما هي.
 - **التوثيق:** `verification/account-auth-habits-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 - **الحالة:** الترحيل والتحقق المتصفحي وبوابات TypeScript وESLint و`git diff --check` و`next build` مكتملة؛ الدفعة جاهزة للـcommit والـpush.
+
+
+## دفعة المكونات المشتركة — مساحة الملاحظات — 2026-08-17
+- **النطاق:** ترحيل أزرار تبديل الشبكة والقائمة، مسح الفلتر، وسوم الالتقاط والتحرير، التثبيت، تحرير الملاحظة، والأرشفة في `components/notes/notes-workspace.tsx` إلى `Button` المشتركة، مع الحفاظ على التصميم الحالي والـhandlers والحالة المحلية.
+- **التحقق المتصفحي:** فُتحت `/notes` على `localhost:3004`؛ ظهر RTL والتصميم العربي بصريًا، وأكد DOM وجود `rawButtonsInNotes: 0` مع مكونات Button وInput وSelect وTextarea المشتركة. اختُبر عرض القائمة، فلترة «تطوير»، مسح الفلتر، فتح محرر الملاحظة وإلغاؤه دون حفظ أو تعديل دائم.
+- **الحفاظ على السلوك:** بقيت الملاحظات الخمس دون تغيير، ولم تُنفذ عمليات حفظ أو أرشفة أو تعديل نهائية، ولم تُضف migrations أو secrets.
+- **التوثيق:** `verification/notes-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
+- **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build`؛ تحذير middleware المعلوماتي غير حاجز.
+- **الحالة:** مكتملة وجاهزة للـcommit والـpush.
