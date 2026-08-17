@@ -1194,3 +1194,13 @@
 - **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإجراء diff check.
 - **النطاق:** دلالة حالة تحميل مساحات العمل فقط؛ لا تغيير في البيانات أو العقود أو الأسرار.
 - **القرار:** إغلاق فجوة مساحة العمل والانتقال إلى تدقيق تفاعلي جديد بعد اعتماد commit مستقل.
+
+## 2026-08-17 — إغلاق دفعة إعلان نتائج التقويم
+
+أُغلقت فجوة وصول في `components/calendar/calendar-workspace.tsx`: أضيفت حالة `notice` ورسائل عربية لنتائج الحفظ والتعديل والحذف وتغيير الحالة، مع عرض الإشعار عبر `role="status"` و`aria-live="polite"` و`aria-atomic="true"`. يحافظ الإصلاح على localStorage fallback، والحفظ المتفائل، وعقود البيانات والهوية البصرية الحالية.
+
+اختبار المتصفح إنشاء حدث «حدث تدقيق تجريبي» وأثبت ظهور `تم حفظ الحدث محليًا.` وخصائص DOM الدلالية الصحيحة، ثم حُذف الحدث وعادت القائمة إلى خمسة عناصر دون تغيير بيانات سابقة. نجحت TypeScript وESLint وNext build؛ كما نجحت ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، `0` failures)، و`git diff --check` بعد تنظيف artifacts.
+
+الأدلة التفصيلية: `verification/calendar-status-announcement-ar-2026-08-17.md`، `verification/calendar-status-quality-20260817T165500Z.log`، `verification/calendar-status-audits-20260817T165700Z.log`، `verification/interaction-smoke-tests.md`، و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة:** مكتملة وقابلة للاعتماد؛ الانتقال التالي هو تدقيق فجوات إعلان النتائج والحالات الدلالية في المكونات المتبقية، بدءًا باليوميات والعناوين metadata.

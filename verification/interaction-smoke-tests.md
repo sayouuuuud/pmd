@@ -901,3 +901,10 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإجراء diff check.
 - **النطاق:** دلالة حالة تحميل مساحات العمل فقط؛ لا تغيير في البيانات أو العقود أو الأسرار.
 - **القرار:** إغلاق فجوة إعلان التحميل والانتقال إلى تدقيق تفاعلي جديد بعد اعتماد commit مستقل.
+
+## 2026-08-17 — التقويم: إعلان نتيجة الحفظ المحلي
+- **النطاق:** إشعار نتائج عمليات التقويم في `components/calendar/calendar-workspace.tsx`، دون تغيير عقد API أو تنفيذ عمليات خارجية.
+- **التحقق:** إنشاء حدث تجريبي بعنوان «حدث تدقيق تجريبي» وحفظه محليًا أظهر الرسالة العربية المتوقعة، وأثبت فحص DOM وجود `role="status"` و`aria-live="polite"` و`aria-atomic="true"`. أُزيل الحدث التجريبي بعد الاختبار ولم تُمس البيانات السابقة.
+- **السلوك الدلالي:** إعلان النتيجة لقارئات الشاشة مع الحفاظ على الحفظ المتفائل وfallback المحلي والهوية البصرية الحالية.
+- **البوابات:** TypeScript وESLint وNext build و`git diff --check` PASS؛ ownership PASS (45 route، 41 session، 41 visible ownership)؛ responsive PASS (34/34)؛ accessibility PASS (34/34، 0 failures).
+- **الأدلة:** `verification/calendar-status-announcement-ar-2026-08-17.md`، `verification/calendar-status-quality-20260817T165500Z.log`، `verification/calendar-status-audits-20260817T165700Z.log`، `verification/visual-audit-findings-20260817T1555Z.md`.

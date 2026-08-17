@@ -86,6 +86,7 @@ export function CalendarWorkspace() {
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [form, setForm] = useState({ title: '', description: '', kind: 'general', date: cairoToday(), start: '09:00', end: '' })
 
   useEffect(() => {
@@ -153,6 +154,7 @@ export function CalendarWorkspace() {
     setEditingEventId(null)
     setForm({ title: '', description: '', kind: 'general', date, start: '09:00', end: '' })
     setError('')
+    setNotice('')
     setShowForm(true)
   }
 
@@ -163,6 +165,7 @@ export function CalendarWorkspace() {
     setEditingEventId(item.id)
     setForm({ title: item.title, description: item.description ?? '', kind: item.kind, date: startsAt.slice(0, 10), start: startsAt.slice(11, 16), end: endsAt ? endsAt.slice(11, 16) : '' })
     setError('')
+    setNotice('')
     setShowForm(true)
   }
 
@@ -170,6 +173,7 @@ export function CalendarWorkspace() {
     setShowForm(false)
     setEditingEventId(null)
     setError('')
+    setNotice('')
   }
 
   async function saveEvent(event: React.FormEvent<HTMLFormElement>) {
@@ -190,6 +194,7 @@ export function CalendarWorkspace() {
       setSelectedDate(form.date)
       setMonth(dateFromKey(form.date))
       closeForm()
+      setNotice('تم تحديث الحدث محليًا.')
       if (!currentEditingId.startsWith('calendar-local-')) {
         try {
           const response = await fetch(`/api/calendar-events/${currentEditingId}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
@@ -210,6 +215,7 @@ export function CalendarWorkspace() {
     setSelectedDate(form.date)
     setMonth(dateFromKey(form.date))
     closeForm()
+    setNotice('تم حفظ الحدث محليًا.')
     try {
       const response = await fetch('/api/calendar-events', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(localEvent) })
       if (response.ok) {
@@ -226,6 +232,7 @@ export function CalendarWorkspace() {
   async function updateStatus(item: CalendarItem, status: 'planned' | 'done') {
     if (item.source !== 'custom') return
     setCustomEvents((current) => current.map((event) => event.id === item.id ? { ...event, status } : event))
+    setNotice(status === 'done' ? 'تم تعليم الحدث كمكتمل.' : 'تمت إعادة فتح الحدث.')
     if (!item.id.startsWith('calendar-local-')) {
       try { await fetch(`/api/calendar-events/${item.id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ status }) }) } catch { /* الحالة المحلية تظل مصدر العرض الاحتياطي */ }
     }
@@ -234,6 +241,7 @@ export function CalendarWorkspace() {
   async function removeEvent(item: CalendarItem) {
     if (item.source !== 'custom') return
     setCustomEvents((current) => current.filter((event) => event.id !== item.id))
+    setNotice('تم حذف الحدث محليًا.')
     if (!item.id.startsWith('calendar-local-')) {
       try { await fetch(`/api/calendar-events/${item.id}`, { method: 'DELETE' }) } catch { /* الإزالة المحلية مقصودة كـfallback */ }
     }
@@ -252,7 +260,8 @@ export function CalendarWorkspace() {
       <ContentCard title={`أحداث ${new Intl.DateTimeFormat('ar-EG', { day: 'numeric', month: 'long' }).format(dateFromKey(selectedDate))}`} description={`${selectedItems.length} عناصر مرتبطة بهذا اليوم.`}>
         {selectedItems.length === 0 ? <EmptyState icon={CalendarDays} title="اليوم فاضي" description="أضف حدثًا يدويًا أو اربط موعدًا من إحدى المساحات." action={<Button type="button" onClick={() => openCreate()}><Plus className="ml-1 h-4 w-4" />أضف حدثًا</Button>} /> : <div className="space-y-2">{selectedItems.map((item) => <div key={item.id} className={`rounded-2xl border p-3 ${item.accent}`}><div className="flex items-start justify-between gap-2"><div><p className={`text-sm font-semibold ${item.status === 'done' ? 'text-muted-foreground line-through' : ''}`}>{item.title}</p><p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground"><Clock3 className="h-3 w-3" />{displayTime(item.startsAt)} · {eventKinds.find((kind) => kind.value === item.kind)?.label ?? 'عام'}</p></div>{item.source === 'custom' && <div className="flex items-center gap-1"><Button type="button" variant="ghost" size="icon-sm" aria-label="تعديل الحدث" onClick={() => openEdit(item)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button><Button type="button" variant="ghost" size="icon-sm" aria-label="حذف الحدث" onClick={() => void removeEvent(item)}><Trash2 className="h-4 w-4 text-muted-foreground" /></Button></div>}</div>{item.description && <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.description}</p>}<div className="mt-3 flex flex-wrap items-center gap-2">{item.href && <Link href={item.href} className="inline-flex items-center gap-1 rounded-xl bg-muted px-2.5 py-1.5 text-[11px] font-medium hover:bg-accent"><ExternalLink className="h-3 w-3" />فتح المصدر</Link>}{item.source === 'custom' && <Button type="button" size="sm" variant={item.status === 'done' ? 'outline' : 'secondary'} onClick={() => void updateStatus(item, item.status === 'done' ? 'planned' : 'done')}>{item.status === 'done' ? 'إعادة فتح' : 'تم'}</Button>}</div></div>)}</div>}
       </ContentCard>
-      <ContentCard title="مصادر التقويم" description="كل لون يوضح نوع المصدر، وليس أولوية جديدة."><div className="space-y-2 text-xs text-muted-foreground"><Legend color="bg-primary" label="أحداث يدوية" /><Legend color="bg-destructive" label="مهام" /><Legend color="bg-chart-2" label="تذكيرات" /><Legend color="bg-accent-foreground" label="خطة اليوم" /><Legend color="bg-chart-5" label="دفعات المشاريع" /></div></ContentCard>
+      <ContentCard title="مصادر التقويم" description="كل لون يوضح نوع المصدر، وليس أولوية جديدة."><div className="space-y-2 text-xs text-muted-foreground"><Legend color="bg-primary" label="أحداث يدوية" /><Legend color="bg-destructive" label="مهام" /><Legend color="bg-chart-2" label="تذكيرات" /><Legend color="bg-accent-foreground" label="خطة اليوم" /><Legend color="bg-chart-5" label="دفعات المشاريع" /></div>      </ContentCard>
+      {notice && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">{notice}</p>}
     </div>
     {showForm && <ContentCard className="lg:col-span-12" title={editingEventId ? 'تعديل حدث' : 'إضافة حدث'} description="سيُحفظ على الخادم عند توفره، ويظل محليًا عند غياب الاتصال."><form onSubmit={saveEvent} noValidate className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6"><label className="lg:col-span-2 text-sm font-medium">العنوان<Input autoFocus value={form.title} onChange={(event) => { setForm((current) => ({ ...current, title: event.target.value })); if (error) setError('') }} aria-label="عنوان الحدث" aria-invalid={Boolean(error)} aria-describedby={error ? 'calendar-event-error' : undefined} className="mt-2 rounded-2xl" placeholder="مثال: جلسة تركيز" /></label><label className="text-sm font-medium">النوع<Select value={form.kind} onChange={(event) => setForm((current) => ({ ...current, kind: event.target.value }))} className="mt-2 rounded-2xl">{eventKinds.map((kind) => <option key={kind.value} value={kind.value}>{kind.label}</option>)}</Select></label><label className="text-sm font-medium">التاريخ<Input type="date" value={form.date} onChange={(event) => { setForm((current) => ({ ...current, date: event.target.value })); if (error) setError('') }} aria-label="تاريخ الحدث" aria-invalid={Boolean(error)} aria-describedby={error ? 'calendar-event-error' : undefined} className="mt-2 rounded-2xl" /></label><label className="text-sm font-medium">من<Input type="time" value={form.start} onChange={(event) => { setForm((current) => ({ ...current, start: event.target.value })); if (error) setError('') }} aria-label="وقت بداية الحدث" aria-invalid={Boolean(error)} aria-describedby={error ? 'calendar-event-error' : undefined} className="mt-2 rounded-2xl" /></label><label className="text-sm font-medium">إلى <span className="font-normal text-muted-foreground">(اختياري)</span><Input type="time" value={form.end} onChange={(event) => { setForm((current) => ({ ...current, end: event.target.value })); if (error) setError('') }} aria-label="وقت نهاية الحدث" aria-invalid={Boolean(error)} aria-describedby={error ? 'calendar-event-error' : undefined} className="mt-2 rounded-2xl" /></label><label className="sm:col-span-2 lg:col-span-4 text-sm font-medium">وصف مختصر<Textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} className="mt-2 min-h-20 rounded-2xl" placeholder="تفاصيل تساعدك عندما ترى الحدث لاحقًا" /></label><div className="flex items-end gap-2 lg:col-span-2"><Button type="submit" disabled={saving}>{saving ? 'جارٍ الحفظ...' : editingEventId ? 'حفظ التعديل' : 'حفظ الحدث'}</Button><Button type="button" variant="outline" onClick={closeForm}><X className="ml-1 h-4 w-4" />إلغاء</Button></div>{error && <p id="calendar-event-error" className="sm:col-span-2 lg:col-span-6 rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive" role="alert">{error}</p>}</form></ContentCard>}
   </div>

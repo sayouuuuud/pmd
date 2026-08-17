@@ -367,3 +367,16 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | النطاق | التغيير | اختبار التفاعل | Build / ownership | Responsive / accessibility | الحالة | الأدلة |
 |---|---|---|---|---|---|---|
 | تحميل مساحات العمل | إضافة `role=status` و`aria-live=polite` و`aria-busy=true` إلى رسالة التحميل العربية دون تغيير منطق الجلب أو fallback | تأخير طلب المساحات مؤقتًا داخل جلسة المتصفح، ثم إثبات ظهور `جاري تحميل المساحات...` وخصائص DOM أثناء التحميل واختفائها بعد النجاح، دون إنشاء أو تعديل بيانات | TypeScript وESLint وNext build PASS؛ ownership PASS — 45 route، 41 session، 41 visible ownership | responsive PASS — 34/34؛ accessibility PASS — 34/34، 0 failures | PASS | `components/workspace/workspace-workspace.tsx`، `verification/workspace-loading-status-ar-2026-08-17.md`، `verification/workspace-loading-status-quality-20260817T164800Z.log`، `verification/visual-audit-findings-20260817T1555Z.md` |
+
+## 2026-08-17 — التقويم: إعلان نتائج العمليات المحلية
+
+| البند | الحالة | الدليل |
+|---|---|---|
+| إعلان نتيجة الحفظ/التعديل/الحذف/تغيير الحالة | مكتمل | `components/calendar/calendar-workspace.tsx` يستخدم حالة `notice` ورسائل عربية بعد العمليات المحلية |
+| دلالة قارئات الشاشة | مكتمل | عنصر الإشعار يحمل `role="status"` و`aria-live="polite"` و`aria-atomic="true"` |
+| اختبار المتصفح | PASS | إنشاء «حدث تدقيق تجريبي» أظهر `تم حفظ الحدث محليًا.` مع خصائص DOM الصحيحة، ثم حُذف الحدث وعادت القائمة إلى 5 عناصر |
+| TypeScript / ESLint / Next build | PASS | `verification/calendar-status-quality-20260817T165500Z.log` |
+| Ownership | PASS | 45 route، 41 session، 41 visible ownership |
+| Responsive | PASS | 34/34 حالة |
+| Accessibility | PASS | 34/34 حالة، 0 failures |
+| التوثيق | مكتمل | `verification/calendar-status-announcement-ar-2026-08-17.md` |
