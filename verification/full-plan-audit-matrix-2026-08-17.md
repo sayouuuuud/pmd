@@ -219,3 +219,9 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 ## 2026-08-17 — دفعة التحقق العربي في الترفيه
 
 أُضيف تحقق عربي يدوي لنموذج إضافة فيلم أو مسلسل داخل `components/entertainment/entertainment-workspace.tsx`، مع `noValidate` و`role="alert"` و`aria-invalid` و`aria-describedby`. اختُبرت حالة النموذج الفارغ، الاسم دون تصنيف، تصحيح الحقل، الحفظ الصحيح، والأرشفة والتنظيف. نجحت بوابات TypeScript وESLint و`git diff --check` وNext build، ثم أُعيدت فحوص ownership وresponsive وaccessibility: 45 route و41 مسارًا بملكية ظاهرة — PASS؛ 34 حالة responsive بلا فشل — PASS؛ 34 حالة accessibility بلا فشل — PASS. التفاصيل في `verification/entertainment-validation-ar-2026-08-17.md`.
+
+
+### المصادقة — التحقق العربي — 2026-08-17
+- في `/login` اختُبرت حالات الإرسال الفارغ، البريد غير الصالح، الاسم المفقود، وكلمة المرور القصيرة في وضعي تسجيل الدخول وإنشاء الحساب؛ ظهرت رسائل عربية محلية واضحة دون إنشاء حساب أو تنفيذ مصادقة ناجحة.
+- لم تُستخدم بيانات شخصية أو credentials تشغيلية. الحالة: PASS ضمن التحقق المحلي، مع إبقاء اختبار Better Auth الفعلي خارج الجولة لعدم وجود حساب تشغيل مخصص.
+- التقرير المستقل: `verification/auth-validation-ar-2026-08-17.md`.
