@@ -113,6 +113,19 @@ export type Reminder = {
   repeatLabel?: string
 }
 
+export type CalendarEvent = {
+  id: string
+  title: string
+  description?: string
+  kind: 'general' | 'task' | 'reminder' | 'pricing' | 'plan' | 'habit' | 'prayer' | 'quran'
+  startsAt: string
+  endsAt?: string | null
+  timezone: string
+  sourceType?: string
+  sourceId?: string
+  status: 'planned' | 'done' | 'cancelled'
+}
+
 export type EntertainmentStatus = 'want' | 'watching' | 'completed'
 export type EntertainmentType = 'movie' | 'series'
 

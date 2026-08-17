@@ -10,6 +10,7 @@ import {
   BookHeart,
   BriefcaseBusiness,
   CalendarCheck2,
+  CalendarDays,
   ChevronDown,
   Clapperboard,
   FolderKanban,
@@ -37,6 +38,7 @@ import { Textarea } from '@/components/ui/textarea'
 const navItems = [
   { href: '/', label: 'الرئيسية', icon: LayoutGrid },
   { href: '/daily-plan', label: 'خطة اليوم', icon: CalendarCheck2 },
+  { href: '/calendar', label: 'التقويم', icon: CalendarDays },
   { href: '/tasks', label: 'المهام', icon: ListChecks },
   { href: '/notes', label: 'الملاحظات', icon: StickyNote },
   { href: '/habits', label: 'العادات', icon: Repeat },

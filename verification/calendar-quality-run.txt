@@ -1,0 +1,14 @@
+Calendar unified quality run
+Started (system clock): 2026-08-17T09:05:20Z (epoch 1786957520)
+Finished (system clock): 2026-08-17T09:05:40Z (epoch 1786957540)
+Measured wall-clock duration: 20 seconds
+
+Checks:
+- tsc --noEmit: PASS
+- eslint . --no-warn-ignored: PASS
+- git diff --check: PASS
+- next build: PASS
+
+Informational warning only: Next.js reports that the middleware file convention is deprecated and recommends proxy. No migration was run in this batch.
+No drizzle-kit generate was run. No secrets were added.
+This timing records only this quality run and is not evidence of consuming 43,200 seconds.
