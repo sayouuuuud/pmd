@@ -766,3 +766,13 @@
 فُحصت `/projects` و`/goals` بصريًا على `localhost:3004` مع RTL وCairo. أكد DOM وجود المكونات المشتركة داخل المساحتين، واختُبر فتح تفاصيل المشروع وإدخال قيمة مؤقتة في حقل إضافة مهمة ثم إفراغها دون حفظ. لم تُنفّذ تغييرات دائمة. سُجلت النتائج في `verification/projects-goals-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 
 نجحت فحوصات TypeScript وESLint و`git diff --check` و`next build` النهائية، وأصبحت الدفعة جاهزة لإنشاء commit وpush.
+
+
+### سجل دفعة — onboarding والسبورة والمكونات المشتركة — 2026-08-17
+
+- **النطاق:** ترحيل عناصر التحكم في `components/onboarding/onboarding-flow.tsx` و`components/board/board-workspace.tsx` إلى `Button` و`Input` و`Select` المشتركة مع الحفاظ على منطق الخطوات، إنشاء Sticky Note، الفلاتر، التكبير، النقل والتحويل.
+- **تحقق المتصفح:** فُتحت `/onboarding` عبر خطوات الاسم وإيقاع اليوم والاتجاه والعادات، واختُبر اختيار اتجاه دون إكمال الإعداد. فُتحت `/board` وفُحصت أدوات السبورة والفلاتر وبطاقات Sticky Note، وفُتح نموذج الإضافة وأُدخل عنوان مؤقت ثم أُفرغ دون حفظ. الاتجاه RTL وConsole نظيف، ولم تُحفظ بيانات تجريبية.
+- **ملاحظة DOM:** الأزرار الخام الأربعة المرصودة في صفحة السبورة تخص TopNav العام (`إضافة سريعة` والبحث والتنبيهات والقائمة) وستُعالج في دفعة Quick Add/TopNav اللاحقة، وليست من `board-workspace.tsx`.
+- **بوابات الجودة:** TypeScript وESLint و`git diff --check` و`next build` نجحت بعد إصلاح إغلاقات JSX في أدوات السبورة. ظهر فقط تحذير Next.js المعلوماتي الخاص بتقادم convention الخاص بـmiddleware.
+- **التوثيق:** أُنشئ `verification/onboarding-board-shared-controls-browser.md` وأُضيف السيناريو إلى `verification/interaction-smoke-tests.md`.
+- **الحالة:** الترحيل والتحقق المتصفحي وبوابات الجودة مكتملة، والدفعة جاهزة للتسجيل والدفع.
