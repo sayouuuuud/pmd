@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Archive, ArchiveRestore, Check, Clock3, ListChecks, Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type ArchiveKind, type ArchivedItem } from '@/lib/command-center-store'
 
@@ -111,21 +113,21 @@ export function ArchiveWorkspace() {
           <label className="relative flex-1">
             <span className="sr-only">البحث داخل الأرشيف</span>
             <Search className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحث في العناصر المؤرشفة..." className="h-11 w-full rounded-xl border border-border bg-background px-10 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
+            <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحث في العناصر المؤرشفة..." className="h-11 w-full px-10" aria-label="البحث داخل الأرشيف" />
           </label>
           <div className="flex flex-wrap gap-2" role="group" aria-label="تصفية الأرشيف حسب القسم">
             {kindOptions.slice(0, 5).map((kind) => (
-              <button key={kind} type="button" onClick={() => setActiveKind(kind)} aria-pressed={activeKind === kind} className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${activeKind === kind ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground'}`}>
+              <Button key={kind} type="button" size="sm" variant={activeKind === kind ? 'default' : 'outline'} onClick={() => setActiveKind(kind)} aria-pressed={activeKind === kind}>
                 {kindLabels[kind]}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
           {kindOptions.slice(5).map((kind) => (
-            <button key={kind} type="button" onClick={() => setActiveKind(kind)} aria-pressed={activeKind === kind} className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${activeKind === kind ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground'}`}>
+            <Button key={kind} type="button" size="sm" variant={activeKind === kind ? 'default' : 'outline'} onClick={() => setActiveKind(kind)} aria-pressed={activeKind === kind}>
               {kindLabels[kind]}
-            </button>
+            </Button>
           ))}
         </div>
         <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/60 p-3 sm:flex-row sm:items-center sm:justify-between">
@@ -134,10 +136,10 @@ export function ArchiveWorkspace() {
             تحديد كل النتائج الظاهرة
             {selectedKeys.length > 0 && <span className="text-xs font-medium text-muted-foreground">({selectedKeys.length} محدد)</span>}
           </label>
-          <button type="button" onClick={restoreSelected} disabled={selectedItems.length === 0} className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-bold text-primary transition hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">
+          <Button type="button" size="sm" variant="outline" onClick={restoreSelected} disabled={selectedItems.length === 0} className="border-primary/20 bg-primary/10 font-bold text-primary hover:bg-primary hover:text-primary-foreground">
             <ListChecks className="size-4" aria-hidden="true" />
             استعادة المحدد ({selectedItems.length})
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -169,10 +171,10 @@ export function ArchiveWorkspace() {
                   <h3 className="mt-2 truncate text-base font-bold text-foreground">{item.title}</h3>
                   <p className="mt-1 text-xs text-muted-foreground">{item.subtitle}</p>
                 </div>
-                <button type="button" onClick={() => restore(item)} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-bold text-primary transition hover:bg-primary hover:text-primary-foreground" aria-label={`استعادة ${item.title}`}>
+                <Button type="button" size="sm" variant="outline" onClick={() => restore(item)} className="shrink-0 border-primary/20 bg-primary/10 font-bold text-primary hover:bg-primary hover:text-primary-foreground" aria-label={`استعادة ${item.title}`}>
                   <ArchiveRestore className="size-4" aria-hidden="true" />
                   استعادة
-                </button>
+                </Button>
               </div>
               <div className="mt-5 flex items-center gap-2 border-t border-border/60 pt-4 text-xs text-muted-foreground">
                 <Clock3 className="size-3.5" aria-hidden="true" />

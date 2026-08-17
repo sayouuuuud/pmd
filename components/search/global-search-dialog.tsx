@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowUpRight, Search, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { useCommandCenter } from '@/lib/command-center-store'
@@ -74,7 +75,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
         <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
         <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} className="h-auto min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 py-0 text-sm shadow-none outline-none focus-visible:border-0 focus-visible:ring-0" placeholder="ابحث في مهامك وملاحظاتك ومشاريعك..." aria-label="اكتب كلمة البحث" aria-controls="global-search-results" />
         <kbd className="hidden rounded-lg bg-muted px-2 py-1 text-[10px] text-muted-foreground sm:block">Esc</kbd>
-        <button type="button" aria-label="إغلاق البحث" onClick={close} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><X className="h-4 w-4" aria-hidden="true" /></button>
+        <Button type="button" variant="ghost" size="icon-sm" aria-label="إغلاق البحث" onClick={close}><X className="h-4 w-4" aria-hidden="true" /></Button>
       </div>
       <div id="global-search-results" className="max-h-[60vh] overflow-y-auto p-3" aria-live="polite">
         {!query.trim() && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">دور على أي حاجة في مساحتك</p><p className="mt-2 text-xs text-muted-foreground">المهام، الملاحظات، المشاريع، الأهداف، اليوميات، الترفيه، والعادات.</p></div>}
@@ -86,10 +87,10 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
               <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{group.results.length}</span>
             </div>
             <div className="space-y-1">
-              {group.results.map((result) => <button key={`${result.section}-${result.id}`} type="button" onClick={() => openResult(result)} className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-right transition-colors hover:bg-muted focus-visible:bg-muted" aria-label={`${result.title}، ${result.section}`}>
+              {group.results.map((result) => <Button key={`${result.section}-${result.id}`} type="button" variant="ghost" onClick={() => openResult(result)} className="h-auto w-full justify-start gap-3 rounded-2xl px-3 py-3 text-right" aria-label={`${result.title}، ${result.section}`}>
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground"><ArrowUpRight className="h-4 w-4" aria-hidden="true" /></span>
                 <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{result.title}</span><span className="mt-1 block truncate text-xs text-muted-foreground">{result.subtitle}</span></span>
-              </button>)}
+              </Button>)}
             </div>
           </section>)}
         </div>}
