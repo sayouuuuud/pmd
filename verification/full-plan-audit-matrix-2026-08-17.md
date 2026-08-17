@@ -652,3 +652,17 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 ## 2026-08-17 — تدقيق إغلاق فجوات validation live-region
 أُعيد تشغيل فاحص `scan_next_a11y.py` بعد دفعات القسم الديني والmetadata والمهام ومساحة العمل، ولم يعد يرصد أي `missing=...` لعناصر رسائل التحقق في مكوّنات الواجهة. نجحت بوابات TypeScript وESLint وNext build، وownership (`45` route، `41` session، `41` visible ownership)، وresponsive (`34/34`)، وaccessibility (`34/34`، صفر إخفاقات). استُثني `app/error.tsx` من نطاق الفجوات لأنه خطأ عام على مستوى التطبيق وليس رسالة تحقق عربية لنموذج.
 **الحالة: PASS — أُغلق نطاق فجوات validation live-region العملية.** الدليل: `verification/a11y-validation-gap-closure-2026-08-17.md` و`verification/a11y-closure-quality-20260817T191705Z.log`.
+
+## 2026-08-17 — دفعة Dark Mode العامة
+| المجال | النتيجة | الدليل |
+|---|---|---|
+| مزود الثيم والتفضيل | PASS | `components/theme/theme-provider.tsx`: `ThemeProvider`، دعم تفضيل النظام، حفظ `personal-command-center-theme` وتطبيق class الجذر |
+| bootstrap قبل الرسم | PASS | `app/layout.tsx`: تشغيل `themeBootstrapScript` وربط `ThemeProvider` |
+| Semantic Dark Tokens | PASS | `app/globals.css`: لوحة ألوان داكنة للتوكنز الحالية دون استبدال الهوية |
+| مفتاح التبديل العام | PASS | `components/layout/top-nav.tsx`: تسمية عربية، `aria-pressed`، وأيقونة متغيرة |
+| اختبار المتصفح | PASS | `verification/dark-mode-browser-findings-2026-08-17.md`: التفعيل، DOM، localStorage، وإعادة التحميل |
+| TypeScript / ESLint / Build | PASS | `verification/dark-mode-quality-20260817T202345Z.log` |
+| Ownership / Responsive / Accessibility | PASS | `verification/dark-mode-audits-20260817T202345Z.log`: 45 route، 41 session، 41 visible ownership، 34/34 responsive، 34/34 accessibility |
+| حدود النطاق | PASS | لا تغييرات API أو schema أو migrations أو Auth؛ إضافة تفضيل ثيم فقط |
+
+**الحالة:** PASS — دفعة Dark Mode جاهزة للاعتماد بعد فحص staged diff.

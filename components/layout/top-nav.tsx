@@ -18,6 +18,7 @@ import {
   ListChecks,
   Moon,
   Plus,
+  Sun,
   Repeat,
   Search,
   Settings,
@@ -26,6 +27,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useCommandCenter } from '@/lib/command-center-store'
+import { useTheme } from '@/components/theme/theme-provider'
 import { authClient } from '@/lib/auth-client'
 import { parseQuickAdd, type ParsedQuickAdd, type QuickAddKind } from '@/lib/quick-add-parser'
 import { GlobalSearchDialog } from '@/components/search/global-search-dialog'
@@ -88,6 +90,7 @@ export function TopNav() {
     reminders,
   } = useCommandCenter()
   const { data: session } = authClient.useSession()
+  const { theme, toggleTheme } = useTheme()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -204,6 +207,9 @@ export function TopNav() {
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
                 <Plus className="h-4 w-4 text-card" />
               </span>
+            </Button>
+            <Button type="button" variant="ghost" size="icon" aria-label={theme === 'dark' ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'} aria-pressed={theme === 'dark'} onClick={toggleTheme} className="rounded-full bg-card sm:h-11 sm:w-11">
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
             <Button ref={searchTriggerRef} type="button" variant="ghost" size="icon" aria-label="البحث الشامل" onClick={() => setSearchOpen(true)} className="rounded-full bg-card sm:h-11 sm:w-11">
               <Search className="h-4 w-4" />

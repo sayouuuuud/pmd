@@ -1413,3 +1413,10 @@
 ## 2026-08-17 — إغلاق نطاق فجوات validation live-region
 أُعيد تشغيل الفاحص الساكن `scan_next_a11y.py` بعد دفعات القسم الديني والmetadata والمهام ومساحة العمل، ولم يعد يرصد أي فجوة `missing=...` في عناصر رسائل التحقق العربية ضمن مكوّنات الواجهة. نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`، وownership (`45` route، `41` session، `41` visible ownership)، وresponsive (`34/34`)، وaccessibility (`34/34`، صفر إخفاقات). بقي تحذير Next.js المعلوماتي الخاص بتقادم convention للـmiddleware غير حاجز. استُثني `app/error.tsx` من هذا النطاق لأنه خطأ عام على مستوى التطبيق وليس رسالة تحقق عربية لنموذج.
 **الحالة: PASS — أُغلق نطاق فجوات validation live-region العملية.** الدليل: `verification/a11y-validation-gap-closure-2026-08-17.md` و`verification/a11y-closure-quality-20260817T191705Z.log`.
+
+## سجل دفعة — Dark Mode العامة — 2026-08-17
+أضيف وضع داكن عام يحافظ على Semantic Design Tokens والهوية الحالية، مع `ThemeProvider` وbootstrap مبكر في `app/layout.tsx` وحفظ التفضيل في `localStorage` تحت المفتاح `personal-command-center-theme`. أضيف زر تبديل عربي عام إلى `components/layout/top-nav.tsx` يحمل `aria-pressed` وتسمية متغيرة، وأضيفت لوحة الألوان الداكنة إلى `app/globals.css`.
+
+اختبار المتصفح على `/` أثبت التبديل الفوري، `html.dark`، `color-scheme: dark`، حفظ الاختيار، واستعادته بعد إعادة التحميل. نجحت بوابات `tsc --noEmit` وESLint وNext build، كما نجحت ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، صفر إخفاقات)، ومسح validation live-region دون فجوات جديدة. الأدلة: `verification/dark-mode-live-region-ar-2026-08-17.md`، `verification/dark-mode-browser-findings-2026-08-17.md`، `verification/dark-mode-quality-20260817T202345Z.log`، و`verification/dark-mode-audits-20260817T202345Z.log`.
+
+**الحالة:** PASS — الدفعة جاهزة للاعتماد والرفع.

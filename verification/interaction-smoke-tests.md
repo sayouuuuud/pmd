@@ -1080,3 +1080,10 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 أُعيد تشغيل الفاحص الساكن بعد اعتماد دفعة مساحة العمل؛ لم يُصدر أي `missing=...`، وأظهر فقط عناوين metadata الحالية للقسم الديني والمال والتذكيرات. أُعيد تشغيل TypeScript وESLint وNext build وownership وresponsive وaccessibility، فنجحت جميعها: الملكية `45/41/41`، responsive `34/34`، وaccessibility `34/34` مع صفر إخفاقات. استُثني `app/error.tsx` عمدًا من نطاق رسائل التحقق لأنه خطأ عام على مستوى التطبيق، لا خطأ نموذج عربي.
 
 **الحالة: PASS — لا توجد فجوات validation live-region عملية متبقية في نطاق الفاحص الحالي.** الدليل: `verification/a11y-validation-gap-closure-2026-08-17.md` و`verification/a11y-closure-quality-20260817T191705Z.log`.
+
+## 2026-08-17 — دفعة Dark Mode العامة
+اختُبرت الصفحة الرئيسية على `http://localhost:3004/`. في الحالة الفاتحة ظهر زر الهيدر بتسمية `تفعيل الوضع الداكن`. بعد التفعيل تبدلت الخلفية والبطاقات ومكونات الصفحة إلى لوحة Dark Mode مع بقاء RTL والتنقل وبنية الهوية الحالية. أصبح الزر يحمل `تفعيل الوضع الفاتح` و`aria-pressed="true"`.
+
+أثبت فحص DOM وJavaScript `html.dark`، و`document.documentElement.style.colorScheme = "dark"`، و`localStorage['personal-command-center-theme'] = "dark"`، مع خلفية body `rgb(17, 18, 22)`. بعد إعادة تحميل الصفحة استُعيد الوضع الداكن تلقائيًا. الأدلة: `verification/dark-mode-browser-findings-2026-08-17.md` و`verification/dark-mode-live-region-ar-2026-08-17.md`.
+
+**الحالة: PASS.**

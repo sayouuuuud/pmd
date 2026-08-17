@@ -4,6 +4,7 @@ import { Cairo } from 'next/font/google'
 import './globals.css'
 import { CommandCenterProvider } from '@/lib/command-center-store'
 import { PwaRegister } from '@/components/pwa/pwa-register'
+import { ThemeProvider, themeBootstrapScript } from '@/components/theme/theme-provider'
 
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light',
+  colorScheme: 'light dark',
   themeColor: '#ededf0',
   userScalable: true,
 }
@@ -49,11 +50,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className="bg-background">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+      </head>
       <body className={`${cairo.variable} font-sans antialiased`}>
         <PwaRegister />
-        <CommandCenterProvider>
-          {children}
-        </CommandCenterProvider>
+        <ThemeProvider>
+          <CommandCenterProvider>
+            {children}
+          </CommandCenterProvider>
+        </ThemeProvider>
         {process.env.VERCEL === '1' && <Analytics />}
       </body>
     </html>
