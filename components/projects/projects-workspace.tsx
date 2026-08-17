@@ -28,6 +28,7 @@ export function ProjectsWorkspace() {
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null)
   const [clients, setClients] = useState<ProjectClient[]>([])
   const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [projectError, setProjectError] = useState('')
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null
 
@@ -75,7 +76,11 @@ export function ProjectsWorkspace() {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     const title = String(form.get('title') ?? '').trim()
-    if (!title) return
+    if (!title) {
+      setProjectError('اكتب اسم المشروع أولًا')
+      return
+    }
+    setProjectError('')
     addProject({
       title,
       description: String(form.get('description') ?? '').trim(),
@@ -135,8 +140,9 @@ export function ProjectsWorkspace() {
       </ContentCard>
 
       <ContentCard title="مشروع جديد" description="اربطه بهدف لو عايز تشوف أثره على الصورة الكبيرة.">
-        <form onSubmit={createProject} className="space-y-3">
-          <Input name="title" aria-label="اسم المشروع" className="w-full rounded-2xl px-4 py-3" placeholder="مثال: تجهيز الإطلاق التجريبي" />
+        <form onSubmit={createProject} noValidate className="space-y-3">
+          <Input name="title" required aria-label="اسم المشروع" aria-invalid={Boolean(projectError)} aria-describedby={projectError ? 'project-title-error' : undefined} onChange={() => projectError && setProjectError('')} className="w-full rounded-2xl px-4 py-3" placeholder="مثال: تجهيز الإطلاق التجريبي" />
+          {projectError && <p id="project-title-error" role="alert" className="text-xs font-medium text-destructive">{projectError}</p>}
           <Textarea name="description" aria-label="وصف المشروع" className="min-h-20 w-full resize-none rounded-2xl px-4 py-3" placeholder="ما النتيجة التي سيخرج بها المشروع؟" />
           <Select name="goalId" aria-label="الهدف المرتبط" defaultValue="" className="w-full rounded-2xl px-3 py-3"><option value="">بدون هدف مرتبط</option>{goals.filter((goal) => goal.status !== 'completed').map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</Select>
           <Input name="dueLabel" aria-label="موعد المشروع" className="w-full rounded-2xl px-4 py-3" placeholder="الموعد: هذا الشهر" />
