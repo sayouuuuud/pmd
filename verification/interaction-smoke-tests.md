@@ -958,3 +958,12 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 راجعت `components/auth/auth-form.tsx` وأضفت `aria-live="assertive"` و`aria-atomic="true"` إلى أخطاء الاسم والبريد الإلكتروني وكلمة المرور والخطأ العام، مع إبقاء التحقق العربي ومنطق Better Auth كما هو. في `http://localhost:3004/login` أُرسل النموذج الفارغ، فظهرت `اكتب البريد الإلكتروني أولًا.`؛ وأثبت فحص DOM أن العنصر يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن الحقل يحمل `aria-invalid="true"` ويرتبط بالخطأ عبر `aria-describedby="auth-email-error"`. لم تُستخدم بيانات اعتماد حقيقية. نجحت TypeScript وESLint وNext build، ونجحت ownership (`45` مسارًا، دون نقص)، وresponsive (`34/34` دون إخفاق)، وaccessibility (`34/34` دون إخفاق). التقرير: `verification/auth-live-region-ar-2026-08-17.md`؛ سجلا الجودة والتدقيق: `verification/auth-live-quality-20260817T172800Z.log` و`verification/auth-live-audits-20260817T172900Z.log`.
 
 ---
+
+## 2026-08-17 — Quick Add: تقوية aria-atomic لخطأ الإدخال العربي
+
+فُتح حوار «إضافة سريعة» من الصفحة الرئيسية على `http://localhost:3004/` وأُرسل النموذج فارغًا. ظهرت الرسالة العربية `اكتب بيانات الإضافة أولًا بصيغة واضحة.`. أثبت فحص DOM أن `#quick-add-error` يملك `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن حقل `#quick-add-title` مرتبط به عبر `aria-describedby="quick-add-error"`. لم تُنشأ بيانات أثناء الاختبار. نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`، كما نجحت ownership (45/45)، responsive (34/34)، وaccessibility (34/34). الإصلاح محصور في `components/layout/top-nav.tsx` ولا يغير parser أو تدفق المعاينة والحفظ.
+
+التقرير: `verification/quickadd-atomic-ar-2026-08-17.md`.
+السجلات الخام: `verification/quickadd-atomic-quality-final-20260817T173500Z.log` و`verification/quickadd-atomic-audits-20260817T173600Z.log`.
+
+## نهاية دفعة Quick Add

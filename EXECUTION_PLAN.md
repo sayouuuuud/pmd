@@ -1242,3 +1242,10 @@
 الأدلة: `verification/auth-live-region-ar-2026-08-17.md`، `verification/auth-live-quality-20260817T172800Z.log`، `verification/auth-live-audits-20260817T172900Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 
 **الحالة:** مكتملة وقابلة للاعتماد بعد إنشاء commit مستقل.
+
+## 2026-08-17 — إغلاق دفعة تقوية aria-atomic لخطأ Quick Add العربي
+أُغلقت فجوة دلالية في `components/layout/top-nav.tsx`: كان عنصر `#quick-add-error` يستخدم `role="alert"` و`aria-live="assertive"` دون `aria-atomic` صريح. أضيفت `aria-atomic="true"` مع الحفاظ على النص العربي، `aria-describedby`، التحقق، parser، وتدفق المعاينة والحفظ.
+في `http://localhost:3004/` فُتح حوار «إضافة سريعة» وأُرسل النموذج فارغًا، فظهرت الرسالة `اكتب بيانات الإضافة أولًا بصيغة واضحة.`. أثبت فحص DOM أن العنصر يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، وأن حقل `#quick-add-title` مرتبط به عبر `aria-describedby="quick-add-error"`. لم تُنشأ بيانات خلال الاختبار.
+نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`. محاولة `pnpm typecheck` الأولية لم تكن بوابة صالحة لأن script غير معرّف، وتمت إعادة التنفيذ بالأمر الصحيح. نجح ownership (`45` route، `41` session، `41` visible ownership، دون نقص)، responsive (`34/34` دون إخفاق)، وaccessibility (`34/34`، `0` إخفاق). أزيلت artifacts العابرة قبل الاعتماد، ولم تتغير عقود API أو قاعدة البيانات أو الملكية، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+الأدلة: `verification/quickadd-atomic-ar-2026-08-17.md`، `verification/quickadd-atomic-quality-final-20260817T173500Z.log`، `verification/quickadd-atomic-audits-20260817T173600Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+**الحالة:** مكتملة وقابلة للاعتماد بعد staging نظيف وإنشاء commit مستقل.

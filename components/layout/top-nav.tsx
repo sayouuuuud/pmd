@@ -340,7 +340,7 @@ export function TopNav() {
                     </label>
                   </div>
                 )}
-                {error && <p id="quick-add-error" role="alert" aria-live="assertive" className="mt-3 rounded-2xl bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+                {error && <p id="quick-add-error" role="alert" aria-live="assertive" aria-atomic="true" className="mt-3 rounded-2xl bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
                 <div className="mt-5 flex justify-end gap-2">
                   <Button type="button" variant="ghost" onClick={closeQuickAdd} className="h-auto rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</Button>
                   <Button type="submit" className="h-auto rounded-full px-5 py-2.5 text-sm">مراجعة قبل الحفظ</Button>

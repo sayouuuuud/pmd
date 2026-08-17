@@ -440,3 +440,16 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 - **التقرير:** `verification/auth-live-region-ar-2026-08-17.md`.
 
 ---
+
+## 2026-08-17 — Quick Add: تقوية aria-atomic لخطأ الإدخال العربي
+| البند | النتيجة | الدليل |
+|---|---|---|
+| الفجوة | عنصر `#quick-add-error` كان يحمل `role="alert"` و`aria-live="assertive"` دون `aria-atomic` صريح | `components/layout/top-nav.tsx` قبل الإصلاح |
+| الإصلاح | إضافة `aria-atomic="true"` مع الحفاظ على النص العربي، التحقق، `aria-describedby`، parser، وتدفق المعاينة والحفظ | `components/layout/top-nav.tsx` |
+| اختبار المتصفح | أُرسل Quick Add فارغًا من `/`؛ ظهرت `اكتب بيانات الإضافة أولًا بصيغة واضحة.`. أثبت DOM القيم `role=alert` و`aria-live=assertive` و`aria-atomic=true`، مع ارتباط الحقل عبر `aria-describedby=quick-add-error` | `verification/quickadd-atomic-ar-2026-08-17.md` |
+| TypeScript / ESLint / Build | PASS عبر `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`؛ محاولة `pnpm typecheck` الأولى غير صالحة لأن script غير معرّف، ثم أُعيدت البوابة بالأمر الصحيح | `verification/quickadd-atomic-quality-final-20260817T173500Z.log` |
+| Ownership | PASS: `45` route، `41` session، `41` visible ownership، بلا مسارات ناقصة | `verification/quickadd-atomic-audits-20260817T173600Z.log` |
+| Responsive | PASS: `34/34`، بلا failures | `verification/quickadd-atomic-audits-20260817T173600Z.log` |
+| Accessibility | PASS: `34/34`، `0` failures | `verification/quickadd-atomic-audits-20260817T173600Z.log` |
+| الحدود | الاختبار استخدم إدخالًا فارغًا ولم ينشئ بيانات؛ لم يتغير API/DB أو ownership أو الأسرار، ولم تُنفذ `drizzle-kit generate` | تقرير الدفعة |
+| القرار | الدفعة مكتملة وقابلة للاعتماد بعد staging نظيف وفحص diff | تقرير الدفعة وسجلات الجودة |
