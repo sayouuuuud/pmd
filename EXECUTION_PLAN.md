@@ -1259,3 +1259,7 @@
 
 الأدلة: `verification/calendar-error-live-region-ar-2026-08-17.md`، `verification/calendar-error-live-browser-test-2026-08-17.md`، `verification/calendar-error-quality-20260817T174100Z.log`، `verification/calendar-error-audits-20260817T174200Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإنشاء commit مستقل.
+
+## 2026-08-17 — إغلاق دفعة live-region لخطأ نموذج المهام
+
+استُكملت مراجعة دلالة نموذج «مهمة جديدة» في `components/tasks/tasks-workspace.tsx`. أضيفت `aria-live="assertive"` و`aria-atomic="true"` إلى رسالة `#new-task-error` مع الحفاظ على النص العربي، والتحقق، و`aria-invalid` و`aria-describedby`، ومنطق الإنشاء وfallback المحلي. اختبار المتصفح على `/tasks` بإرسال النموذج فارغًا أثبت ظهور `اكتب اسم المهمة أولًا قبل الإضافة.` مع `role="alert"` والخصائص الحية الثلاث والارتباط الصحيح بالحقل. نجحت TypeScript وESLint وNext build، ثم ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`) وaccessibility (`34/34`، صفر إخفاقات). لم تتغير عقود API/DB أو الملكية أو الأسرار، ولم تُنفذ `drizzle-kit generate`. التقرير: `verification/tasks-error-live-region-ar-2026-08-17.md`، والسجل الخام: `verification/tasks-error-live-quality-and-audits-20260817T174500Z.log`.

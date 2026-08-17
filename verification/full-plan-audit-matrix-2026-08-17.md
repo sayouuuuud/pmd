@@ -460,3 +460,13 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 |---|---|---|---|---|
 | الوصول العربي في التقويم | عنصر خطأ النموذج كان يملك `role=alert` وارتباط `aria-describedby` دون `aria-live` و`aria-atomic` صريحين | إضافة `aria-live="assertive"` و`aria-atomic="true"` إلى `#calendar-event-error` دون تغيير النص أو التحقق أو الحفظ | إرسال نموذج الحدث فارغًا في `/calendar`، ثم فحص DOM: `اكتب عنوان الحدث أولًا.`، `role=alert`، `aria-live=assertive`، `aria-atomic=true` | PASS |
 | بوابات المشروع | — | — | TypeScript وESLint وNext build وownership وresponsive وaccessibility | PASS؛ responsive 34/34، accessibility 34/34 |
+
+## 2026-08-17 — المهام: دلالة خطأ نموذج الإضافة
+
+- **النطاق:** `components/tasks/tasks-workspace.tsx`، رسالة التحقق الفارغة في نموذج «مهمة جديدة».
+- **الفجوة:** عنصر `#new-task-error` كان يحمل `role="alert"` وارتباط `aria-describedby`، دون `aria-live` و`aria-atomic` صريحين.
+- **الإصلاح:** إضافة `aria-live="assertive"` و`aria-atomic="true"` فقط، مع الحفاظ على النص العربي والتحقق المحلي ومنطق المهام وfallback المحلي.
+- **اختبار المتصفح:** إرسال النموذج الفارغ في `/tasks` أثبت النص `اكتب اسم المهمة أولًا قبل الإضافة.`، والدور والخصائص الحية والارتباط بالحقل.
+- **البوابات:** TypeScript وESLint وNext build وownership (`45/45`) وresponsive (`34/34`) وaccessibility (`34/34`) — PASS.
+- **الحدود:** لم تُنشأ بيانات تجريبية ولم تتغير API أو DB أو ownership أو الأسرار؛ لم تُنفذ `drizzle-kit generate`.
+- **الدليل:** `verification/tasks-error-live-region-ar-2026-08-17.md` و`verification/tasks-error-live-quality-and-audits-20260817T174500Z.log`.

@@ -975,3 +975,7 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **اختبار المتصفح:** إرسال نموذج الحدث فارغًا أظهر `اكتب عنوان الحدث أولًا.`، وأعاد DOM: `role=alert`, `aria-live=assertive`, `aria-atomic=true`، مع ارتباط الحقول عبر `aria-describedby`. **PASS**.
 - **البوابات:** TypeScript وESLint وNext build وownership وresponsive وaccessibility — **PASS**؛ responsive: 34 حالة دون إخفاقات، accessibility: 34 حالة دون إخفاقات.
 - **حدود التحقق:** لم تتغير بيانات المستخدم أو عقود API أو منطق fallback المحلي؛ التعديل يخص دلالة رسالة الخطأ فقط.
+
+## 2026-08-17 — المهام: live-region لخطأ نموذج الإضافة
+
+اختُبرت صفحة `/tasks` عبر إرسال نموذج «مهمة جديدة» فارغًا. ظهرت الرسالة العربية `اكتب اسم المهمة أولًا قبل الإضافة.`، وأثبت فحص DOM: `role=alert` و`aria-live=assertive` و`aria-atomic=true`، مع `aria-describedby=new-task-error` و`aria-invalid=true` في حقل العنوان. لم تُنشأ بيانات تجريبية. نجحت بوابات TypeScript وESLint وNext build وownership وresponsive وaccessibility؛ التفاصيل في `verification/tasks-error-live-region-ar-2026-08-17.md` و`verification/tasks-error-live-quality-and-audits-20260817T174500Z.log`.
