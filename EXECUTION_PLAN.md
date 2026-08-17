@@ -797,3 +797,12 @@
 - **الحفاظ على السلوك:** لم تُنفذ استعادة أو تنقل أو تغييرات دائمة، ولم تُضف migrations أو secrets. الأزرار الخام التي قد تظهر في DOM خارج نطاق الملفين تخص TopNav العام أو عناصر الإطار العام.
 - **التوثيق:** `verification/archive-search-shared-controls-browser.md` و`verification/interaction-smoke-tests.md`.
 - **الحالة:** اكتمل الترحيل والفحص المتصفحي؛ نجحت TypeScript وESLint و`git diff --check` و`next build`. ظهر فقط تحذير Next.js المعلوماتي الخاص بتقادم convention الخاص بـmiddleware، والدفعة جاهزة للتسجيل والدفع.
+
+
+### دفعة توحيد عناصر تحكم الصفحة الرئيسية — 2026-08-17
+
+- **النطاق:** ترحيل أزرار مهام الصفحة الرئيسية، أزرار متابعة الصلوات، أزرار اقتراحات اليوم، زر التراجع، وحقل تعديل الاقتراح في `components/dashboard/dashboard-home.tsx` إلى `Button` و`Input` المشتركتين، مع الحفاظ على الـhandlers والروابط والكلاسات الحالية.
+- **التحقق المتصفحي:** فُتحت `http://localhost:3004/`؛ ظهر RTL وCairo والمحتوى العربي دون أخطاء ظاهرة. اختُبر زر «اختبار مهمة يومية» فانتقلت مؤشرات الخطة مؤقتًا من `2/7` إلى `3/7` ثم عادت إلى `2/7` بالنقرة التالية دون تغيير تجريبي متبقٍ.
+- **التوثيق:** أُنشئ `verification/dashboard-shared-controls-browser.md` وأُضيف السيناريو إلى `verification/interaction-smoke-tests.md`.
+- **بوابات الجودة:** نجحت TypeScript وESLint و`git diff --check` و`next build` بعد تحديث التوثيق؛ تحذير تقادم convention الخاص بـmiddleware من Next.js معلوماتي وغير حاجز.
+- **الحالة:** مكتملة وجاهزة للـcommit والـpush.
