@@ -21,6 +21,28 @@ export type ArchivedClient = Client & {
   archivedAt: string
 }
 
+export type WorkspaceMember = {
+  id: string
+  workspaceId: string
+  userId: string
+  role: string
+  status: string
+  joinedAt: string | Date | null
+  name: string
+  email: string
+}
+
+export type WorkspaceInvitation = {
+  id: string
+  workspaceId: string
+  invitedEmail: string
+  role: string
+  status: string
+  expiresAt: string | Date
+  acceptedAt: string | Date | null
+  createdAt: string | Date
+}
+
 export type WorkspaceFallback = {
   workspaces: Workspace[]
   clientsByWorkspace: Record<string, Client[]>

@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Archive, BriefcaseBusiness, Building2, Pencil, Plus, RefreshCw, Search, Users, X } from 'lucide-react'
+import { Archive, BriefcaseBusiness, Building2, Mail, Pencil, Plus, RefreshCw, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { persistWorkspaceFallback, readWorkspaceFallback, workspaceFallback, type Client, type Workspace, type WorkspaceFallback } from '@/lib/workspace-types'
+import { persistWorkspaceFallback, readWorkspaceFallback, workspaceFallback, type Client, type Workspace, type WorkspaceFallback, type WorkspaceInvitation, type WorkspaceMember } from '@/lib/workspace-types'
 
 export function WorkspaceWorkspace() {
   const [data, setData] = useState<WorkspaceFallback>(workspaceFallback)
@@ -26,6 +26,15 @@ export function WorkspaceWorkspace() {
   const [clientError, setClientError] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [members, setMembers] = useState<WorkspaceMember[]>([])
+  const [invitations, setInvitations] = useState<WorkspaceInvitation[]>([])
+  const [canManageMembers, setCanManageMembers] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('member')
+  const [inviteToken, setInviteToken] = useState('')
+  const [generatedToken, setGeneratedToken] = useState('')
+  const [inviteError, setInviteError] = useState('')
+  const [accessLoading, setAccessLoading] = useState(false)
 
   const activeWorkspace = useMemo(
     () => data.workspaces.find((item) => item.id === activeWorkspaceId) ?? data.workspaces[0],
@@ -41,6 +50,30 @@ export function WorkspaceWorkspace() {
   function persist(next: WorkspaceFallback) {
     setData(next)
     persistWorkspaceFallback(next)
+  }
+
+  async function loadWorkspaceAccess(workspaceId: string) {
+    if (!backendAvailable || workspaceId.startsWith('local-')) {
+      setMembers([])
+      setInvitations([])
+      setCanManageMembers(false)
+      return
+    }
+    setAccessLoading(true)
+    try {
+      const response = await fetch(`/api/workspaces/invitations?workspaceId=${encodeURIComponent(workspaceId)}`, { cache: 'no-store' })
+      if (!response.ok) throw new Error('workspace-access-failed')
+      const payload = await response.json() as { members?: WorkspaceMember[]; invitations?: WorkspaceInvitation[]; canManage?: boolean }
+      setMembers(payload.members ?? [])
+      setInvitations(payload.invitations ?? [])
+      setCanManageMembers(Boolean(payload.canManage))
+    } catch {
+      setMembers([])
+      setInvitations([])
+      setCanManageMembers(false)
+    } finally {
+      setAccessLoading(false)
+    }
   }
 
   async function loadData() {
@@ -66,12 +99,17 @@ export function WorkspaceWorkspace() {
       const nextData: WorkspaceFallback = { workspaces: nextWorkspaces, clientsByWorkspace: Object.fromEntries(nextClients), archivedClientsByWorkspace: Object.fromEntries(nextArchivedClients) }
       setBackendAvailable(true)
       setData(nextData)
-      setActiveWorkspaceId(workspacesPayload.activeWorkspaceId ?? nextWorkspaces[0]?.id ?? 'local-personal')
+      const nextActiveWorkspaceId = workspacesPayload.activeWorkspaceId ?? nextWorkspaces[0]?.id ?? 'local-personal'
+      setActiveWorkspaceId(nextActiveWorkspaceId)
+      await loadWorkspaceAccess(nextActiveWorkspaceId)
     } catch {
       const local = readWorkspaceFallback()
       setBackendAvailable(false)
       setData(local)
       setActiveWorkspaceId(local.workspaces[0]?.id ?? 'local-personal')
+      setMembers([])
+      setInvitations([])
+      setCanManageMembers(false)
       setNotice('تعمل مساحة العمل بالبيانات المحلية مؤقتًا لأن قاعدة البيانات غير متاحة.')
     } finally {
       setLoading(false)
@@ -254,6 +292,104 @@ export function WorkspaceWorkspace() {
     setSaving(false)
   }
 
+  async function inviteMember() {
+    if (!activeWorkspace || saving) return
+    const email = inviteEmail.trim().toLocaleLowerCase('en-US')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setInviteError('اكتب بريدًا إلكترونيًا صحيحًا.')
+      return
+    }
+    if (!backendAvailable || activeWorkspace.id.startsWith('local-')) {
+      setInviteError('الدعوات تحتاج اتصالًا بقاعدة البيانات.')
+      return
+    }
+    setInviteError('')
+    setSaving(true)
+    setGeneratedToken('')
+    try {
+      const response = await fetch('/api/workspaces/invitations', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ workspaceId: activeWorkspace.id, invitedEmail: email, role: inviteRole }),
+      })
+      const payload = await response.json() as { error?: string; token?: string }
+      if (!response.ok) throw new Error(payload.error ?? 'تعذر إنشاء الدعوة.')
+      setInviteEmail('')
+      setGeneratedToken(payload.token ?? '')
+      await loadWorkspaceAccess(activeWorkspace.id)
+      setNotice('تم إنشاء الدعوة. شارك الرمز التجريبي مع صاحب البريد.')
+    } catch (error) {
+      setInviteError(error instanceof Error ? error.message : 'تعذر إنشاء الدعوة.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function acceptInvitation() {
+    const token = inviteToken.trim()
+    if (!token || saving) return
+    if (!backendAvailable) {
+      setInviteError('قبول الدعوات يحتاج اتصالًا بقاعدة البيانات.')
+      return
+    }
+    setInviteError('')
+    setSaving(true)
+    try {
+      const response = await fetch('/api/workspaces/invitations', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'accept', token }),
+      })
+      const payload = await response.json() as { error?: string }
+      if (!response.ok) throw new Error(payload.error ?? 'تعذر قبول الدعوة.')
+      setInviteToken('')
+      await loadData()
+      setNotice('تم قبول الدعوة وتفعيل عضويتك في مساحة العمل.')
+    } catch (error) {
+      setInviteError(error instanceof Error ? error.message : 'تعذر قبول الدعوة.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function revokeInvitation(invitation: WorkspaceInvitation) {
+    if (!activeWorkspace || saving) return
+    setSaving(true)
+    setInviteError('')
+    try {
+      const response = await fetch('/api/workspaces/invitations', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ workspaceId: activeWorkspace.id, invitationId: invitation.id }),
+      })
+      const payload = await response.json() as { error?: string }
+      if (!response.ok) throw new Error(payload.error ?? 'تعذر إبطال الدعوة.')
+      await loadWorkspaceAccess(activeWorkspace.id)
+      setNotice('تم إبطال الدعوة.')
+    } catch (error) {
+      setInviteError(error instanceof Error ? error.message : 'تعذر إبطال الدعوة.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function removeMember(member: WorkspaceMember) {
+    if (!activeWorkspace || saving) return
+    setSaving(true)
+    setInviteError('')
+    try {
+      const response = await fetch(`/api/workspaces/members/${encodeURIComponent(member.id)}`, { method: 'DELETE' })
+      const payload = await response.json() as { error?: string }
+      if (!response.ok) throw new Error(payload.error ?? 'تعذر إبطال وصول العضو.')
+      await loadWorkspaceAccess(activeWorkspace.id)
+      setNotice('تم إبطال وصول العضو من مساحة العمل.')
+    } catch (error) {
+      setInviteError(error instanceof Error ? error.message : 'تعذر إبطال وصول العضو.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -279,7 +415,7 @@ export function WorkspaceWorkspace() {
                 type="button"
                 variant={item.id === activeWorkspace?.id ? 'secondary' : 'ghost'}
                 className="h-auto w-full justify-start gap-3 rounded-2xl px-3 py-3 text-right"
-                onClick={() => setActiveWorkspaceId(item.id)}
+                onClick={() => { setActiveWorkspaceId(item.id); void loadWorkspaceAccess(item.id) }}
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
                   {item.kind === 'personal' ? <Users className="h-4 w-4" /> : <BriefcaseBusiness className="h-4 w-4" />}
@@ -353,6 +489,80 @@ export function WorkspaceWorkspace() {
           </div>
         </ContentCard>
       </div>
+
+      <ContentCard title="أعضاء ودعوات مساحة العمل" description="إدارة وصول الفريق بطريقة تجريبية؛ لا يوجد إرسال بريد آلي حتى الآن.">
+        {activeWorkspace?.id.startsWith('local-') ? <p className="rounded-2xl bg-muted/40 px-4 py-3 text-sm text-muted-foreground">إدارة الأعضاء والدعوات متاحة عند اتصال قاعدة البيانات فقط.</p> : null}
+        {accessLoading ? <p role="status" aria-live="polite" aria-busy="true" className="text-sm text-muted-foreground">جاري تحميل العضوية...</p> : null}
+        {inviteError ? <p role="alert" aria-live="assertive" aria-atomic="true" className="mb-4 rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{inviteError}</p> : null}
+
+        {canManageMembers && activeWorkspace ? <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
+          <div className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-primary" />
+            <p className="font-medium">دعوة عضو جديد</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-[1fr_9rem_auto]">
+            <Input type="email" value={inviteEmail} onChange={(event) => { setInviteEmail(event.target.value); if (inviteError) setInviteError('') }} placeholder="البريد الإلكتروني للعضو" aria-label="البريد الإلكتروني للعضو" />
+            <Select value={inviteRole} onChange={(event) => setInviteRole(event.target.value)} aria-label="دور العضو">
+              <option value="member">عضو</option>
+              <option value="admin">مدير</option>
+            </Select>
+            <Button type="button" onClick={() => void inviteMember()} disabled={saving || activeWorkspace.id.startsWith('local-')}>
+              <Mail className="h-4 w-4" />
+              إنشاء دعوة
+            </Button>
+          </div>
+          {generatedToken ? <div className="rounded-2xl border border-primary/30 bg-primary/5 p-3 text-sm">
+            <p className="font-medium text-primary">رمز الدعوة التجريبي</p>
+            <code dir="ltr" className="mt-2 block break-all rounded-xl bg-background px-3 py-2 text-xs">{generatedToken}</code>
+            <p className="mt-2 text-xs text-muted-foreground">انسخ الرمز وأرسله يدويًا إلى البريد المدعو. الرمز لا يُخزّن بصورته الأصلية.</p>
+          </div> : null}
+        </div> : null}
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-2xl border border-border p-4">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="font-medium">الأعضاء الحاليون</p>
+              <span className="text-xs text-muted-foreground">{members.length}</span>
+            </div>
+            <div className="space-y-2">
+              {members.map((member) => <div key={member.id} className="flex items-center gap-3 rounded-xl bg-muted/30 px-3 py-2">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground"><Users className="h-4 w-4" /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{member.name}</span>
+                  <span dir="ltr" className="block truncate text-right text-xs text-muted-foreground">{member.email}</span>
+                </span>
+                <span className="text-xs text-muted-foreground">{member.role === 'owner' ? 'مالك' : member.role === 'admin' ? 'مدير' : 'عضو'}</span>
+                {canManageMembers && member.role !== 'owner' ? <Button type="button" variant="ghost" size="sm" onClick={() => void removeMember(member)} disabled={saving} aria-label={`إبطال وصول ${member.name}`}><UserMinus className="h-4 w-4" /></Button> : null}
+              </div>)}
+              {!accessLoading && members.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد عضويات ظاهرة لهذه المساحة.</p> : null}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border p-4">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="font-medium">الدعوات المعلقة</p>
+              <span className="text-xs text-muted-foreground">{invitations.length}</span>
+            </div>
+            <div className="space-y-2">
+              {invitations.map((invitation) => <div key={invitation.id} className="flex items-center gap-3 rounded-xl bg-muted/30 px-3 py-2">
+                <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span dir="ltr" className="min-w-0 flex-1 truncate text-right text-sm">{invitation.invitedEmail}</span>
+                {canManageMembers ? <Button type="button" variant="ghost" size="sm" onClick={() => void revokeInvitation(invitation)} disabled={saving} aria-label={`إبطال دعوة ${invitation.invitedEmail}`}><X className="h-4 w-4" /></Button> : null}
+              </div>)}
+              {!accessLoading && invitations.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد دعوات معلقة.</p> : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 space-y-3 border-t border-border pt-4">
+          <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /><p className="font-medium">قبول دعوة برمز</p></div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Input dir="ltr" value={inviteToken} onChange={(event) => { setInviteToken(event.target.value); if (inviteError) setInviteError('') }} placeholder="ألصق رمز الدعوة هنا" aria-label="رمز الدعوة" className="text-left" />
+            <Button type="button" variant="outline" onClick={() => void acceptInvitation()} disabled={saving || !inviteToken.trim()}>قبول الدعوة</Button>
+          </div>
+          <p className="text-xs text-muted-foreground">سيتم التحقق من أن البريد الحالي يطابق البريد الذي أُرسلت إليه الدعوة قبل تفعيل العضوية.</p>
+        </div>
+      </ContentCard>
     </div>
   )
 }

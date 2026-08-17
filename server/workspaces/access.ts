@@ -57,6 +57,24 @@ export async function ensureWorkspaceMember(db: AppDb, workspaceId: string, user
   return created
 }
 
+export async function getWorkspaceMember(db: AppDb, workspaceId: string, userId: string) {
+  const [member] = await db
+    .select()
+    .from(workspaceMember)
+    .where(and(
+      eq(workspaceMember.workspaceId, workspaceId),
+      eq(workspaceMember.userId, userId),
+      eq(workspaceMember.status, 'active'),
+    ))
+    .limit(1)
+
+  return member ?? null
+}
+
+export function canManageWorkspace(role: string | null | undefined) {
+  return role === 'owner' || role === 'admin'
+}
+
 export async function getWorkspaceForMember(db: AppDb, workspaceId: string, userId: string) {
   const [row] = await db
     .select({ workspace })

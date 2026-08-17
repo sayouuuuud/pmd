@@ -683,3 +683,18 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | قواعد السلامة | PASS | لا secrets في الريبو، لا keylogging أو screenshots أو Windows monitor، ولم يُشغّل `drizzle-kit generate` بسبب اختلاف journal |
 
 **الحالة:** PASS — الدفعة التجريبية معتمدة ومرفوعة، مع بقاء اختبار تسجيل الدخول الكامل ومراجعة أمنية مستقلة كشرطين صريحين قبل الإنتاج.
+
+## سجل تدقيق — تقوية Workspace والدعوات والصلاحيات — 2026-08-17
+
+| البند | التنفيذ | الدليل | الحالة |
+|---|---|---|---|
+| إدارة أعضاء مساحة العمل | `server/workspaces/access.ts` و`/api/workspaces/members/[memberId]` مع منع إزالة المالك وإبطال وصول العضو | build route manifest، typecheck، سجل المتصفح | PASS تجريبي |
+| دورة الدعوة | `/api/workspaces/invitations` يدعم الإنشاء والاستعراض والقبول والإبطال، وقبول الدعوة يعيد تفعيل العضوية الملغاة | `app/api/workspaces/invitations/route.ts`، اختبار `401` غير موثق، build | PASS بنيوي؛ يحتاج DB/session |
+| عزل الجلسة والملكية | فحص الجلسة والعضوية قبل عمليات الدعوة والعضوية، مع إعادة استخدام مساعدات Workspace | `verification/workspace-ownership-20260817T2117.log` | PASS: `47` route، `43` session، `43` visible ownership |
+| واجهة Workspace العربية | بطاقة أعضاء ودعوات، حالات فارغة/تحميل/خطأ، قبول رمز، ورسالة local fallback واضحة | `verification/workspace-invitations-browser-20260817T2113Z.md` | PASS بصري |
+| Responsive | جميع المسارات التي شملها الفاحص دون إخفاقات | `verification/workspace-responsive-20260817T2117.log` | PASS `34/34` |
+| Accessibility | لا توجد عناصر غير معنونة أو console failures في الجولة | `verification/workspace-accessibility-20260817T2117.log` | PASS `34/34` |
+| بوابات البناء | TypeScript وESLint و`next build --webpack` | سجل جلسة التنفيذ | PASS؛ تحذيرات Next/Edge Runtime معلوماتية |
+| قاعدة البيانات | لم يُشغّل `drizzle-kit generate`، ولا توجد DATABASE_URL في البيئة الحالية | migration/schema الحاليان | مؤجل للتطبيق اليدوي والتحقق بقاعدة حقيقية |
+
+**حدود المرحلة:** لا تُعتبر دعوات Workspace أو بوابة العميل جاهزة للإنتاج قبل اختبار جلسة Better Auth حقيقية، expiry/revocation، البريد أو موفر الدعوات، race conditions، وإبطال الجلسات بعد سحب الوصول.
