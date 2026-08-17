@@ -164,7 +164,7 @@ export function MoneyWorkspace() {
               <Input aria-label="الميزانية الشهرية" type="number" min="0" value={budgetDraft} onChange={(event) => { setBudgetDraft(event.target.value); if (budgetError) setBudgetError('') }} aria-invalid={Boolean(budgetError)} aria-describedby={budgetError ? 'budget-error' : undefined} className="h-auto w-32 rounded-2xl px-3 py-2" />
               <Button type="submit" className="rounded-2xl px-4 py-2">حفظ</Button>
             </div>
-            {budgetError && <p id="budget-error" role="alert" className="basis-full text-xs text-destructive">{budgetError}</p>}
+            {budgetError && <p id="budget-error" role="alert" aria-live="assertive" aria-atomic="true" className="basis-full text-xs text-destructive">{budgetError}</p>}
           </form>
         </div>
         <div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${remaining < 0 ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${budgetProgress}%` }} /></div>
@@ -245,7 +245,7 @@ export function MoneyWorkspace() {
             <Select name="goalId" aria-label="الهدف المرتبط" defaultValue="" className="h-auto rounded-2xl py-3"><option value="">بدون هدف</option>{goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</Select>
           </div>
           <Input name="note" aria-label="ملاحظة العملية" className="h-auto rounded-2xl px-4 py-3" placeholder="ملاحظة اختيارية" />
-          {entryFormError && <p id="finance-entry-error" role="alert" className="text-xs text-destructive">{entryFormError}</p>}
+          {entryFormError && <p id="finance-entry-error" role="alert" aria-live="assertive" aria-atomic="true" className="text-xs text-destructive">{entryFormError}</p>}
           <Button type="submit" className="h-auto w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> تسجيل العملية</Button>
         </form>
       </ContentCard>
