@@ -494,3 +494,17 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | الأمان والنطاق | لا أسرار، لا تغييرات في queries أو session ownership أو Better Auth |
 
 الحكم: **PASS — الدفعة موثقة وجاهزة للاعتماد.**
+
+## 2026-08-17 — خطة اليوم: live-region لأخطاء النقل والتعديل
+
+**الفجوة:** رسالتا `move-date-*-error` و`plan-title-*-error` في `components/daily-plan/daily-plan-workspace.tsx` كانتا تستخدمان `role="alert"` دون `aria-live` و`aria-atomic` صريحين.
+
+**الإصلاح:** أضيفت `aria-live="assertive"` و`aria-atomic="true"` إلى الرسالتين، مع الحفاظ على النصوص العربية، والتحقق، و`aria-invalid` و`aria-describedby`، والملكية وfallback المحلي.
+
+**الاختبار:** في `/daily-plan` أُفرغ عنوان عنصر قائم وأُرسل نموذج التعديل؛ ظهرت `اكتب عنوان العنصر أولًا.`. أثبت DOM `role=alert` و`aria-live=assertive` و`aria-atomic=true`، مع `aria-invalid=true` وارتباط `aria-describedby` الصحيح بالحقل.
+
+**البوابات:** TypeScript وESLint وNext build وownership وresponsive وaccessibility — PASS. ownership: `45` route handlers، `41` session، `41` visible ownership، دون مسارات ناقصة. responsive: `34/34`. accessibility: `34/34` و`0` إخفاقات.
+
+**النطاق:** لا تغييرات API أو DB أو Better Auth أو التصميم أو الأسرار، ولم تُنفذ `drizzle-kit generate`. الأدلة: `verification/daily-plan-error-live-region-ar-2026-08-17.md`، `verification/daily-plan-error-quality-20260817T1805Z.log`، `verification/daily-plan-error-audits-20260817T1806Z.log`.
+
+**الحكم:** PASS — جاهزة للاعتماد بعد تنظيف artifacts.

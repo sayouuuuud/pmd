@@ -1288,3 +1288,13 @@
 الأدلة: `verification/account-error-live-region-ar-2026-08-17.md`، `verification/account-error-quality-20260817T1758Z.log`، `verification/account-error-audits-20260817T1759Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 
 **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإنشاء commit مستقل.
+
+## 2026-08-17 — إغلاق دفعة live-region لأخطاء خطة اليوم
+
+أُغلقت فجوة دلالية في `components/daily-plan/daily-plan-workspace.tsx`: رسالتا خطأ نقل العنصر إلى تاريخ آخر وتعديل عنوان العنصر كانتا تحملان `role="alert"` دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النصوص العربية، والتحقق، و`aria-invalid` و`aria-describedby`، ومنطق خطة اليوم وfallback المحلي.
+
+في `http://localhost:3004/daily-plan` فُتح نموذج تعديل عنصر قائم، أُفرغ العنوان وأُرسل النموذج؛ ظهرت الرسالة `اكتب عنوان العنصر أولًا.`. أثبت فحص DOM أن عنصر الخطأ يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن الحقل يحمل `aria-invalid=true` ويرتبط عبر `aria-describedby` بالمعرّف المطابق. نجحت بوابات TypeScript وESLint وNext build، ثم ownership (`45` route، `41` session، `41` visible ownership، دون نقص)، responsive (`34/34` دون إخفاقات)، وaccessibility (`34/34`، `0` إخفاق). لم تتغير عقود API أو قاعدة البيانات أو Better Auth أو الملكية، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/daily-plan-error-live-region-ar-2026-08-17.md`، `verification/daily-plan-error-quality-20260817T1805Z.log`، `verification/daily-plan-error-audits-20260817T1806Z.log`، و`verification/daily-plan-error-browser-findings-2026-08-17.md`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإنشاء commit مستقل.

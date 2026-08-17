@@ -995,3 +995,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 اختُبر نموذج تفضيلات الحساب على `http://localhost:3004/account` بإفراغ حقل الاسم وإرسال النموذج. ظهرت الرسالة العربية `اكتب اسمك أولًا.` كعنصر `role="alert"` مع `aria-live="assertive"` و`aria-atomic="true"`، وبقي الحقل مرتبطًا عبر `aria-invalid="true"` و`aria-describedby="profile-name-error"`. نجحت بوابات TypeScript وESLint وNext build، كما نجحت ownership (45 route handlers، دون مسارات ناقصة)، وresponsive (34/34)، وaccessibility (34/34، دون إخفاقات). لم يتضمن الاختبار بيانات حساسة أو تغييرًا في تدفق Better Auth.
 
 الحكم: PASS.
+
+## 2026-08-17 — خطة اليوم: live-region لأخطاء النقل والتعديل
+
+في `/daily-plan` فُتح نموذج تعديل عنصر، أُفرغ العنوان وأُرسل النموذج. ظهرت الرسالة العربية `اكتب عنوان العنصر أولًا.`، وأثبت DOM أن عنصر الخطأ يحمل `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، بينما يحمل الحقل `aria-invalid="true"` و`aria-describedby` إلى الرسالة. أضيفت الخصائص نفسها إلى خطأ نقل العنصر إلى تاريخ آخر. نجحت TypeScript وESLint وNext build، ونجحت ownership (45 route handlers دون نقص)، وresponsive (34/34)، وaccessibility (34/34، دون إخفاقات). لم تُحفظ بيانات اختبار جديدة ولم تتغير عقود API أو ملكية البيانات.
+
+الحكم: PASS.
