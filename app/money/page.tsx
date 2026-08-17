@@ -4,7 +4,7 @@ import { MoneyWorkspace } from '@/components/money/money-workspace'
 import { PageShell } from '@/components/layout/page-shell'
 
 export const metadata: Metadata = {
-  title: 'الفلوس | Personal Command Center',
+  title: 'الفلوس | مركز القيادة الشخصي',
   description: 'سجّل مصاريفك، راقب ميزانيتك، وافهم اتجاه إنفاقك.',
 }
 

@@ -393,3 +393,12 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Accessibility | PASS: `34/34`، `0` failures | `verification/workspace-status-audits-20260817T170046Z.log` |
 | حدود الدليل | لا يثبت اتصال Neon أو جلسة Better Auth الإنتاجية لغياب credentials في البيئة الحالية | تقرير المتصفح |
 | القرار | دفعة مكتملة وقابلة للاعتماد؛ لا تغيير في البيانات أو الأسرار أو التصميم | سجلات الدفعة |
+
+## 2026-08-17 — دفعة اليوميات وmetadata العربية
+
+- **اليوميات:** فُصلت تهيئة نموذج اليوميات عن مسح notice عند تحديث السجل، وأصبح إشعار النجاح live-region صريحًا عبر `role="status"` و`aria-live="polite"` و`aria-atomic="true"`؛ الخطأ يستخدم `alert/assertive`، والنص المساعد بلا notice لا يُعلن كمنطقة حية.
+- **اختبار التفاعل:** حفظ تدوينة مؤقتة غير حساسة فأُعلنت الرسالة العربية، ثم أُرشفت التدوينة وعادت الحالة إلى تدوينة واحدة. فحص DOM أكد `status/polite/true`.
+- **metadata:** عُوِّد عنوان `/money` من `الفلوس | Personal Command Center` إلى `الفلوس | مركز القيادة الشخصي`، وأثبت المتصفح عنوان الوثيقة العربي.
+- **الجودة:** TypeScript PASS، ESLint PASS، Next build PASS، ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`، `0` failures)، و`git diff --check` PASS بعد تنظيف artifacts.
+- **الحدود:** لا تغيير في user ownership أو عقود API/DB أو localStorage fallback أو الأسرار، ولم تُنفذ `drizzle-kit generate`.
+- **الأدلة:** `verification/journal-metadata-ar-2026-08-17.md`، `verification/journal-metadata-quality-20260817T170700Z.log`، `verification/journal-metadata-audits-20260817T170800Z.log`.

@@ -1210,3 +1210,11 @@
 اختُبرت `/workspace` بإنشاء عميل غير حساس باسم «عميل تدقيق تجريبي»؛ ظهرت الرسالة `تم حفظ العميل محليًا.`، وأثبت فحص DOM خصائص `status/polite/true`. ثم أُرشِف العميل التجريبي وعادت الحالة إلى نظافتها. نجحت TypeScript وESLint وNext build، وفحوص ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، `0` failures)، و`git diff --check` بعد تنظيف artifacts.
 الأدلة: `verification/workspace-status-browser-test-2026-08-17.md`، `verification/workspace-status-quality-20260817T170017Z.log`، `verification/workspace-status-audits-20260817T170046Z.log`.
 **الحالة:** الدفعة مكتملة وقابلة للاعتماد؛ لا تغيير في عقود البيانات أو المصادقة أو الأسرار. الدفعة العملية التالية: مراجعة إعلان نتائج اليوميات وتوحيد metadata العربية المؤكدة.
+
+## 2026-08-17 — إغلاق دفعة اليوميات وmetadata العربية
+
+أُغلقت فجوة دلالة نتائج اليوميات في `components/journal/journal-workspace.tsx`: فُصلت تهيئة النموذج عن إعادة ضبط notice حتى لا تمسح إعادة تصيير السجل رسالة النجاح، وأصبح الإشعار يستخدم `role="status"` و`aria-live="polite"` و`aria-atomic="true"` عند النجاح، و`role="alert"` مع `aria-live="assertive"` عند الخطأ، مع إبقاء النص المساعد غير الحي عند غياب notice. اختُبرت `/journal` بحفظ تدوينة مؤقتة غير حساسة، وأثبت فحص DOM ظهور الرسالة العربية والخصائص `status/polite/true`، ثم أُرشفت التدوينة وعادت البيانات إلى حالتها النظيفة.
+
+كما وُحِّد عنوان metadata لصفحة `/money` من `الفلوس | Personal Command Center` إلى `الفلوس | مركز القيادة الشخصي`، وأثبت اختبار المتصفح عنوان الوثيقة العربي. نجحت TypeScript وESLint وNext build، وفحوص ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، `0` failures)، و`git diff --check` بعد تنظيف artifacts. لم تتغير عقود البيانات أو الملكية أو localStorage fallback، ولم تُضف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/journal-metadata-ar-2026-08-17.md`، `verification/journal-metadata-quality-20260817T170700Z.log`، `verification/journal-metadata-audits-20260817T170800Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`. الحالة: مكتملة وقابلة للاعتماد بعد commit مستقل.

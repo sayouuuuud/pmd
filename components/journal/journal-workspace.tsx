@@ -98,9 +98,12 @@ export function JournalWorkspace() {
     setTitle(selectedEntry?.title ?? '')
     setBody(selectedEntry?.body ?? '')
     setMood(selectedEntry?.mood ?? 'محايد')
+  }, [selectedEntry?.body, selectedEntry?.id, selectedEntry?.mood, selectedEntry?.title, selectedEntry?.updatedAt])
+
+  useEffect(() => {
     setNotice('')
     setNoticeIsError(false)
-  }, [selectedDate, selectedEntry?.body, selectedEntry?.id, selectedEntry?.mood, selectedEntry?.title, selectedEntry?.updatedAt])
+  }, [selectedDate])
 
   function selectDate(date: string) {
     setSelectedDate(date)
@@ -179,7 +182,7 @@ export function JournalWorkspace() {
 
             <div className="space-y-2"><span className="text-sm font-semibold">كيف كان مزاجك؟</span><div className="grid grid-cols-2 gap-2 sm:grid-cols-5">{moods.map((option) => <Button key={option} type="button" variant="ghost" onClick={() => setMood(option)} className={`h-auto rounded-2xl border px-2 py-2.5 text-xs font-semibold transition ${mood === option ? moodStyles[option].className : 'border-border bg-background text-muted-foreground hover:border-primary/40'}`}><span className="mb-1 block text-base">{moodStyles[option].icon}</span>{option}</Button>)}</div></div>
 
-            <div className="flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between"><p id={noticeIsError ? 'journal-form-error' : undefined} role={noticeIsError ? 'alert' : undefined} aria-live={noticeIsError ? 'assertive' : 'polite'} className={`text-xs ${noticeIsError ? 'text-destructive' : 'text-muted-foreground'}`}>{notice || (selectedEntry ? `آخر تحديث: ${selectedEntry.updatedAt}` : 'هذه المساحة تخص هذا التاريخ فقط.')}</p><div className="flex gap-2"><Button type="button" variant="outline" onClick={archive} disabled={!selectedEntry} className="flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold"><Trash2 className="h-4 w-4" /> أرشفة</Button><Button type="button" onClick={save} className="flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold"><Save className="h-4 w-4" /> حفظ التدوينة</Button></div></div>
+            <div className="flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between"><p id={noticeIsError ? 'journal-form-error' : undefined} role={notice ? (noticeIsError ? 'alert' : 'status') : undefined} aria-live={notice ? (noticeIsError ? 'assertive' : 'polite') : undefined} aria-atomic={notice ? 'true' : undefined} className={`text-xs ${noticeIsError ? 'text-destructive' : 'text-muted-foreground'}`}>{notice || (selectedEntry ? `آخر تحديث: ${selectedEntry.updatedAt}` : 'هذه المساحة تخص هذا التاريخ فقط.')}</p><div className="flex gap-2"><Button type="button" variant="outline" onClick={archive} disabled={!selectedEntry} className="flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold"><Trash2 className="h-4 w-4" /> أرشفة</Button><Button type="button" onClick={save} className="flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold"><Save className="h-4 w-4" /> حفظ التدوينة</Button></div></div>
           </div>
         </ContentCard>
 

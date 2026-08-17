@@ -914,3 +914,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 اختُبرت `/workspace` بإنشاء عميل غير حساس باسم «عميل تدقيق تجريبي» في الوضع المحلي؛ ظهرت الرسالة `تم حفظ العميل محليًا.`، وأثبت فحص DOM القيم `role=status` و`aria-live=polite` و`aria-atomic=true`. ثم أُرشِف العميل التجريبي وعادت الصفحة إلى حالتها النظيفة. نجحت TypeScript وESLint وNext build، كما نجحت ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، `0` failures)، و`git diff --check` بعد تنظيف artifacts.
 الأدلة التفصيلية: `verification/workspace-status-browser-test-2026-08-17.md`، `verification/workspace-status-quality-20260817T170017Z.log`، و`verification/workspace-status-audits-20260817T170046Z.log`.
 **الحالة:** مكتملة وقابلة للاعتماد؛ لا تغيير في عقد البيانات أو المصادقة أو الأسرار.
+
+## 2026-08-17 — اليوميات: live-region وmetadata العربية
+
+اختُبرت `/journal` بحفظ تدوينة مؤقتة غير حساسة، وظهرت رسالة `تم حفظ يومياتك محليًا، وستتم مزامنتها تلقائيًا عند توفر الحساب.`. أثبت فحص DOM القيم `role="status"` و`aria-live="polite"` و`aria-atomic="true"`. أُرشفت التدوينة التجريبية وعادت الصفحة إلى تدوينة واحدة دون بقاء بيانات الاختبار. كما اختُبرت `/money` وأثبت عنوان الوثيقة `الفلوس | مركز القيادة الشخصي` بعد إزالة الاسم الإنجليزي من metadata.
+
+بوابات الدفعة: TypeScript PASS، ESLint PASS، Next build PASS، ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`، `0` failures)، و`git diff --check` PASS بعد تنظيف artifacts. التقرير: `verification/journal-metadata-ar-2026-08-17.md`، والسجلات الخام: `verification/journal-metadata-quality-20260817T170700Z.log` و`verification/journal-metadata-audits-20260817T170800Z.log`.
+
+**الحالة:** مكتملة وقابلة للاعتماد؛ لم تُغيّر عقود البيانات أو الملكية أو fallback المحلي ولم تُضف أسرار.
