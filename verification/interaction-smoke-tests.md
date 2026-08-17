@@ -832,3 +832,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **الحفظ والتنظيف:** حُفظت المهمة العربية مؤقتًا، ثم أُزيلت وحدها من الحالة المحلية وأُعيد تحميل `/goals`؛ عاد عداد الهدف إلى `0/1` دون بقاء عنوان التجربة.
 - **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership `45` route و`41` session و`41` visible ownership؛ responsive `34/34`؛ accessibility `34/34` و0 failures.
 - **الأدلة:** `components/goals/goals-workspace.tsx`، `verification/goals-validation-ar-2026-08-17.md`، `verification/goals-validation-quality-20260817T152817Z.log`، `verification/goals-validation-audits-verified-20260817T153128Z.log`.
+
+### 2026-08-17 — تحقق عربي لنموذج الميزانية
+
+- فُتحت `/money` واختُبر إرسال نموذج ميزانية الشهر بعد تفريغ الحقل؛ رُفض الإرسال برسالة عربية inline مرتبطة بالحقل، دون تغيير سقف الميزانية الأصلي.
+- أُدخلت قيمة `13000`؛ اختفت رسالة الرفض أثناء الكتابة، ثم نجح الحفظ وظهرت الميزانية `13,000 جنيه` والمتبقي `10,480 جنيه`، مع بقاء عدد العمليات `6`.
+- أُعيدت القيمة الأصلية `12000` وحُفظت؛ عادت الميزانية والمتبقي إلى `12,000 جنيه` و`9,480 جنيه`، ولم تترك التجربة عملية مالية أو بيانات اختبار.
+- بوابات دفعة الميزانية: TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34` و0 failures).
+- الأدلة: `components/money/money-workspace.tsx`، `verification/money-budget-validation-ar-2026-08-17.md`، `verification/money-budget-validation-quality-20260817T153525Z.log`، `verification/money-budget-validation-audits-20260817T153732Z.log`.

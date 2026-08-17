@@ -24,6 +24,7 @@ export function MoneyWorkspace() {
   const searchParams = useSearchParams()
   const { financeEntries, budget, projects, goals, addFinanceEntry, archiveFinanceEntry, updateBudget } = useCommandCenter()
   const [budgetDraft, setBudgetDraft] = useState(String(budget.monthlyLimit))
+  const [budgetError, setBudgetError] = useState('')
   const [entryFormError, setEntryFormError] = useState('')
   const [selectedMonth, setSelectedMonth] = useState(currentLocalDate().slice(0, 7))
 
@@ -134,7 +135,12 @@ export function MoneyWorkspace() {
   function saveBudget(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const amount = Number(budgetDraft)
-    if (Number.isFinite(amount) && amount >= 0) updateBudget(amount)
+    if (!budgetDraft.trim() || !Number.isFinite(amount) || amount < 0) {
+      setBudgetError('اكتب ميزانية صحيحة تساوي صفرًا أو أكثر.')
+      return
+    }
+    setBudgetError('')
+    updateBudget(amount)
   }
 
   return <div className="space-y-4">
@@ -153,9 +159,12 @@ export function MoneyWorkspace() {
             <p className="text-3xl font-semibold tracking-tight">{formatAmount(totalExpenses, budget.currency)}</p>
             <p className="mt-1 text-sm text-muted-foreground">من {formatAmount(budget.monthlyLimit, budget.currency)} — {budgetProgress}% مستخدم</p>
           </div>
-          <form onSubmit={saveBudget} className="flex gap-2">
-            <Input aria-label="الميزانية الشهرية" type="number" min="0" value={budgetDraft} onChange={(event) => setBudgetDraft(event.target.value)} className="h-auto w-32 rounded-2xl px-3 py-2" />
-            <Button type="submit" className="rounded-2xl px-4 py-2">حفظ</Button>
+          <form onSubmit={saveBudget} noValidate className="flex flex-wrap items-start gap-2">
+            <div className="flex min-w-0 flex-1 items-start gap-2 sm:flex-initial">
+              <Input aria-label="الميزانية الشهرية" type="number" min="0" value={budgetDraft} onChange={(event) => { setBudgetDraft(event.target.value); if (budgetError) setBudgetError('') }} aria-invalid={Boolean(budgetError)} aria-describedby={budgetError ? 'budget-error' : undefined} className="h-auto w-32 rounded-2xl px-3 py-2" />
+              <Button type="submit" className="rounded-2xl px-4 py-2">حفظ</Button>
+            </div>
+            {budgetError && <p id="budget-error" role="alert" className="basis-full text-xs text-destructive">{budgetError}</p>}
           </form>
         </div>
         <div className="mt-5 h-3 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${remaining < 0 ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${budgetProgress}%` }} /></div>

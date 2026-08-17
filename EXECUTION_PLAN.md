@@ -1114,3 +1114,9 @@
 |---|---|---:|---:|---:|---|---|---|
 | مهمة الهدف | إضافة `noValidate` وARIA ورسالة `اكتب مهمة الهدف أولًا.` عند الإرسال الفارغ، مع مسح الخطأ أثناء الكتابة والحفاظ على parser ومسار CRUD والتصميم | PASS — 45 route، 41 session، 41 visible ownership | PASS — 34/34 | PASS — 34/34، 0 failures | TypeScript، ESLint، diff check، Next build PASS | PASS | `components/goals/goals-workspace.tsx`، `verification/goals-validation-ar-2026-08-17.md`، `verification/goals-validation-quality-20260817T152817Z.log`، `verification/goals-validation-audits-verified-20260817T153128Z.log` |
 | اختبار المتصفح والتنظيف | رفض فارغ، مسح الخطأ، إضافة `مراجعة خطة الإطلاق`، ثم حذفها وحدها وإعادة التحميل؛ عاد العداد من `0/2` إلى `0/1` دون أثر للتجربة | PASS | PASS | PASS | موثق في التقرير المستقل | PASS | `verification/goals-validation-ar-2026-08-17.md` |
+
+## 2026-08-17 — المال: تحقق عربي لنموذج الميزانية
+| النطاق | التنفيذ والتحقق | Ownership | Responsive | Accessibility | Quality gates | الحالة | الأدلة |
+|---|---|---:|---:|---:|---|---|---|
+| ميزانية الشهر | إضافة `noValidate` وARIA ورسالة رفض عربية عند القيمة الفارغة أو غير الصالحة، مع مسح الخطأ أثناء الكتابة والحفاظ على منطق الميزانية الحالي | PASS — 45 route، 41 session، 41 visible ownership | PASS — 34/34 | PASS — 34/34، 0 failures | TypeScript، ESLint، diff check، Next build PASS؛ تحذير middleware معلوماتي فقط | PASS | `components/money/money-workspace.tsx`، `verification/money-budget-validation-ar-2026-08-17.md`، `verification/money-budget-validation-quality-20260817T153525Z.log`، `verification/money-budget-validation-audits-20260817T153732Z.log` |
+| دورة المتصفح والتنظيف | رفض قيمة فارغة برسالة عربية، مسح الخطأ بإدخال `13000`، حفظها وظهور المتبقي `10,480 جنيه`، ثم استعادة `12000` وعودة المتبقي `9,480 جنيه` دون إنشاء عملية أو تغيير البيانات الأخرى | PASS | PASS | PASS | موثق في التقرير المستقل | PASS | `verification/money-budget-validation-ar-2026-08-17.md` |
