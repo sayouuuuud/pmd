@@ -1,0 +1,25 @@
+=== board error audits rerun ===
+2026-08-17T17:51:20Z
+-- ownership --
+route_count=45
+routes_with_session=41
+routes_with_visible_ownership=41
+missing_session_routes:
+missing_visible_ownership_routes:
+ownership_audit=PASS
+ownership_exit=0
+-- responsive --
+{
+  "total": 34,
+  "failures": [],
+  "reportPath": "/home/ubuntu/pmd/docs/responsive-audit-results.json"
+}
+responsive_exit=0
+-- accessibility --
+{
+  "total": 34,
+  "failures": 0,
+  "reportPath": "/home/ubuntu/pmd/docs/accessibility-audit-results.json",
+  "failureSummary": []
+}
+accessibility_exit=0

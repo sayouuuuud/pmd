@@ -1263,3 +1263,17 @@
 ## 2026-08-17 — إغلاق دفعة live-region لخطأ نموذج المهام
 
 استُكملت مراجعة دلالة نموذج «مهمة جديدة» في `components/tasks/tasks-workspace.tsx`. أضيفت `aria-live="assertive"` و`aria-atomic="true"` إلى رسالة `#new-task-error` مع الحفاظ على النص العربي، والتحقق، و`aria-invalid` و`aria-describedby`، ومنطق الإنشاء وfallback المحلي. اختبار المتصفح على `/tasks` بإرسال النموذج فارغًا أثبت ظهور `اكتب اسم المهمة أولًا قبل الإضافة.` مع `role="alert"` والخصائص الحية الثلاث والارتباط الصحيح بالحقل. نجحت TypeScript وESLint وNext build، ثم ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`) وaccessibility (`34/34`، صفر إخفاقات). لم تتغير عقود API/DB أو الملكية أو الأسرار، ولم تُنفذ `drizzle-kit generate`. التقرير: `verification/tasks-error-live-region-ar-2026-08-17.md`، والسجل الخام: `verification/tasks-error-live-quality-and-audits-20260817T174500Z.log`.
+
+## 2026-08-17 — إغلاق دفعة live-region لأخطاء السبورة
+
+**الفجوة المغلقة:** رسائل أخطاء إنشاء السبورة والمجموعة والورقة كانت تستخدم `role="alert"` دون خصائص live-region صريحة.
+
+**الإصلاح:** أضيفت `aria-live="assertive"` و`aria-atomic="true"` إلى الرسائل القائمة، مع الحفاظ على النصوص العربية والتحقق و`aria-describedby` ومنطق الملكية وfallback المحلي.
+
+**التحقق:** أُرسل نموذج إنشاء السبورة فارغًا في `/board`، وثبت DOM ظهور `اكتب اسم السبورة أولًا` مع `role=alert` و`aria-live=assertive` و`aria-atomic=true` وارتباط الحقل بـ`new-board-title-error`. نجحت بوابات TypeScript وESLint وNext build وroute ownership وresponsive وaccessibility؛ فُحصت 45 route ownership و34 حالة responsive و34 حالة accessibility دون إخفاقات.
+
+**التوثيق:** `verification/board-error-live-region-ar-2026-08-17.md`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحدود:** لم تُنشأ بيانات سبورة فعلية؛ اقتصر اختبار المتصفح على حالة التحقق الفارغة غير الحساسة. لا تشمل الدفعة تغييرات API أو قاعدة البيانات أو التصميم.
+
+**الحكم:** PASS — الدفعة جاهزة للاعتماد كـcommit مستقل.

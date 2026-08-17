@@ -470,3 +470,11 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 - **البوابات:** TypeScript وESLint وNext build وownership (`45/45`) وresponsive (`34/34`) وaccessibility (`34/34`) — PASS.
 - **الحدود:** لم تُنشأ بيانات تجريبية ولم تتغير API أو DB أو ownership أو الأسرار؛ لم تُنفذ `drizzle-kit generate`.
 - **الدليل:** `verification/tasks-error-live-region-ar-2026-08-17.md` و`verification/tasks-error-live-quality-and-audits-20260817T174500Z.log`.
+
+## 2026-08-17 — السبورة: live-region لأخطاء نماذج الإنشاء
+
+| المجال | الفجوة | الإصلاح | الإثبات | الحكم |
+|---|---|---|---|---|
+| أخطاء إنشاء السبورة والمجموعة والورقة | `role="alert"` دون `aria-live` و`aria-atomic` صريحين | إضافة `aria-live="assertive"` و`aria-atomic="true"` مع إبقاء النصوص والتحقق و`aria-describedby` ومنطق الملكية وfallback المحلي | اختبار `/board` بإرسال نموذج سبورة فارغًا؛ DOM أكد `alert/assertive/true` وارتباط `new-board-title-error` بالحقل | PASS |
+| بوابات الجودة | خطر regression في النوع والبناء والتخطيط والوصول | تشغيل TypeScript وESLint وNext build وownership وresponsive وaccessibility | 45 route ownership، و34 حالة responsive، و34 حالة accessibility بلا إخفاقات | PASS |
+| النطاق | لا تغييرات في API أو قاعدة البيانات أو التصميم | تعديل دلالي محدود ورسائل عربية قائمة | التقرير `verification/board-error-live-region-ar-2026-08-17.md` وسجلَا الجودة والتدقيق | PASS |

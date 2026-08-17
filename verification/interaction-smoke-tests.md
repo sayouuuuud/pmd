@@ -979,3 +979,13 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 ## 2026-08-17 — المهام: live-region لخطأ نموذج الإضافة
 
 اختُبرت صفحة `/tasks` عبر إرسال نموذج «مهمة جديدة» فارغًا. ظهرت الرسالة العربية `اكتب اسم المهمة أولًا قبل الإضافة.`، وأثبت فحص DOM: `role=alert` و`aria-live=assertive` و`aria-atomic=true`، مع `aria-describedby=new-task-error` و`aria-invalid=true` في حقل العنوان. لم تُنشأ بيانات تجريبية. نجحت بوابات TypeScript وESLint وNext build وownership وresponsive وaccessibility؛ التفاصيل في `verification/tasks-error-live-region-ar-2026-08-17.md` و`verification/tasks-error-live-quality-and-audits-20260817T174500Z.log`.
+
+## 2026-08-17 — السبورة: دلالة live-region لأخطاء النماذج
+
+- **الفجوة:** رسائل أخطاء إنشاء السبورة والمجموعة والورقة كانت تحمل `role="alert"` دون `aria-live` و`aria-atomic` صريحين.
+- **الإصلاح:** إضافة `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النصوص والتحقق و`aria-describedby` ومنطق الملكية وfallback المحلي.
+- **اختبار المتصفح:** فُتح `/board` وأُرسل نموذج إنشاء السبورة فارغًا؛ ظهر الخطأ العربي `اكتب اسم السبورة أولًا`. أثبت فحص DOM القيم `role=alert` و`aria-live=assertive` و`aria-atomic=true`، مع ارتباط الحقل بالمعرّف `new-board-title-error`.
+- **البوابات:** TypeScript وESLint وNext build وroute ownership وresponsive وaccessibility — PASS. ownership: 45 مسارًا بلا مسارات ناقصة؛ responsive: 34 حالة بلا إخفاقات؛ accessibility: 34 حالة بلا إخفاقات.
+- **التنظيف:** أُعيدت artifacts العابرة إلى حالتها المتتبعة وحُذف `tsconfig.tsbuildinfo` وسجلا المحاولات الفاشلة، مع إبقاء سجل الجودة وسجل التدقيق الناجح والتقرير المستقل.
+- **التقرير:** `verification/board-error-live-region-ar-2026-08-17.md`.
+- **الحدود:** اقتصر الاختبار على التحقق الفارغ ولم تُنشأ بيانات سبورة فعلية.
