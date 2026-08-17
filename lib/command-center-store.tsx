@@ -4,6 +4,10 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteProjectUpdate, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, createRemoteProjectPricing, createRemoteProjectUpdate, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteProjectPricing, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
 
+function newLocalId(prefix: string) {
+  return `${prefix}-${typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Date.now()}`
+}
+
 type Priority = 'high' | 'medium' | 'low'
 type TaskStatus = 'todo' | 'in-progress' | 'done'
 export type GoalStatus = 'active' | 'paused' | 'completed'
@@ -302,8 +306,9 @@ type CommandCenterContextValue = {
   archiveProject: (id: string) => void
   addProjectUpdate: (input: Pick<ProjectUpdate, 'projectId' | 'body' | 'kind'>) => void
   removeProjectUpdate: (id: string) => void
-  addProjectPricing: (input: Pick<ProjectPricing, 'projectId' | 'title' | 'amount' | 'currency'> & Partial<Pick<ProjectPricing, 'status' | 'expectedDate' | 'notes'>>) => void
-  updateProjectPricing: (id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) => void
+  addProjectPricing: (input: Pick<ProjectPricing, 'projectId' | 'title' | 'amount' | 'currency'> & Partial<Pick<ProjectPricing, 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) => void
+  updateProjectPricing: (id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'financeEntryId' | 'notes'>>) => void
+  addFinanceEntryFromPricing: (pricingId: string) => void
   addFinanceEntry: (input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId' | 'recurrence'>>) => void
   updateFinanceEntry: (id: string, patch: Partial<FinanceEntry>) => void
   archiveFinanceEntry: (id: string) => void
@@ -854,7 +859,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     addProjectUpdate: (input) => {
       const body = input.body.trim()
       if (!body) return
-      const item: ProjectUpdate = { id: `project-update-${Date.now()}`, projectId: input.projectId, body, kind: input.kind, createdAt: new Date().toISOString() }
+      const kind: ProjectUpdate['kind'] = input.kind === 'decision' || input.kind === 'blocker' || input.kind === 'info' ? input.kind : 'progress'
+      const item: ProjectUpdate = { id: newLocalId('project-update'), projectId: input.projectId, body, kind, createdAt: new Date().toISOString() }
       setProjectUpdates((items) => [item, ...items])
       void createRemoteProjectUpdate(item)
     },
@@ -864,17 +870,72 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       if (item) void archiveRemoteProjectUpdate(item.projectId, id)
     },
     addProjectPricing: (input) => {
-      const item: ProjectPricing = { id: `project-pricing-${Date.now()}`, projectId: input.projectId, title: input.title.trim(), amount: Math.max(0, Math.round(input.amount)), currency: input.currency.trim() || 'جنيه', status: input.status ?? 'expected', expectedDate: input.expectedDate, notes: input.notes?.trim() || undefined, createdAt: new Date().toISOString() }
-      if (!item.title) return
+      const title = input.title.trim()
+      const amount = Number(input.amount)
+      const currency = input.currency.trim() || 'جنيه'
+      if (!title || !Number.isFinite(amount) || amount <= 0) return
+      const status: ProjectPricing['status'] = input.status === 'due' || input.status === 'received' || input.status === 'cancelled' ? input.status : 'expected'
+      const receivedAt = status === 'received' ? input.receivedAt ?? new Date().toISOString() : input.receivedAt
+      const item: ProjectPricing = { id: newLocalId('project-pricing'), projectId: input.projectId, title, amount: Math.round(amount), currency, status, expectedDate: input.expectedDate?.trim() || undefined, receivedAt, notes: input.notes?.trim() || undefined, createdAt: new Date().toISOString() }
       setProjectPricings((items) => [item, ...items])
       void createRemoteProjectPricing(item)
     },
     updateProjectPricing: (id, patch) => {
-      setProjectPricings((items) => items.map((item) => item.id === id ? { ...item, ...patch, amount: patch.amount === undefined ? item.amount : Math.max(0, Math.round(patch.amount)), title: patch.title === undefined ? item.title : patch.title.trim(), currency: patch.currency === undefined ? item.currency : patch.currency.trim() || item.currency } : item))
-      void updateRemoteProjectPricing(id, patch)
+      const current = projectPricings.find((item) => item.id === id)
+      if (!current) return
+      if (current.financeEntryId && (patch.title !== undefined || patch.amount !== undefined || patch.currency !== undefined || patch.expectedDate !== undefined || patch.status !== undefined)) return
+      const normalizedPatch: typeof patch = { ...patch }
+      if (patch.title !== undefined) {
+        const title = patch.title.trim()
+        if (!title) return
+        normalizedPatch.title = title
+      }
+      if (patch.amount !== undefined) {
+        const amount = Number(patch.amount)
+        if (!Number.isFinite(amount) || amount <= 0) return
+        normalizedPatch.amount = Math.round(amount)
+      }
+      if (patch.currency !== undefined) normalizedPatch.currency = patch.currency.trim() || current.currency || 'جنيه'
+      if (patch.status !== undefined) {
+        if (patch.status !== 'expected' && patch.status !== 'due' && patch.status !== 'received' && patch.status !== 'cancelled') return
+        normalizedPatch.status = patch.status
+        if (current.financeEntryId && normalizedPatch.status !== 'received') return
+        if (normalizedPatch.status === 'received') {
+          normalizedPatch.receivedAt = patch.receivedAt ?? current.receivedAt ?? new Date().toISOString()
+        } else {
+          normalizedPatch.receivedAt = undefined
+        }
+      }
+      if (patch.expectedDate !== undefined) normalizedPatch.expectedDate = patch.expectedDate?.trim() || undefined
+      if (patch.notes !== undefined) normalizedPatch.notes = patch.notes?.trim() || undefined
+      setProjectPricings((items) => items.map((item) => item.id === id ? { ...item, ...normalizedPatch } : item))
+      void updateRemoteProjectPricing(id, normalizedPatch)
+    },
+    addFinanceEntryFromPricing: (pricingId) => {
+      const pricing = projectPricings.find((item) => item.id === pricingId)
+      if (!pricing || pricing.status !== 'received') return
+      const financeId = pricing.financeEntryId ?? newLocalId('finance')
+      const localDate = pricing.receivedAt?.slice(0, 10) ?? new Date().toISOString().slice(0, 10)
+      const existingEntry = financeEntries.find((entry) => entry.id === financeId)
+      const entry: FinanceEntry = existingEntry ?? { id: financeId, title: pricing.title, amount: Math.max(0, Math.round(pricing.amount)), kind: 'income', category: 'دخل', localDate, recurrence: 'none', note: `تحصيل دفعة مشروع: ${pricing.title}`, projectId: pricing.projectId }
+      if (!existingEntry) setFinanceEntries((items) => [entry, ...items])
+      if (pricing.financeEntryId !== financeId) setProjectPricings((items) => items.map((item) => item.id === pricingId ? { ...item, financeEntryId: financeId } : item))
+      void createRemoteFinanceEntry(entry).then(async (result) => {
+        const remoteId = result?.item?.id
+        if (!remoteId) return
+        const linked = await updateRemoteProjectPricing(pricingId, { financeEntryId: remoteId })
+        if (!linked?.item) {
+          void archiveRemoteFinanceEntry(remoteId)
+          return
+        }
+        setFinanceEntries((items) => items.map((item) => item.id === financeId ? { ...item, id: remoteId } : item))
+        setProjectPricings((items) => items.map((item) => item.id === pricingId ? { ...item, financeEntryId: remoteId } : item))
+      }).catch(() => {
+        // Keep the local entry and temporary link so the user can retry without losing data.
+      })
     },
     addFinanceEntry: (input) => {
-      const entry: FinanceEntry = { id: `finance-${Date.now()}`, ...input, recurrence: input.recurrence ?? 'none', amount: Math.max(0, input.amount) }
+      const entry: FinanceEntry = { id: newLocalId('finance'), ...input, recurrence: input.recurrence ?? 'none', amount: Math.max(0, input.amount) }
       setFinanceEntries((items) => [entry, ...items])
       void createRemoteFinanceEntry(input)
     },

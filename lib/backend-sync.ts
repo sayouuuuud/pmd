@@ -635,10 +635,10 @@ export function archiveRemoteProjectUpdate(projectId: string, updateId: string) 
 }
 
 export function createRemoteProjectPricing(input: ProjectPricing) {
-  return request<{ item: RemoteProjectPricing }>(`/api/projects/${input.projectId}/pricing`, { method: 'POST', body: JSON.stringify({ id: input.id, title: input.title, amount: input.amount, currency: input.currency, status: input.status, expectedDate: input.expectedDate, notes: input.notes }) })
+  return request<{ item: RemoteProjectPricing }>(`/api/projects/${input.projectId}/pricing`, { method: 'POST', body: JSON.stringify({ id: input.id, title: input.title, amount: input.amount, currency: input.currency, status: input.status, expectedDate: input.expectedDate, receivedAt: input.receivedAt, financeEntryId: input.financeEntryId, notes: input.notes }) })
 }
 
-export function updateRemoteProjectPricing(id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) {
+export function updateRemoteProjectPricing(id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'financeEntryId' | 'notes'>>) {
   return request<{ item: RemoteProjectPricing }>(`/api/projects/pricing/${id}`, { method: 'PATCH', body: JSON.stringify(patch) })
 }
 

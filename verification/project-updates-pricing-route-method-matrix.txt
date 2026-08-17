@@ -1,0 +1,12 @@
+Route method matrix (unauthenticated)
+PUT      /api/projects/updates                          405 
+DELETE   /api/projects/updates                          405 
+PUT      /api/projects/pricing                          405 
+DELETE   /api/projects/pricing                          405 
+PUT      /api/projects/test-project/updates             405 
+DELETE   /api/projects/test-project/updates             401 {"error":"يجب تسجيل الدخول أولاً."}
+PUT      /api/projects/test-project/pricing             405 
+DELETE   /api/projects/test-project/pricing             405 
+GET      /api/projects/pricing/test-pricing             405 
+POST     /api/projects/pricing/test-pricing             405 
+OPTIONS  /api/projects/test-project/pricing             204 

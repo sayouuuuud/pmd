@@ -1,0 +1,7 @@
+GET    /api/projects/updates                      401 {"error":"يجب تسجيل الدخول أولاً."}
+GET    /api/projects/pricing                      401 {"error":"يجب تسجيل الدخول أولاً."}
+GET    /api/projects/test-project/updates         401 {"error":"يجب تسجيل الدخول أولاً."}
+POST   /api/projects/test-project/updates         401 {"error":"يجب تسجيل الدخول أولاً."}
+GET    /api/projects/test-project/pricing         401 {"error":"يجب تسجيل الدخول أولاً."}
+POST   /api/projects/test-project/pricing         401 {"error":"يجب تسجيل الدخول أولاً."}
+PATCH  /api/projects/pricing/test-pricing         401 {"error":"يجب تسجيل الدخول أولاً."}

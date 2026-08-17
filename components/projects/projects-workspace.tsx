@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Archive, CheckCircle2, ChevronLeft, Circle, ExternalLink, FolderKanban, GripVertical, Plus, Trash2 } from 'lucide-react'
+import { Archive, CheckCircle2, ChevronLeft, Circle, ExternalLink, FolderKanban, GripVertical, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Input } from '@/components/ui/input'
@@ -20,7 +20,7 @@ const columns: { id: ProjectStatus; label: string; tone: string }[] = [
 
 export function ProjectsWorkspace() {
   const searchParams = useSearchParams()
-  const { projects, goals, tasks, notes, projectUpdates, projectPricings, addProject, addTask, updateProject, toggleTask, archiveProject, addProjectUpdate, removeProjectUpdate, addProjectPricing, updateProjectPricing } = useCommandCenter()
+  const { projects, goals, tasks, notes, projectUpdates, projectPricings, addProject, addTask, updateProject, toggleTask, archiveProject, addProjectUpdate, removeProjectUpdate, addProjectPricing, updateProjectPricing, addFinanceEntryFromPricing } = useCommandCenter()
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
@@ -125,6 +125,7 @@ export function ProjectsWorkspace() {
       onRemoveProjectUpdate={removeProjectUpdate}
       onAddProjectPricing={addProjectPricing}
       onUpdateProjectPricing={updateProjectPricing}
+      onAddFinanceEntryFromPricing={addFinanceEntryFromPricing}
       newTaskTitle={newTaskTitle}
       onNewTaskTitleChange={setNewTaskTitle}
       onCreateTask={createProjectTask}
@@ -150,8 +151,11 @@ function ProjectCard({ project, goalTitle, taskCount, selected, onOpen, onDragSt
   </article>
 }
 
-function ProjectDetails({ project, goalTitle, linkedTasks, linkedNotes, projectUpdates, projectPricings, onAddProjectUpdate, onRemoveProjectUpdate, onAddProjectPricing, onUpdateProjectPricing, newTaskTitle, onNewTaskTitleChange, onCreateTask, onToggleTask, onUpdateProgress, onClose }: { project: Project; goalTitle?: string; linkedTasks: ReturnType<typeof useCommandCenter>['tasks']; linkedNotes: ReturnType<typeof useCommandCenter>['notes']; projectUpdates: ProjectUpdate[]; projectPricings: ProjectPricing[]; onAddProjectUpdate: (input: Pick<ProjectUpdate, 'projectId' | 'body' | 'kind'>) => void; onRemoveProjectUpdate: (id: string) => void; onAddProjectPricing: (input: Pick<ProjectPricing, 'projectId' | 'title' | 'amount' | 'currency'> & Partial<Pick<ProjectPricing, 'status' | 'expectedDate' | 'notes'>>) => void; onUpdateProjectPricing: (id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) => void; newTaskTitle: string; onNewTaskTitleChange: (value: string) => void; onCreateTask: (event: React.FormEvent<HTMLFormElement>) => void; onToggleTask: (id: string) => void; onUpdateProgress: (progress: number) => void; onClose: () => void }) {
+function ProjectDetails({ project, goalTitle, linkedTasks, linkedNotes, projectUpdates, projectPricings, onAddProjectUpdate, onRemoveProjectUpdate, onAddProjectPricing, onUpdateProjectPricing, onAddFinanceEntryFromPricing, newTaskTitle, onNewTaskTitleChange, onCreateTask, onToggleTask, onUpdateProgress, onClose }: { project: Project; goalTitle?: string; linkedTasks: ReturnType<typeof useCommandCenter>['tasks']; linkedNotes: ReturnType<typeof useCommandCenter>['notes']; projectUpdates: ProjectUpdate[]; projectPricings: ProjectPricing[]; onAddProjectUpdate: (input: Pick<ProjectUpdate, 'projectId' | 'body' | 'kind'>) => void; onRemoveProjectUpdate: (id: string) => void; onAddProjectPricing: (input: Pick<ProjectPricing, 'projectId' | 'title' | 'amount' | 'currency'> & Partial<Pick<ProjectPricing, 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) => void; onUpdateProjectPricing: (id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'financeEntryId' | 'notes'>>) => void; onAddFinanceEntryFromPricing: (pricingId: string) => void; newTaskTitle: string; onNewTaskTitleChange: (value: string) => void; onCreateTask: (event: React.FormEvent<HTMLFormElement>) => void; onToggleTask: (id: string) => void; onUpdateProgress: (progress: number) => void; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'updates' | 'pricing'>('overview')
+  const [updateError, setUpdateError] = useState<string | null>(null)
+  const [pricingError, setPricingError] = useState<string | null>(null)
+  const [editingPricingId, setEditingPricingId] = useState<string | null>(null)
   const completed = linkedTasks.filter((task) => task.status === 'done').length
   const derivedProgress = linkedTasks.length ? Math.round((completed / linkedTasks.length) * 100) : project.progress
   const statusLabel = project.status === 'done' ? 'مكتمل' : project.status === 'in-progress' ? 'جاري' : 'قادم'
@@ -163,7 +167,11 @@ function ProjectDetails({ project, goalTitle, linkedTasks, linkedNotes, projectU
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     const body = String(form.get('body') ?? '').trim()
-    if (!body) return
+    if (!body) {
+      setUpdateError('اكتب نص التحديث قبل الحفظ.')
+      return
+    }
+    setUpdateError(null)
     onAddProjectUpdate({ projectId: project.id, body, kind: String(form.get('kind') ?? 'progress') as ProjectUpdate['kind'] })
     event.currentTarget.reset()
   }
@@ -173,12 +181,58 @@ function ProjectDetails({ project, goalTitle, linkedTasks, linkedNotes, projectU
     const form = new FormData(event.currentTarget)
     const title = String(form.get('title') ?? '').trim()
     const amount = Number(form.get('amount') ?? 0)
-    if (!title || !Number.isFinite(amount)) return
-    onAddProjectPricing({ projectId: project.id, title, amount, currency: String(form.get('currency') ?? 'جنيه').trim() || 'جنيه', status: String(form.get('status') ?? 'expected') as ProjectPricing['status'], expectedDate: String(form.get('expectedDate') ?? '').trim() || undefined, notes: String(form.get('notes') ?? '').trim() || undefined })
+    const currency = String(form.get('currency') ?? 'جنيه').trim() || 'جنيه'
+    const status = String(form.get('status') ?? 'expected') as ProjectPricing['status']
+    if (!title) {
+      setPricingError('اكتب اسم الدفعة أولًا.')
+      return
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setPricingError('اكتب مبلغًا أكبر من صفر.')
+      return
+    }
+    setPricingError(null)
+    onAddProjectPricing({ projectId: project.id, title, amount, currency, status, expectedDate: String(form.get('expectedDate') ?? '').trim() || undefined, receivedAt: status === 'received' ? new Date().toISOString() : undefined, notes: String(form.get('notes') ?? '').trim() || undefined })
     event.currentTarget.reset()
   }
 
+  function updatePricing(event: React.FormEvent<HTMLFormElement>, item: ProjectPricing) {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
+    // Disabled controls are intentionally excluded from FormData. Fall back to
+    // the persisted values so a finance-linked payment can still edit notes.
+    const rawTitle = form.get('title')
+    const rawAmount = form.get('amount')
+    const rawCurrency = form.get('currency')
+    const rawStatus = form.get('status')
+    const rawExpectedDate = form.get('expectedDate')
+    const title = (rawTitle === null ? item.title : String(rawTitle)).trim()
+    const amount = rawAmount === null ? item.amount : Number(rawAmount)
+    if (!title) {
+      setPricingError('اكتب اسم الدفعة أولًا.')
+      return
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setPricingError('اكتب مبلغًا أكبر من صفر.')
+      return
+    }
+    const status = (rawStatus === null ? item.status : String(rawStatus)) as ProjectPricing['status']
+    onUpdateProjectPricing(item.id, {
+      title,
+      amount,
+      currency: (rawCurrency === null ? item.currency : String(rawCurrency)).trim() || 'جنيه',
+      status,
+      expectedDate: (rawExpectedDate === null ? item.expectedDate ?? '' : String(rawExpectedDate)).trim() || undefined,
+      receivedAt: status === 'received' ? item.receivedAt ?? new Date().toISOString() : undefined,
+      notes: String(form.get('notes') ?? '').trim() || undefined,
+    })
+    setPricingError(null)
+    setEditingPricingId(null)
+  }
+
   const statusLabelForPricing = (status: ProjectPricing['status']) => status === 'received' ? 'تم التحصيل' : status === 'due' ? 'مستحقة' : status === 'cancelled' ? 'ملغاة' : 'متوقعة'
+  const canQuickTransition = (item: ProjectPricing, nextStatus: ProjectPricing['status']) => item.status !== nextStatus && item.status !== 'cancelled' && !item.financeEntryId
+  const hasPendingFinanceSync = (item: ProjectPricing) => Boolean(item.financeEntryId?.startsWith('finance-'))
   const updateKindLabel = (kind: ProjectUpdate['kind']) => kind === 'decision' ? 'قرار' : kind === 'blocker' ? 'عائق' : kind === 'info' ? 'معلومة' : 'تقدم'
 
   return <ContentCard title="تفاصيل المشروع" description="كل ما يرتبط بالمشروع في مساحة واحدة." action={<Button type="button" variant="ghost" size="sm" onClick={onClose} className="rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted">إغلاق</Button>}>
@@ -190,8 +244,8 @@ function ProjectDetails({ project, goalTitle, linkedTasks, linkedNotes, projectU
       </div>
       <div className="space-y-4 lg:col-span-5"><div className="rounded-2xl border border-border/70 bg-card p-4"><div className="flex items-center justify-between"><h3 className="text-sm font-semibold">ملاحظات مرتبطة</h3><ExternalLink className="h-4 w-4 text-muted-foreground" /></div><div className="mt-3 space-y-2">{projectNotes.map((note) => <div key={note.id} className="rounded-xl bg-muted/70 p-3"><p className="text-xs font-semibold">{note.title}</p><p className="mt-1 line-clamp-3 text-[11px] leading-5 text-muted-foreground">{note.body}</p></div>)}{projectNotes.length === 0 && <p className="text-xs leading-5 text-muted-foreground">الملاحظات التي تحولت من مهام المشروع ستظهر هنا.</p>}</div></div><div className="rounded-2xl bg-accent/60 p-4"><p className="text-xs font-semibold text-accent-foreground">الخطوة التالية</p><p className="mt-2 text-sm leading-6 text-accent-foreground/80">اختار أصغر مهمة مفتوحة وابدأ بها، وبعدها حدّث نسبة المشروع بدل انتظار نهاية كل شيء.</p></div></div>
     </div>}
-    {activeTab === 'updates' && <div className="grid grid-cols-1 gap-4 lg:grid-cols-12"><div className="space-y-3 lg:col-span-7"><div className="space-y-3">{projectUpdates.map((item) => <article key={item.id} className="rounded-2xl border border-border/70 bg-card p-4"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-accent px-2 py-1 text-[11px] text-accent-foreground">{updateKindLabel(item.kind)}</span><div className="flex items-center gap-2"><time className="text-[11px] text-muted-foreground">{new Date(item.createdAt).toLocaleString('ar-EG')}</time><Button type="button" variant="ghost" size="icon-sm" aria-label="حذف التحديث" onClick={() => onRemoveProjectUpdate(item.id)} className="rounded-full p-1 text-muted-foreground hover:bg-warning"><Trash2 className="h-3.5 w-3.5" /></Button></div></div><p className="mt-3 whitespace-pre-wrap text-sm leading-6">{item.body}</p></article>)}{projectUpdates.length === 0 && <EmptyState icon={ExternalLink} title="لا توجد تحديثات بعد" description="سجّل قرارًا أو تقدمًا أو عائقًا لتظل صورة المشروع محدثة." />}</div></div><div className="lg:col-span-5"><form onSubmit={createUpdate} className="space-y-3 rounded-2xl bg-muted/70 p-4"><h3 className="text-sm font-semibold">تحديث جديد</h3><Select name="kind" aria-label="نوع التحديث" defaultValue="progress" className="w-full rounded-2xl px-3 py-3"><option value="progress">تقدم</option><option value="decision">قرار</option><option value="blocker">عائق</option><option value="info">معلومة</option></Select><Textarea name="body" aria-label="نص التحديث" className="min-h-28 w-full resize-none rounded-2xl px-3 py-3" placeholder="ما الذي تغير في المشروع؟" /><Button type="submit" className="w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> حفظ التحديث</Button></form></div></div>}
-    {activeTab === 'pricing' && <div className="grid grid-cols-1 gap-4 lg:grid-cols-12"><div className="space-y-3 lg:col-span-7">{projectPricings.map((item) => <article key={item.id} className="rounded-2xl border border-border/70 bg-card p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-semibold">{item.title}</h3><p className="mt-1 text-xs text-muted-foreground">{item.expectedDate ? `موعد متوقع: ${item.expectedDate}` : 'بدون موعد محدد'}{item.notes ? ` · ${item.notes}` : ''}</p></div><div className="text-left"><p className="font-semibold text-primary">{item.amount.toLocaleString('ar-EG')} {item.currency}</p><span className="text-[11px] text-muted-foreground">{statusLabelForPricing(item.status)}</span></div></div><div className="mt-3 flex flex-wrap gap-2"><Button type="button" variant={item.status === 'due' ? 'default' : 'outline'} size="sm" onClick={() => onUpdateProjectPricing(item.id, { status: 'due' })} className="rounded-xl px-3 py-1.5 text-xs">مستحقة</Button><Button type="button" variant={item.status === 'received' ? 'default' : 'outline'} size="sm" onClick={() => onUpdateProjectPricing(item.id, { status: 'received', receivedAt: new Date().toISOString() })} className="rounded-xl px-3 py-1.5 text-xs">تم التحصيل</Button><Button type="button" variant={item.status === 'cancelled' ? 'default' : 'outline'} size="sm" onClick={() => onUpdateProjectPricing(item.id, { status: 'cancelled' })} className="rounded-xl px-3 py-1.5 text-xs">إلغاء</Button></div>{item.status === 'received' && !item.financeEntryId && <p className="mt-3 rounded-xl bg-accent/60 px-3 py-2 text-xs leading-5 text-accent-foreground">اقتراح: أضف هذه الدفعة كدخل في قسم المالية حتى ينعكس التحصيل على ملخصك المالي.</p>}</article>)}{projectPricings.length === 0 && <EmptyState icon={FolderKanban} title="لا توجد دفعات" description="أضف دفعات المشروع المتوقعة أو المستحقة من النموذج المجاور." />}</div><div className="lg:col-span-5"><form onSubmit={createPricing} className="space-y-3 rounded-2xl bg-muted/70 p-4"><h3 className="text-sm font-semibold">دفعة جديدة</h3><Input name="title" aria-label="اسم الدفعة" className="w-full rounded-2xl px-3 py-3" placeholder="مثال: الدفعة الأولى" /><div className="grid grid-cols-2 gap-2"><Input name="amount" type="number" min="0" aria-label="المبلغ" className="w-full rounded-2xl px-3 py-3" placeholder="المبلغ" /><Input name="currency" defaultValue="جنيه" aria-label="العملة" className="w-full rounded-2xl px-3 py-3" placeholder="العملة" /></div><Select name="status" aria-label="حالة الدفعة" defaultValue="expected" className="w-full rounded-2xl px-3 py-3"><option value="expected">متوقعة</option><option value="due">مستحقة</option><option value="received">تم التحصيل</option><option value="cancelled">ملغاة</option></Select><Input name="expectedDate" aria-label="موعد الدفعة" className="w-full rounded-2xl px-3 py-3" placeholder="موعد متوقع: 2026-08-25" /><Textarea name="notes" aria-label="ملاحظات الدفعة" className="min-h-20 w-full resize-none rounded-2xl px-3 py-3" placeholder="ملاحظات اختيارية" /><Button type="submit" className="w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> إضافة الدفعة</Button></form></div></div>}
+    {activeTab === 'updates' && <div className="grid grid-cols-1 gap-4 lg:grid-cols-12"><div className="space-y-3 lg:col-span-7"><div className="space-y-3">{projectUpdates.map((item) => <article key={item.id} className="rounded-2xl border border-border/70 bg-card p-4"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-accent px-2 py-1 text-[11px] text-accent-foreground">{updateKindLabel(item.kind)}</span><div className="flex items-center gap-2"><time className="text-[11px] text-muted-foreground">{new Date(item.createdAt).toLocaleString('ar-EG')}</time><Button type="button" variant="ghost" size="icon-sm" aria-label="حذف التحديث" onClick={() => onRemoveProjectUpdate(item.id)} className="rounded-full p-1 text-muted-foreground hover:bg-warning"><Trash2 className="h-3.5 w-3.5" /></Button></div></div><p className="mt-3 whitespace-pre-wrap text-sm leading-6">{item.body}</p></article>)}{projectUpdates.length === 0 && <EmptyState icon={ExternalLink} title="لا توجد تحديثات بعد" description="سجّل قرارًا أو تقدمًا أو عائقًا لتظل صورة المشروع محدثة." />}</div></div><div className="lg:col-span-5"><form onSubmit={createUpdate} className="space-y-3 rounded-2xl bg-muted/70 p-4"><h3 className="text-sm font-semibold">تحديث جديد</h3><Select name="kind" aria-label="نوع التحديث" defaultValue="progress" className="w-full rounded-2xl px-3 py-3"><option value="progress">تقدم</option><option value="decision">قرار</option><option value="blocker">عائق</option><option value="info">معلومة</option></Select><Textarea name="body" aria-label="نص التحديث" className="min-h-28 w-full resize-none rounded-2xl px-3 py-3" placeholder="ما الذي تغير في المشروع؟" />{updateError && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-xs leading-5 text-destructive">{updateError}</p>}<Button type="submit" className="w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> حفظ التحديث</Button></form></div></div>}
+    {activeTab === 'pricing' && <div className="grid grid-cols-1 gap-4 lg:grid-cols-12"><div className="space-y-3 lg:col-span-7">{editingPricingId && (() => { const item = projectPricings.find((pricing) => pricing.id === editingPricingId); return item ? <form onSubmit={(event) => updatePricing(event, item)} className="space-y-3 rounded-2xl border border-primary/20 bg-primary/5 p-4"><div className="flex items-center justify-between gap-2"><h3 className="text-sm font-semibold">تعديل الدفعة</h3><Button type="button" variant="ghost" size="icon-sm" aria-label="إلغاء تعديل الدفعة" onClick={() => setEditingPricingId(null)} className="rounded-full"><X className="h-4 w-4" /></Button></div><Input name="title" defaultValue={item.title} aria-label="اسم الدفعة المعدلة" disabled={Boolean(item.financeEntryId)} className="w-full rounded-2xl px-3 py-3" /><div className="grid grid-cols-2 gap-2"><Input name="amount" type="number" min="0" defaultValue={item.amount} aria-label="المبلغ المعدل" disabled={Boolean(item.financeEntryId)} className="w-full rounded-2xl px-3 py-3" /><Input name="currency" defaultValue={item.currency} aria-label="العملة المعدلة" disabled={Boolean(item.financeEntryId)} className="w-full rounded-2xl px-3 py-3" /></div><Select name="status" aria-label="حالة الدفعة المعدلة" defaultValue={item.status} disabled={Boolean(item.financeEntryId)} className="w-full rounded-2xl px-3 py-3"><option value="expected">متوقعة</option><option value="due">مستحقة</option><option value="received">تم التحصيل</option><option value="cancelled">ملغاة</option></Select>{item.financeEntryId && <p className="rounded-xl bg-accent/60 px-3 py-2 text-xs leading-5 text-accent-foreground">هذه الدفعة مرتبطة بسجل مالي؛ الحقول الأساسية مقفلة للحفاظ على تطابق التحصيل مع المالية. يمكنك تعديل الملاحظات فقط.</p>}<Input name="expectedDate" defaultValue={item.expectedDate ?? ''} aria-label="موعد الدفعة المعدل" disabled={Boolean(item.financeEntryId)} className="w-full rounded-2xl px-3 py-3" placeholder="موعد متوقع: 2026-08-25" /><Textarea name="notes" defaultValue={item.notes ?? ''} aria-label="ملاحظات الدفعة المعدلة" className="min-h-20 w-full resize-none rounded-2xl px-3 py-3" placeholder="ملاحظات اختيارية" /><div className="flex gap-2"><Button type="submit" className="flex-1 rounded-2xl px-4 py-3"><CheckCircle2 className="h-4 w-4" /> حفظ التعديل</Button><Button type="button" variant="outline" onClick={() => setEditingPricingId(null)} className="rounded-2xl px-4 py-3">إلغاء</Button></div></form> : null })()}{projectPricings.map((item) => <article key={item.id} className="rounded-2xl border border-border/70 bg-card p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-semibold">{item.title}</h3><p className="mt-1 text-xs text-muted-foreground">{item.expectedDate ? `موعد متوقع: ${item.expectedDate}` : 'بدون موعد محدد'}{item.notes ? ` · ${item.notes}` : ''}</p></div><div className="text-left"><p className="font-semibold text-primary">{item.amount.toLocaleString('ar-EG')} {item.currency}</p><span className="text-[11px] text-muted-foreground">{statusLabelForPricing(item.status)}</span></div></div><div className="mt-3 flex flex-wrap gap-2"><Button type="button" variant="outline" size="sm" onClick={() => setEditingPricingId(item.id)} className="rounded-xl px-3 py-1.5 text-xs"><Pencil className="h-3.5 w-3.5" /> تعديل</Button><Button type="button" variant={item.status === 'due' ? 'default' : 'outline'} size="sm" disabled={!canQuickTransition(item, 'due')} onClick={() => onUpdateProjectPricing(item.id, { status: 'due' })} className="rounded-xl px-3 py-1.5 text-xs">مستحقة</Button><Button type="button" variant={item.status === 'received' ? 'default' : 'outline'} size="sm" disabled={!canQuickTransition(item, 'received')} onClick={() => onUpdateProjectPricing(item.id, { status: 'received', receivedAt: new Date().toISOString() })} className="rounded-xl px-3 py-1.5 text-xs">تم التحصيل</Button><Button type="button" variant={item.status === 'cancelled' ? 'default' : 'outline'} size="sm" disabled={!canQuickTransition(item, 'cancelled')} onClick={() => onUpdateProjectPricing(item.id, { status: 'cancelled' })} className="rounded-xl px-3 py-1.5 text-xs">إلغاء</Button></div>{item.status === 'received' && <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-accent/60 px-3 py-2 text-xs text-accent-foreground"><p className="leading-5">{item.financeEntryId ? hasPendingFinanceSync(item) ? 'الدخل محفوظ محليًا، لكن المزامنة لم تكتمل. يمكنك إعادة المحاولة دون إنشاء سجل محلي مكرر.' : 'تمت إضافة الدفعة إلى قسم المالية كدخل مرتبط بالمشروع.' : 'حوّل الدفعة إلى دخل في قسم المالية حتى ينعكس التحصيل على ملخصك المالي.'}</p>{item.financeEntryId && !hasPendingFinanceSync(item) ? <span className="rounded-full bg-card/70 px-2 py-1 font-semibold">تم الربط</span> : <Button type="button" size="sm" onClick={() => onAddFinanceEntryFromPricing(item.id)} className="rounded-xl px-3 py-1.5 text-xs">{hasPendingFinanceSync(item) ? 'إعادة المزامنة' : 'إضافة إلى المالية'}</Button>}</div>}</article>)}{projectPricings.length === 0 && <EmptyState icon={FolderKanban} title="لا توجد دفعات" description="أضف دفعات المشروع المتوقعة أو المستحقة من النموذج المجاور." />}</div><div className="lg:col-span-5"><form onSubmit={createPricing} className="space-y-3 rounded-2xl bg-muted/70 p-4"><h3 className="text-sm font-semibold">دفعة جديدة</h3><Input name="title" aria-label="اسم الدفعة" className="w-full rounded-2xl px-3 py-3" placeholder="مثال: الدفعة الأولى" /><div className="grid grid-cols-2 gap-2"><Input name="amount" type="number" min="0" aria-label="المبلغ" className="w-full rounded-2xl px-3 py-3" placeholder="المبلغ" /><Input name="currency" defaultValue="جنيه" aria-label="العملة" className="w-full rounded-2xl px-3 py-3" placeholder="العملة" /></div><Select name="status" aria-label="حالة الدفعة" defaultValue="expected" className="w-full rounded-2xl px-3 py-3"><option value="expected">متوقعة</option><option value="due">مستحقة</option><option value="received">تم التحصيل</option><option value="cancelled">ملغاة</option></Select><Input name="expectedDate" aria-label="موعد الدفعة" className="w-full rounded-2xl px-3 py-3" placeholder="موعد متوقع: 2026-08-25" /><Textarea name="notes" aria-label="ملاحظات الدفعة" className="min-h-20 w-full resize-none rounded-2xl px-3 py-3" placeholder="ملاحظات اختيارية" />{pricingError && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-xs leading-5 text-destructive">{pricingError}</p>}<Button type="submit" className="w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> إضافة الدفعة</Button></form></div></div>}
   </ContentCard>
 }
 

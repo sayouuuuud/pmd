@@ -24,8 +24,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 
   try {
     const { id } = await context.params
-    const item = await ownedProject(id, user.id)
-    if (!item) return json({ error: 'المشروع غير موجود.' }, { status: 404 })
+    if (!(await ownedProject(id, user.id))) return json({ error: 'المشروع غير موجود.' }, { status: 404 })
     const db = getDb()
     const items = await db.select().from(projectUpdate).where(and(eq(projectUpdate.projectId, id), eq(projectUpdate.createdBy, user.id))).orderBy(desc(projectUpdate.createdAt)).limit(100)
     return json({ items })
@@ -40,7 +39,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
 
   try {
     const { id } = await context.params
-    const updateId = new URL(request.url).searchParams.get('updateId')
+    const updateId = new URL(request.url).searchParams.get('updateId')?.trim()
     if (!updateId) return json({ error: 'معرّف التحديث مطلوب.' }, { status: 400 })
     const db = getDb()
     const [deleted] = await db.delete(projectUpdate).where(and(eq(projectUpdate.id, updateId), eq(projectUpdate.projectId, id), eq(projectUpdate.createdBy, user.id))).returning({ id: projectUpdate.id })
@@ -59,13 +58,17 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const { id } = await context.params
     const body = await request.json() as Record<string, unknown>
     const text = typeof body.body === 'string' ? body.body.trim() : ''
-    const kind = typeof body.kind === 'string' && kinds.has(body.kind) ? body.kind : 'progress'
     if (!text) return json({ error: 'نص التحديث مطلوب.' }, { status: 400 })
+    if (text.length > 4000) return json({ error: 'نص التحديث طويل جدًا.' }, { status: 400 })
+    const kind = body.kind === undefined ? 'progress' : typeof body.kind === 'string' && kinds.has(body.kind) ? body.kind : undefined
+    if (!kind) return json({ error: 'نوع التحديث غير صالح.' }, { status: 400 })
+
     const db = getDb()
     const item = await ownedProject(id, user.id)
     if (!item) return json({ error: 'المشروع غير موجود.' }, { status: 404 })
     const workspaceId = item.workspaceId ?? (await getOrCreatePersonalWorkspace(db, user.id)).id
-    const [created] = await db.insert(projectUpdate).values({ id: typeof body.id === 'string' && body.id.trim() ? body.id.trim() : crypto.randomUUID(), workspaceId, projectId: id, createdBy: user.id, body: text, kind }).returning()
+    const requestedId = typeof body.id === 'string' && body.id.trim() ? body.id.trim() : crypto.randomUUID()
+    const [created] = await db.insert(projectUpdate).values({ id: requestedId, workspaceId, projectId: id, createdBy: user.id, body: text, kind }).returning()
     return json({ item: created }, { status: 201 })
   } catch {
     return backendUnavailable()
