@@ -132,3 +132,8 @@ Better Auth الحالي لا يحتوي 2FA. سيتم إدخال 2FA تجريب
 - بوابات TypeScript وESLint و`git diff --check` و`next build` نجحت بعد التعديل. تحذير Next.js الخاص بتقادم convention الخاص بـ`middleware` معلوماتي فقط.
 
 النتيجة: فجوة زر القائمة غير الوظيفي في الـshell أُغلقت، وأصبح التنقل السريع قابلًا للاستخدام والوصول من كل صفحات الـshell.
+
+
+### فحص Design System — 2026-08-17
+
+فُتحت `/design-system` على `localhost:3004` وتأكد ظهور مرجع RTL للمكونات المشتركة: StatCard وContentCard وButton variants وBadge وInput وSelect وTextarea وCheckbox وEmptyState وLoadingState. فُتح Dialog «إضافة تذكير تجريبي» بنجاح، وظهر عنوانه ومحتواه وأزرار الإلغاء والحفظ الموحدة، دون تغيير بيانات التطبيق. الفحص البصري أكد استمرار Cairo والكروت المستديرة والتوكنز الدلالية.
