@@ -21,26 +21,33 @@ export function AuthForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string; password?: string }>({})
   const [loading, setLoading] = useState(false)
+
+  function clearFieldError(field: 'name' | 'email' | 'password') {
+    setFieldErrors((current) => ({ ...current, [field]: undefined }))
+    setError('')
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
+    setFieldErrors({})
 
     if (mode === 'signup' && !name.trim()) {
-      setError('اكتب اسمك أولًا.')
+      setFieldErrors({ name: 'اكتب اسمك أولًا.' })
       return
     }
     if (!email.trim()) {
-      setError('اكتب البريد الإلكتروني أولًا.')
+      setFieldErrors({ email: 'اكتب البريد الإلكتروني أولًا.' })
       return
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('اكتب بريدًا إلكترونيًا صحيحًا.')
+      setFieldErrors({ email: 'اكتب بريدًا إلكترونيًا صحيحًا.' })
       return
     }
     if (password.length < 8) {
-      setError('كلمة المرور يجب أن تكون ٨ أحرف على الأقل.')
+      setFieldErrors({ password: 'كلمة المرور يجب أن تكون ٨ أحرف على الأقل.' })
       return
     }
 
@@ -67,13 +74,13 @@ export function AuthForm() {
     </div>
 
     <form className="space-y-4" onSubmit={submit} noValidate>
-      {mode === 'signup' && <label className="block"><span className="mb-2 block text-sm font-medium">الاسم</span><div className="relative"><UserRound className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input required value={name} onChange={(event) => setName(event.target.value)} className="h-12 rounded-2xl pr-10 pl-4" placeholder="اسمك" /></div></label>}
-      <label className="block"><span className="mb-2 block text-sm font-medium">البريد الإلكتروني</span><div className="relative"><Mail className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-12 rounded-2xl pr-10 pl-4" placeholder="you@example.com" dir="ltr" /></div></label>
-      <label className="block"><span className="mb-2 block text-sm font-medium">كلمة المرور</span><div className="relative"><LockKeyhole className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-12 rounded-2xl pr-10 pl-4" placeholder="٨ أحرف على الأقل" dir="ltr" /></div></label>
+      {mode === 'signup' && <label className="block" htmlFor="auth-name"><span className="mb-2 block text-sm font-medium">الاسم</span><div className="relative"><UserRound className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="auth-name" required value={name} onChange={(event) => { setName(event.target.value); clearFieldError('name') }} aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'auth-name-error' : undefined} autoComplete="name" className="h-12 rounded-2xl pr-10 pl-4" placeholder="اسمك" /></div>{fieldErrors.name && <p id="auth-name-error" role="alert" className="mt-2 text-xs text-destructive">{fieldErrors.name}</p>}</label>}
+      <label className="block" htmlFor="auth-email"><span className="mb-2 block text-sm font-medium">البريد الإلكتروني</span><div className="relative"><Mail className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="auth-email" required type="email" value={email} onChange={(event) => { setEmail(event.target.value); clearFieldError('email') }} aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'auth-email-error' : undefined} autoComplete="email" className="h-12 rounded-2xl pr-10 pl-4" placeholder="you@example.com" dir="ltr" /></div>{fieldErrors.email && <p id="auth-email-error" role="alert" className="mt-2 text-xs text-destructive">{fieldErrors.email}</p>}</label>
+      <label className="block" htmlFor="auth-password"><span className="mb-2 block text-sm font-medium">كلمة المرور</span><div className="relative"><LockKeyhole className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="auth-password" required minLength={8} type="password" value={password} onChange={(event) => { setPassword(event.target.value); clearFieldError('password') }} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'auth-password-error' : undefined} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} className="h-12 rounded-2xl pr-10 pl-4" placeholder="٨ أحرف على الأقل" dir="ltr" /></div>{fieldErrors.password && <p id="auth-password-error" role="alert" className="mt-2 text-xs text-destructive">{fieldErrors.password}</p>}</label>
       {error && <div role="alert" className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm leading-6 text-destructive">{error}</div>}
       <Button type="submit" disabled={loading} className="h-12 w-full rounded-2xl px-4 text-sm font-semibold">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}{mode === 'signin' ? 'دخول إلى حسابي' : 'إنشاء الحساب'}</Button>
     </form>
 
-    <Button type="button" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError('') }} variant="ghost" className="mt-6 h-auto w-full rounded-2xl py-2 text-center text-sm text-muted-foreground hover:text-foreground">{mode === 'signin' ? 'لسه معندكش حساب؟ أنشئ حساب جديد' : 'عندك حساب بالفعل؟ سجل الدخول'}</Button>
+          <Button type="button" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setFieldErrors({}) }} variant="ghost" className="mt-6 h-auto w-full rounded-2xl py-2 text-center text-sm text-muted-foreground hover:text-foreground">{mode === 'signin' ? 'لسه معندكش حساب؟ أنشئ حساب جديد' : 'عندك حساب بالفعل؟ سجل الدخول'}</Button>
   </div>
 }

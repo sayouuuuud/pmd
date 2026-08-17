@@ -846,3 +846,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 اختُبر نموذج «إضافة مهمة للمشروع» على `/projects` في الواجهة العربية. أُرسل الحقل فارغًا فظهرت رسالة عربية inline بدور `alert` مرتبطة بالحقل عبر ARIA، وبقي المشروع دون مهمة جديدة. بعد إدخال `مراجعة بنية المشروع` اختفى الخطأ أثناء الكتابة، ثم نجحت الإضافة مؤقتًا. حُذفت المهمة التجريبية وحدها مع سطر خطة اليوم المرتبط بها، وأُعيد تحميل الصفحة فعاد عدد مهام المشروع إلى 1 واختفى أثر التجربة.
 
 بوابات الجودة: TypeScript وESLint و`git diff --check` وNext build PASS. تدقيق الملكية PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، وaccessibility PASS (`34/34`، `0` failures). الأدلة: `verification/project-task-validation-ar-2026-08-17.md`، `verification/project-task-validation-quality-20260817T154102Z.log`، و`verification/project-task-validation-audits-20260817T154313Z.log`.
+
+## 2026-08-17 — المصادقة: أخطاء الحقول العربية المرتبطة
+
+- **النطاق:** نموذج `components/auth/auth-form.tsx` في `/login`، وضعا تسجيل الدخول وإنشاء الحساب، دون OAuth أو طلبات حساب فعلية.
+- **التحقق:** إرسال الدخول دون بريد أظهر `اكتب البريد الإلكتروني أولًا.` inline؛ إدخال `test@example.com` مسح الخطأ. إدخال كلمة المرور `123` أظهر `كلمة المرور يجب أن تكون ٨ أحرف على الأقل.`؛ إدخال `12345678` مسح الخطأ. في وضع إنشاء الحساب، إرسال الاسم الفارغ أظهر `اكتب اسمك أولًا.`؛ إدخال `مستخدم تجريبي` مسح الخطأ.
+- **السلوك الدلالي:** كل خطأ مرتبط بالحقل عبر `aria-describedby` و`aria-invalid`، والخطأ العام منفصل عن أخطاء الحقول. لم يُرسل دخول أو إنشاء حساب حقيقي.
+- **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS (`45` route، `41` session، `41` visible ownership)؛ responsive PASS (`34/34`)؛ accessibility PASS (`34/34`، 0 failures).
+- **الأدلة:** `verification/auth-field-errors-ar-2026-08-17.md`، `verification/auth-field-errors-audits-20260817T154857Z.log`، `verification/auth-field-validation-quality-20260817T154708Z.log`.

@@ -1126,3 +1126,16 @@
 |---|---|---|---|---|---|---|---|
 | مهمة المشروع المرتبطة | إضافة `noValidate` و`aria-invalid` و`aria-describedby` ورسالة `role="alert"` عربية عند إرسال اسم فارغ، مع مسح الخطأ أثناء الكتابة والحفاظ على منطق إنشاء المهمة وعلاقة `projectId` | PASS — 45 route، 41 session، 41 visible ownership | PASS — 34/34 | PASS — 34/34، 0 failures | TypeScript وESLint و`git diff --check` وNext build PASS | PASS | `components/projects/projects-workspace.tsx`، `verification/project-task-validation-ar-2026-08-17.md`، `verification/project-task-validation-quality-20260817T154102Z.log`، `verification/project-task-validation-audits-20260817T154313Z.log` |
 | دورة المتصفح والتنظيف | رفض فارغ، مسح الخطأ بعد إدخال `مراجعة بنية المشروع`، إنشاء المهمة العربية مؤقتًا، ثم حذفها وحدها مع عنصر خطة اليوم المرتبط وإعادة التحميل؛ عاد عدد المهام المرتبطة إلى 1 دون أثر تجريبي | PASS | PASS | PASS | موثق في التقرير المستقل | PASS | `verification/project-task-validation-ar-2026-08-17.md` |
+
+## 2026-08-17 — المصادقة: ربط أخطاء الحقول العربية بـARIA
+أُغلقت فجوة عرض أخطاء الحقول في `components/auth/auth-form.tsx` بفصل أخطاء الاسم والبريد الإلكتروني وكلمة المرور عن الخطأ العام، وربط كل رسالة بالحقل المقابل عبر `aria-describedby` و`aria-invalid` مع الحفاظ على Better Auth وتدفق البريد/كلمة المرور دون OAuth أو تغيير في عقد المصادقة.
+اختُبر المسار على `http://localhost:3004/login` باستخدام بيانات شكلية فقط: رفض البريد الفارغ برسالة `اكتب البريد الإلكتروني أولًا.`، ثم مسحها أثناء الكتابة؛ رفض كلمة المرور القصيرة `123` برسالة `كلمة المرور يجب أن تكون ٨ أحرف على الأقل.`، ثم مسحها بعد إدخال `12345678`؛ وفي وضع إنشاء الحساب رُفض الاسم الفارغ برسالة `اكتب اسمك أولًا.` ثم مُسحت بعد إدخال `مستخدم تجريبي`. لم يُنفّذ دخول أو إنشاء حساب حقيقي.
+الأدلة: `verification/auth-field-errors-ar-2026-08-17.md`، `verification/auth-field-validation-quality-20260817T154708Z.log`، `verification/auth-field-errors-audits-20260817T154857Z.log`. النتيجة: **PASS** — TypeScript وESLint و`git diff --check` وNext build؛ ownership `45` Route Handler (`41` session و`41` visible ownership)؛ responsive `34/34`؛ accessibility `34/34` و0 failures.
+
+---
+
+### سجل التقدم — دفعة المصادقة
+- **الحالة:** مكتملة وقابلة للاعتماد بعد إلحاق أدلة التفاعل والتدقيق في ملفات التحقق المركزية.
+- **نطاق الإصلاح:** أخطاء الاسم والبريد وكلمة المرور فقط؛ لا تغيير في Better Auth أو قاعدة البيانات أو أسرار البيئة.
+- **حماية البيانات:** استخدمت قيم اختبار شكلية، ولم يُرسل أي طلب دخول أو إنشاء حساب فعلي.
+- **القرار:** إغلاق فجوة ARIA والانتقال إلى جرد عملي جديد بعد إنشاء commit مستقل.
