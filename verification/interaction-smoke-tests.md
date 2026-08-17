@@ -782,3 +782,11 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **التنظيف:** أُرشِف العميل التجريبي، ثم أُزيلت مساحة الاختبار وبياناتها المؤرشفة من localStorage فقط. أظهر التحقق النهائي مساحة المستخدم الشخصية وعميلها الأصليين فقط.
 - **البوابات:** TypeScript وESLint و`git diff --check` وNext build نجحت في `verification/workspace-validation-quality-20260817T143610Z.log`؛ ownership `45` route و`41` مع session وownership ظاهر؛ responsive `34/34`؛ accessibility `34/34` في `verification/workspace-validation-audits-20260817T143853Z.log`.
 - **النتيجة:** PASS، ولا توجد بيانات اختبار متبقية.
+
+## دفعة onboarding — تحقق عربي — 2026-08-17
+- **النطاق:** `components/onboarding/onboarding-flow.tsx`، حقل الاسم الإلزامي في الخطوة الأولى.
+- **الرفض المرئي:** الضغط على «التالي» مع اسم فارغ أبقى المستخدم في الخطوة الأولى وأظهر `اكتب اسمك أولًا.` inline بدور `alert`، مع `aria-invalid` و`aria-describedby`.
+- **التصحيح:** إدخال اسم صحيح مسح رسالة الخطأ أثناء الكتابة، ثم نجح التقدم عبر الخطوات وإكمال onboarding وظهور شاشة النجاح العربية.
+- **الاستعادة:** حُفظت الحالة المحلية الأصلية قبل الاختبار، ثم أُعيدت بعد النجاح وأُعيد تحميل الصفحة؛ عادت الصفحة إلى الحالة الأصلية ولم تبقَ بيانات اختبار.
+- **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS في `verification/onboarding-validation-quality-20260817T144336Z.log`؛ ownership `45/45` مع `41` session و`41` visible ownership؛ responsive `34/34`؛ accessibility `34/34` في `verification/onboarding-validation-audits-20260817T145455Z.log`.
+- **النتيجة:** PASS، فجوة onboarding العربية مغلقة دون تغيير الهوية البصرية أو RTL.

@@ -281,3 +281,10 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 أُغلقت فجوة التحقق الصامت في `components/workspace/workspace-workspace.tsx`. اختُبر رفض اسم مساحة العمل الفارغ، ثم إنشاء مساحة `مساحة اختبار التحقق` بعد مسح الخطأ. داخلها اختُبر رفض اسم العميل الفارغ، ورفض البريد الاختياري `invalid-email`، ثم نجاح الإنشاء بعد إدخال `test@example.com`. أُرشِف العميل وأُزيلت مساحة الاختبار وبياناتها من localStorage، وبقيت بيانات المستخدم الأصلية.
 
 الأدلة: `verification/workspace-validation-ar-2026-08-17.md`، `verification/workspace-validation-quality-20260817T143610Z.log`، `verification/workspace-validation-audits-20260817T143853Z.log`. البوابات: TypeScript وESLint وdiff check وNext build PASS؛ ownership `45/45` مع 41 route مملوكًا ظاهرًا؛ responsive `34/34`؛ accessibility `34/34`. **الحالة: PASS — فجوة UX مغلقة ولا توجد بيانات اختبار متبقية.**
+
+## 2026-08-17 — دفعة onboarding
+أُغلقت فجوة التحقق الصامت في حقل الاسم الإلزامي داخل `components/onboarding/onboarding-flow.tsx`. رفض المسار الاسم الفارغ برسالة عربية inline مرتبطة بـARIA، ومسح الخطأ أثناء الكتابة، ثم نجح المسار الكامل حتى شاشة النجاح. بعد ذلك استُعيدت الحالة المحلية الأصلية وتحقق عدم بقاء بيانات اختبار.
+
+الأدلة: `verification/onboarding-validation-ar-2026-08-17.md`، `verification/onboarding-validation-quality-20260817T144336Z.log`، `verification/onboarding-validation-audits-20260817T145455Z.log`.
+
+النتيجة: **PASS** — TypeScript، ESLint، `git diff --check`، Next build؛ ownership `45` Route Handler (`41` session و`41` visible ownership)؛ responsive `34/34`؛ accessibility `34/34`.

@@ -1081,3 +1081,10 @@
 أُرشِف العميل التجريبي، ثم أُزيلت مساحة الاختبار وبياناتها المؤرشفة من localStorage فقط، وعادت مساحة المستخدم الشخصية وعميلها الأصليان دون تغيير. الأدلة: `verification/workspace-validation-ar-2026-08-17.md`، `verification/workspace-validation-quality-20260817T143610Z.log`، و`verification/workspace-validation-audits-20260817T143853Z.log`.
 
 البوابات: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS؛ ownership PASS (45 Route Handler، 41 session و41 visible ownership)، responsive PASS (34/34)، accessibility PASS (34/34). **الحالة: دفعة مساحة العمل والعملاء مكتملة وجاهزة للاعتماد.**
+
+## 2026-08-17 — تحقق عربي لـ onboarding
+أُغلقت فجوة الفشل الصامت في الخطوة الأولى من `components/onboarding/onboarding-flow.tsx`. عند إرسال الاسم فارغًا ظهرت الرسالة العربية `اكتب اسمك أولًا.` inline بدور `alert`، مع `aria-invalid` و`aria-describedby`، ثم مُسحت الرسالة فور الكتابة. نجح إدخال اسم صحيح وإكمال onboarding حتى شاشة النجاح، ثم أُعيدت الحالة المحلية الكاملة السابقة وتحقق رجوع الصفحة إلى الحالة الأصلية دون بيانات اختبار متبقية.
+
+الأدلة: `verification/onboarding-validation-ar-2026-08-17.md`، `verification/onboarding-validation-quality-20260817T144336Z.log`، و`verification/onboarding-validation-audits-20260817T145455Z.log`.
+
+البوابات: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS؛ ownership PASS (`45` Route Handler، `41` مع session و`41` بملكية ظاهرة)؛ responsive PASS (`34/34`، failures فارغة)؛ accessibility PASS (`34/34`، failures `0`). **الحالة: دفعة onboarding مكتملة وجاهزة للاعتماد.**
