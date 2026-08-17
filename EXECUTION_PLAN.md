@@ -1308,3 +1308,13 @@
 الأدلة: `verification/entertainment-error-live-region-ar-2026-08-17.md`، `verification/entertainment-error-browser-findings-2026-08-17.md`، `verification/entertainment-error-quality-20260817T1810Z.log`، و`verification/entertainment-error-audits-20260817T1811Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 
 **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإنشاء commit مستقل.
+
+## 2026-08-17 — إغلاق دفعة live-region لأخطاء الأهداف
+
+أُغلقت فجوة دلالية في `components/goals/goals-workspace.tsx`: رسالتا خطأ إنشاء الهدف وإضافة مهمة إلى هدف قائم (`#goal-title-error` و`#goal-task-error`) كانتا تحملان `role="alert"` دون `aria-live` و`aria-atomic` صريحين. أضيفت `aria-live="assertive"` و`aria-atomic="true"` مع الحفاظ على النصوص العربية، والتحقق، و`aria-invalid` و`aria-describedby`، ومنطق الأهداف وfallback المحلي.
+
+في `http://localhost:3004/goals` أُرسل نموذج إنشاء هدف فارغًا؛ ظهرت `اكتب اسم الهدف أولًا` وأثبت DOM أن الرسالة تحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن الحقل يحمل `aria-invalid=true` ويرتبط عبر `aria-describedby=goal-title-error`. ثم فُتح هدف قائم مرتبط بمشاريع وأُرسل نموذج إضافة مهمة فارغًا؛ ظهرت `اكتب مهمة الهدف أولًا.` وأثبت DOM الخصائص نفسها مع ارتباط الحقل بـ`goal-task-error`. لم تُنشأ بيانات جديدة. نجحت بوابات TypeScript وESLint وNext build، ثم ownership (`45` route، `41` session، `41` visible ownership، دون نقص)، responsive (`34/34` دون إخفاقات)، وaccessibility (`34/34`، `0` إخفاق). لم تتغير عقود API أو قاعدة البيانات أو Better Auth أو الملكية، ولم تُضاف أسرار، ولم تُنفذ `drizzle-kit generate`.
+
+الأدلة: `verification/goals-error-live-region-ar-2026-08-17.md`، `verification/goals-error-browser-findings-2026-08-17.md`، `verification/goals-error-quality-20260817T1816Z.log`، و`verification/goals-error-audits-20260817T1817Z.log`، مع تحديث `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإنشاء commit مستقل.

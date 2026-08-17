@@ -522,3 +522,17 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 **النطاق:** لا تغييرات API أو DB أو Better Auth أو التصميم أو الأسرار، ولم تُنفذ `drizzle-kit generate`. الأدلة: `verification/entertainment-error-live-region-ar-2026-08-17.md`، `verification/entertainment-error-browser-findings-2026-08-17.md`، `verification/entertainment-error-quality-20260817T1810Z.log`، `verification/entertainment-error-audits-20260817T1811Z.log`.
 
 **الحكم:** PASS — جاهزة للاعتماد بعد تنظيف artifacts.
+
+## 2026-08-17 — الأهداف: live-region لأخطاء إنشاء الهدف وإضافة مهمة
+
+**الفجوة:** رسالتا `goal-title-error` و`goal-task-error` في `components/goals/goals-workspace.tsx` كانتا تستخدمان `role="alert"` دون `aria-live` و`aria-atomic` صريحين.
+
+**الإصلاح:** إضافة `aria-live="assertive"` و`aria-atomic="true"` إلى الرسالتين مع الحفاظ على النصوص العربية، والتحقق، و`aria-invalid` و`aria-describedby`، وfallback المحلي وملكية البيانات.
+
+**الاختبار:** في `/goals` أُرسل نموذج إنشاء هدف فارغًا؛ ظهرت `اكتب اسم الهدف أولًا` وأثبت DOM `role=alert` و`aria-live=assertive` و`aria-atomic=true` مع `aria-describedby=goal-title-error`. ثم فُتح هدف قائم مرتبط بمشاريع وأُرسل نموذج إضافة مهمة فارغًا؛ ظهرت `اكتب مهمة الهدف أولًا.` وأثبت DOM الخصائص نفسها مع `aria-describedby=goal-task-error`. لم تُنشأ بيانات جديدة.
+
+**البوابات:** TypeScript وESLint وNext build وownership وresponsive وaccessibility — PASS. ownership: `45` route handlers، `41` session، `41` visible ownership، دون نقص. responsive: `34/34`. accessibility: `34/34` و`0` إخفاقات.
+
+**النطاق:** لا تغييرات API أو DB أو Better Auth أو التصميم أو الأسرار، ولم تُنفذ `drizzle-kit generate`. الأدلة: `verification/goals-error-live-region-ar-2026-08-17.md`، `verification/goals-error-browser-findings-2026-08-17.md`، `verification/goals-error-quality-20260817T1816Z.log`، `verification/goals-error-audits-20260817T1817Z.log`.
+
+**الحكم:** PASS — جاهزة للاعتماد بعد تنظيف artifacts.
