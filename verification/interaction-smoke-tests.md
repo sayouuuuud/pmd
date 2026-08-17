@@ -757,3 +757,10 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 
 ## 2026-08-17 — الحساب: تحقق عربي للاسم
 اختُبر `/account` على نموذج «تفضيلات المساحة»: أُفرغ الاسم وأُرسل النموذج فظهرت رسالة `اكتب اسمك أولًا.` inline مع بقاء النموذج مفتوحًا؛ أُعيد إدخال `اختبار الإعداد` فاختفت الرسالة؛ ثم تم الحفظ وظهر `تم الحفظ` مع بقاء بيانات الحساب الأصلية دون إنشاء بيانات اختبار. التقرير `verification/account-validation-ar-2026-08-17.md`، وسجل البوابات `verification/account-validation-quality-20260817T141801Z.log` و`verification/account-validation-audits-20260817T141920Z.log`. TypeScript وESLint وdiff check وbuild وownership وresponsive وaccessibility كلها PASS.
+
+
+## 2026-08-17 — تحقق عربي للتقويم
+
+اختُبر نموذج «حدث جديد» على `/calendar`: أُرسل العنوان فارغًا فظهرت رسالة `اكتب عنوان الحدث أولًا.`، ثم أُدخل `حدث اختبار التقويم` واختفى الخطأ. أُرسل التاريخ فارغًا فظهرت `اختر تاريخًا صالحًا.`، ثم أُعيد `2026-08-17`. أُرسل وقت البداية فارغًا فظهرت `اختر وقت بداية صالحًا.`، ثم أُعيد `09:00`. جُرّبت نهاية `08:00` قبل البداية فظهرت `النهاية يجب أن تكون بعد البداية.`، ثم أُفرغ الحقل الاختياري واختفى الخطأ. حُفظ الحدث بنجاح عند 09:00، ثم حُذف من الواجهة وعادت أحداث 17 أغسطس إلى أربعة عناصر أصلية.
+
+بوابات الدفعة: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS، ownership PASS (45 Route Handler؛ 41 session و41 visible ownership)، responsive PASS (34/34)، accessibility PASS (34/34). التقارير: `verification/calendar-validation-ar-2026-08-17.md`، وسجل الجودة `verification/calendar-validation-quality-20260817T142300Z.log`، وسجل الفحوص الثلاث `verification/calendar-validation-audits-20260817T142523Z.log`.

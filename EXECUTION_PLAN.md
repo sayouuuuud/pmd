@@ -1055,3 +1055,14 @@
 
 ### دفعة تحقق الحساب العربي — 2026-08-17
 أُغلقت فجوة الفشل الصامت في نموذج تفضيلات الحساب داخل `components/account/account-workspace.tsx`. عند إرسال الاسم فارغًا تظهر الرسالة العربية inline `اكتب اسمك أولًا.` مع `noValidate` وARIA، وتمسح الرسالة أثناء إدخال قيمة صحيحة. أُعيد إدخال `اختبار الإعداد` وحُفظت التفضيلات بنجاح وظهر `تم الحفظ` دون تغيير بيانات المستخدم أو إنشاء بيانات اختبار. التقرير التفصيلي: `verification/account-validation-ar-2026-08-17.md`. سجل البوابات الأساسية: `verification/account-validation-quality-20260817T141801Z.log`؛ وسجل ownership/responsive/accessibility: `verification/account-validation-audits-20260817T141920Z.log`، وكلها PASS. الدفعة جاهزة للاعتماد بعد فحص diff ونظافة artifacts.
+
+
+## 2026-08-17 — دفعة التحقق العربي في التقويم
+
+أُغلقت فجوة التحقق في `components/calendar/calendar-workspace.tsx` لنموذج إنشاء الحدث. أُضيف `noValidate` ورسائل عربية inline مع `role="alert"` و`aria-invalid` و`aria-describedby` ومسح الخطأ أثناء الكتابة لحقول العنوان والتاريخ ووقت البداية وترتيب الوقت، مع الحفاظ على التخطيط الحالي والعقود المحلية والبعيدة.
+
+اختبار المتصفح على `http://localhost:3004/calendar`: رُفض العنوان الفارغ، ثم التاريخ الفارغ، ثم وقت البداية الفارغ، ثم نهاية أسبق من البداية برسائل عربية محددة. بعد إدخال القيم الصحيحة حُفظ حدث «حدث اختبار التقويم» عند `09:00`، ثم حُذف من الواجهة وعادت أحداث 17 أغسطس إلى أربعة عناصر أصلية. لم تُترك بيانات اختبار.
+
+البوابات الأساسية: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS. وأُعيدت فحوص ownership وresponsive وaccessibility بين `2026-08-17T14:25:23Z` و`2026-08-17T14:26:41Z`: ownership PASS لـ45 Route Handler، responsive PASS لـ34/34، accessibility PASS لـ34/34. التقارير: `verification/calendar-validation-ar-2026-08-17.md`، `verification/calendar-validation-quality-20260817T142300Z.log`، و`verification/calendar-validation-audits-20260817T142523Z.log`.
+
+**الحالة:** PASS — دفعة التقويم جاهزة للاعتماد بعد تنظيف artifacts.
