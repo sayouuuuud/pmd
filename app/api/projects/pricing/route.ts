@@ -15,7 +15,7 @@ export async function GET(request: Request) {
 
   try {
     const db = getDb()
-    const items = await db.select({ id: projectPricing.id, projectId: projectPricing.projectId, title: projectPricing.title, amount: projectPricing.amount, currency: projectPricing.currency, status: projectPricing.status, expectedDate: projectPricing.expectedDate, receivedAt: projectPricing.receivedAt, financeEntryId: projectPricing.financeEntryId, notes: projectPricing.notes, createdAt: projectPricing.createdAt })
+    const items = await db.select({ id: projectPricing.id, projectId: projectPricing.projectId, clientId: projectPricing.clientId, title: projectPricing.title, amount: projectPricing.amount, currency: projectPricing.currency, status: projectPricing.status, expectedDate: projectPricing.expectedDate, receivedAt: projectPricing.receivedAt, financeEntryId: projectPricing.financeEntryId, notes: projectPricing.notes, createdAt: projectPricing.createdAt })
       .from(projectPricing)
       .innerJoin(project, eq(project.id, projectPricing.projectId))
       .where(and(eq(project.userId, user.id), isNull(project.archivedAt)))

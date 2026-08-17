@@ -74,6 +74,7 @@ export type ProjectUpdate = {
 export type ProjectPricing = {
   id: string
   projectId: string
+  clientId?: string | null
   title: string
   amount: number
   currency: string
@@ -319,8 +320,8 @@ type CommandCenterContextValue = {
   archiveProject: (id: string) => void
   addProjectUpdate: (input: Pick<ProjectUpdate, 'projectId' | 'body' | 'kind'>) => void
   removeProjectUpdate: (id: string) => void
-  addProjectPricing: (input: Pick<ProjectPricing, 'projectId' | 'title' | 'amount' | 'currency'> & Partial<Pick<ProjectPricing, 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) => void
-  updateProjectPricing: (id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'financeEntryId' | 'notes'>>) => void
+  addProjectPricing: (input: Pick<ProjectPricing, 'projectId' | 'title' | 'amount' | 'currency'> & Partial<Pick<ProjectPricing, 'clientId' | 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) => void
+  updateProjectPricing: (id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'financeEntryId' | 'notes'>> & { clientId?: string | null }) => void
   addFinanceEntryFromPricing: (pricingId: string) => void
   addFinanceEntry: (input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId' | 'recurrence'>>) => void
   updateFinanceEntry: (id: string, patch: Partial<FinanceEntry>) => void
@@ -593,7 +594,7 @@ function normalizeState(value: unknown): PersistedState | null {
     goals: arrayOr(source.goals, defaults.goals),
     projects: arrayOr(source.projects, defaults.projects),
     projectUpdates: arrayOr(source.projectUpdates, defaults.projectUpdates).filter((item) => isRecord(item) && typeof item.id === 'string' && typeof item.projectId === 'string' && typeof item.body === 'string').map((item) => ({ id: item.id, projectId: item.projectId, body: item.body, kind: item.kind === 'decision' || item.kind === 'blocker' || item.kind === 'info' ? item.kind : 'progress', createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() })),
-    projectPricings: arrayOr(source.projectPricings, defaults.projectPricings).filter((item) => isRecord(item) && typeof item.id === 'string' && typeof item.projectId === 'string' && typeof item.title === 'string').map((item) => ({ id: item.id, projectId: item.projectId, title: item.title, amount: Math.max(0, Math.round(Number(item.amount) || 0)), currency: typeof item.currency === 'string' && item.currency.trim() ? item.currency : 'جنيه', status: item.status === 'due' || item.status === 'received' || item.status === 'cancelled' ? item.status : 'expected', expectedDate: typeof item.expectedDate === 'string' ? item.expectedDate : undefined, receivedAt: typeof item.receivedAt === 'string' ? item.receivedAt : undefined, financeEntryId: typeof item.financeEntryId === 'string' ? item.financeEntryId : undefined, notes: typeof item.notes === 'string' ? item.notes : undefined, createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() })),
+    projectPricings: arrayOr(source.projectPricings, defaults.projectPricings).filter((item) => isRecord(item) && typeof item.id === 'string' && typeof item.projectId === 'string' && typeof item.title === 'string').map((item) => ({ id: item.id, projectId: item.projectId, clientId: typeof item.clientId === 'string' && item.clientId.trim() ? item.clientId : undefined, title: item.title, amount: Math.max(0, Math.round(Number(item.amount) || 0)), currency: typeof item.currency === 'string' && item.currency.trim() ? item.currency : 'جنيه', status: item.status === 'due' || item.status === 'received' || item.status === 'cancelled' ? item.status : 'expected', expectedDate: typeof item.expectedDate === 'string' ? item.expectedDate : undefined, receivedAt: typeof item.receivedAt === 'string' ? item.receivedAt : undefined, financeEntryId: typeof item.financeEntryId === 'string' ? item.financeEntryId : undefined, notes: typeof item.notes === 'string' ? item.notes : undefined, createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() })),
     financeEntries: arrayOr(source.financeEntries, defaults.financeEntries).map((entry) => ({ ...entry, recurrence: entry.recurrence === 'weekly' || entry.recurrence === 'monthly' ? entry.recurrence : 'none' })),
     budget: { ...defaults.budget, ...budget },
     religious: {
@@ -889,15 +890,16 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       if (!title || !Number.isFinite(amount) || amount <= 0) return
       const status: ProjectPricing['status'] = input.status === 'due' || input.status === 'received' || input.status === 'cancelled' ? input.status : 'expected'
       const receivedAt = status === 'received' ? input.receivedAt ?? new Date().toISOString() : input.receivedAt
-      const item: ProjectPricing = { id: newLocalId('project-pricing'), projectId: input.projectId, title, amount: Math.round(amount), currency, status, expectedDate: input.expectedDate?.trim() || undefined, receivedAt, notes: input.notes?.trim() || undefined, createdAt: new Date().toISOString() }
+      const item: ProjectPricing = { id: newLocalId('project-pricing'), projectId: input.projectId, clientId: input.clientId?.trim() || undefined, title, amount: Math.round(amount), currency, status, expectedDate: input.expectedDate?.trim() || undefined, receivedAt, notes: input.notes?.trim() || undefined, createdAt: new Date().toISOString() }
       setProjectPricings((items) => [item, ...items])
       void createRemoteProjectPricing(item)
     },
     updateProjectPricing: (id, patch) => {
       const current = projectPricings.find((item) => item.id === id)
       if (!current) return
-      if (current.financeEntryId && (patch.title !== undefined || patch.amount !== undefined || patch.currency !== undefined || patch.expectedDate !== undefined || patch.status !== undefined)) return
+      if (current.financeEntryId && (patch.clientId !== undefined || patch.title !== undefined || patch.amount !== undefined || patch.currency !== undefined || patch.expectedDate !== undefined || patch.status !== undefined)) return
       const normalizedPatch: typeof patch = { ...patch }
+      if (patch.clientId !== undefined) normalizedPatch.clientId = patch.clientId === null ? null : patch.clientId.trim() || null
       if (patch.title !== undefined) {
         const title = patch.title.trim()
         if (!title) return

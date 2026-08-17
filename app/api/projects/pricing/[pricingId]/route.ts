@@ -1,6 +1,6 @@
 import { and, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
-import { financeEntry, project, projectPricing } from '@/server/db/schema'
+import { client, financeEntry, project, projectPricing } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
 
 export const dynamic = 'force-dynamic'
@@ -31,10 +31,19 @@ export async function PATCH(request: Request, context: { params: Promise<{ prici
     const { pricingId } = await context.params
     const body = await request.json() as Record<string, unknown>
     const db = getDb()
-    const [ownedPricing] = await db.select({ id: projectPricing.id, status: projectPricing.status }).from(projectPricing).innerJoin(project, eq(project.id, projectPricing.projectId)).where(and(eq(projectPricing.id, pricingId), eq(projectPricing.createdBy, user.id), eq(project.userId, user.id), isNull(project.archivedAt))).limit(1)
+    const [ownedPricing] = await db.select({ id: projectPricing.id, status: projectPricing.status, workspaceId: projectPricing.workspaceId }).from(projectPricing).innerJoin(project, eq(project.id, projectPricing.projectId)).where(and(eq(projectPricing.id, pricingId), eq(projectPricing.createdBy, user.id), eq(project.userId, user.id), isNull(project.archivedAt))).limit(1)
     if (!ownedPricing) return json({ error: 'الدفعة غير موجودة.' }, { status: 404 })
 
     const patch: Record<string, unknown> = { updatedAt: new Date() }
+    if (body.clientId !== undefined) {
+      if (body.clientId !== null && (typeof body.clientId !== 'string' || !body.clientId.trim())) return json({ error: 'معرّف العميل غير صالح.' }, { status: 400 })
+      const requestedClientId = body.clientId === null ? null : (body.clientId as string).trim()
+      if (requestedClientId) {
+        const [ownedClient] = await db.select({ id: client.id }).from(client).where(and(eq(client.id, requestedClientId), eq(client.workspaceId, ownedPricing.workspaceId), isNull(client.archivedAt))).limit(1)
+        if (!ownedClient) return json({ error: 'العميل غير موجود في مساحة المشروع.' }, { status: 400 })
+      }
+      patch.clientId = requestedClientId
+    }
     if (body.title !== undefined) {
       if (typeof body.title !== 'string' || !body.title.trim()) return json({ error: 'اسم الدفعة مطلوب.' }, { status: 400 })
       patch.title = body.title.trim()

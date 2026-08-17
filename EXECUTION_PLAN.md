@@ -928,3 +928,28 @@
 اختُبرت دورة العميل كاملة عبر المتصفح باستخدام سجل عربي مؤقت: إضافة، بحث باسم الشركة، تعديل الملاحظات فقط، ثم أرشفة وإعادة القائمة النشطة إلى حالة نظيفة. كما أعادت مصفوفة API غير الموثقة `GET /api/clients` و`PATCH /api/clients/test-id` و`DELETE /api/clients/test-id` جميعًا الحالة `401`. نجحت بوابات TypeScript وESLint و`git diff --check` و`next build`؛ استغرق تشغيل الجودة من `2026-08-17T09:16:50+00:00` إلى `2026-08-17T09:17:09+00:00` وفق ساعة النظام، مع بقاء تحذير middleware معلوماتيًا وغير حاجز.
 
 الملفات المرجعية: `verification/workspace-clients-browser-audit.md` و`verification/workspace-clients-quality-run.txt`. لم تُشغّل أي migration ولم تُضف أسرارًا إلى المستودع.
+
+## دفعة ربط العملاء بالمشاريع — 17 أغسطس 2026
+
+### النطاق
+
+اكتمل تفعيل `clientId` الموجود أصلًا في migration جدول `project_pricing` عبر طبقات النوع المحلي، والمخطط، والمزامنة البعيدة، وواجهات API، وواجهة دفعات المشروع، دون إنشاء migration جديدة أو تشغيل `drizzle-kit generate`.
+
+### التنفيذ
+
+أضيف `clientId` الاختياري والقابل للإلغاء إلى `ProjectPricing` وعمليات CRUD المحلية، مع تمريره إلى `RemoteProjectPricing` وطلبات POST/PATCH. أضيف `clientId` إلى endpoint التجميعي لدفعات المشاريع. تتحقق مسارات إنشاء وتعديل الدفعة من أن العميل ينتمي إلى مساحة العمل نفسها التي ينتمي إليها المشروع، وتسمح بإلغاء الارتباط صراحةً.
+
+في `ProjectDetails` أضيف Select للعميل في نموذج الدفعة الجديدة ومحرر الدفعة، مع عرض اسم العميل داخل بطاقة الدفعة. تُحمّل قائمة العملاء من مساحة العمل النشطة مع fallback محلي عند غياب قاعدة البيانات أو الجلسة.
+
+### التحقق
+
+نجح التدقيق المتصفحي المحلي في `/workspace` و`/projects`: إضافة «شركة النور»، اختيارها عند إنشاء «دفعة اختبار العميل»، ظهور اسمها في البطاقة، ثم إلغاء الارتباط من المحرر والعودة إلى «بدون عميل مرتبط». أعادت مسارات `GET /api/projects/pricing` و`POST /api/projects/demo/pricing` و`PATCH /api/projects/pricing/demo-pricing` الحالة `401` دون جلسة. نجحت `tsc --noEmit` وESLint و`git diff --check` و`next build`، مع بقاء تحذير Next.js الخاص بتقادم convention الـmiddleware معلوماتيًا وغير حاجز.
+
+### الملفات المرجعية
+
+- `verification/project-pricing-client-link-browser-audit.md`
+- `verification/interaction-smoke-tests.md`
+
+### الحدود المعروفة
+
+لم تُختبر دورة authenticated كاملة على قاعدة البيانات في هذه الجولة لغياب جلسة وبيانات اعتماد فعلية. لا توجد تغييرات schema جديدة ولا secrets ولا migrations في هذه الدفعة.

@@ -95,6 +95,7 @@ type RemoteProjectUpdate = {
 type RemoteProjectPricing = {
   id: string
   projectId: string
+  clientId: string | null
   title: string
   amount: number
   currency: string
@@ -299,7 +300,7 @@ export function mapRemoteProjectUpdate(item: RemoteProjectUpdate): ProjectUpdate
 }
 
 export function mapRemoteProjectPricing(item: RemoteProjectPricing): ProjectPricing {
-  return { id: item.id, projectId: item.projectId, title: item.title, amount: Math.max(0, Number(item.amount) || 0), currency: item.currency || 'جنيه', status: asProjectPricingStatus(item.status), expectedDate: item.expectedDate ?? undefined, receivedAt: item.receivedAt ? (typeof item.receivedAt === 'string' ? item.receivedAt : new Date(item.receivedAt).toISOString()) : undefined, financeEntryId: item.financeEntryId ?? undefined, notes: item.notes ?? undefined, createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toISOString() }
+  return { id: item.id, projectId: item.projectId, clientId: item.clientId ?? undefined, title: item.title, amount: Math.max(0, Number(item.amount) || 0), currency: item.currency || 'جنيه', status: asProjectPricingStatus(item.status), expectedDate: item.expectedDate ?? undefined, receivedAt: item.receivedAt ? (typeof item.receivedAt === 'string' ? item.receivedAt : new Date(item.receivedAt).toISOString()) : undefined, financeEntryId: item.financeEntryId ?? undefined, notes: item.notes ?? undefined, createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toISOString() }
 }
 
 function asFinanceKind(value: string): FinanceEntry['kind'] {
@@ -635,10 +636,10 @@ export function archiveRemoteProjectUpdate(projectId: string, updateId: string) 
 }
 
 export function createRemoteProjectPricing(input: ProjectPricing) {
-  return request<{ item: RemoteProjectPricing }>(`/api/projects/${input.projectId}/pricing`, { method: 'POST', body: JSON.stringify({ id: input.id, title: input.title, amount: input.amount, currency: input.currency, status: input.status, expectedDate: input.expectedDate, receivedAt: input.receivedAt, financeEntryId: input.financeEntryId, notes: input.notes }) })
+  return request<{ item: RemoteProjectPricing }>(`/api/projects/${input.projectId}/pricing`, { method: 'POST', body: JSON.stringify({ id: input.id, clientId: input.clientId, title: input.title, amount: input.amount, currency: input.currency, status: input.status, expectedDate: input.expectedDate, receivedAt: input.receivedAt, financeEntryId: input.financeEntryId, notes: input.notes }) })
 }
 
-export function updateRemoteProjectPricing(id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'financeEntryId' | 'notes'>>) {
+export function updateRemoteProjectPricing(id: string, patch: Partial<Pick<ProjectPricing, 'clientId' | 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'financeEntryId' | 'notes'>>) {
   return request<{ item: RemoteProjectPricing }>(`/api/projects/pricing/${id}`, { method: 'PATCH', body: JSON.stringify(patch) })
 }
 

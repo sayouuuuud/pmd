@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
-import { financeEntry, project, projectPricing } from '@/server/db/schema'
+import { client, financeEntry, project, projectPricing } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
 import { getOrCreatePersonalWorkspace } from '@/server/workspaces/access'
 
@@ -63,13 +63,22 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const receivedAt = status === 'received' ? parseDate(body.receivedAt) ?? new Date() : null
     const financeEntryId = typeof body.financeEntryId === 'string' && body.financeEntryId.trim() ? body.financeEntryId.trim() : null
     if (financeEntryId && status !== 'received') return json({ error: 'لا يمكن ربط دخل إلا بدفعة محصلة.' }, { status: 400 })
+    let requestedClientId: string | null = null
+    if (body.clientId !== undefined && body.clientId !== null) {
+      if (typeof body.clientId !== 'string' || !body.clientId.trim()) return json({ error: 'معرّف العميل غير صالح.' }, { status: 400 })
+      requestedClientId = body.clientId.trim()
+    }
 
     const db = getDb()
     const item = await ownedProject(id, user.id)
     if (!item) return json({ error: 'المشروع غير موجود.' }, { status: 404 })
     if (financeEntryId && !(await ownedIncome(financeEntryId, user.id))) return json({ error: 'سجل الدخل المرتبط غير موجود.' }, { status: 400 })
     const workspaceId = item.workspaceId ?? (await getOrCreatePersonalWorkspace(db, user.id)).id
-    const [created] = await db.insert(projectPricing).values({ id: typeof body.id === 'string' && body.id.trim() ? body.id.trim() : crypto.randomUUID(), workspaceId, projectId: id, createdBy: user.id, title, amount, currency: typeof body.currency === 'string' && body.currency.trim() ? body.currency.trim() : 'جنيه', status, expectedDate, receivedAt, financeEntryId, notes: typeof body.notes === 'string' ? body.notes.trim() : null }).returning()
+    if (requestedClientId) {
+      const [ownedClient] = await db.select({ id: client.id }).from(client).where(and(eq(client.id, requestedClientId), eq(client.workspaceId, workspaceId), isNull(client.archivedAt))).limit(1)
+      if (!ownedClient) return json({ error: 'العميل غير موجود في مساحة المشروع.' }, { status: 400 })
+    }
+    const [created] = await db.insert(projectPricing).values({ id: typeof body.id === 'string' && body.id.trim() ? body.id.trim() : crypto.randomUUID(), workspaceId, projectId: id, clientId: requestedClientId, createdBy: user.id, title, amount, currency: typeof body.currency === 'string' && body.currency.trim() ? body.currency.trim() : 'جنيه', status, expectedDate, receivedAt, financeEntryId, notes: typeof body.notes === 'string' ? body.notes.trim() : null }).returning()
     return json({ item: created }, { status: 201 })
   } catch {
     return backendUnavailable()
