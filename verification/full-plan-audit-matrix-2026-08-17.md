@@ -255,3 +255,7 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 الأدلة: `components/daily-plan/daily-plan-workspace.tsx`، `verification/daily-plan-validation-ar-2026-08-17.md`، `verification/daily-plan-validation-quality-20260817T141123Z.log`، و`verification/interaction-smoke-tests.md`.
 
 النتيجة: PASS — TypeScript، ESLint، diff check، Next build، ownership (45/45 Route Handler؛ 41 session و41 visible ownership)، responsive (34/34)، accessibility (34/34).
+
+
+## 2026-08-17 — الحساب: تحقق عربي للاسم
+أُغلقت فجوة الفشل الصامت في نموذج تفضيلات الحساب: الإرسال باسم فارغ يعرض `اكتب اسمك أولًا.` inline مع `noValidate` وARIA، وإدخال `اختبار الإعداد` يمسح الخطأ ثم يحفظ بنجاح. لم تتغير بيانات المستخدم ولم تُترك بيانات اختبار. الأدلة: `components/account/account-workspace.tsx`، `verification/account-validation-ar-2026-08-17.md`، `verification/account-validation-quality-20260817T141801Z.log`، و`verification/account-validation-audits-20260817T141920Z.log`. النتيجة: PASS — 45 Route Handler ownership، و34/34 responsive، و34/34 accessibility، إضافة إلى TypeScript وESLint وdiff check وNext build.

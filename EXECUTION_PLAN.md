@@ -1051,3 +1051,7 @@
 البوابات: TypeScript PASS، ESLint PASS، `git diff --check` PASS، Next production build PASS، ownership PASS (45 Route Handler؛ 41 session و41 visible ownership)، responsive PASS (34/34)، accessibility PASS (34/34). السجل الخام `verification/daily-plan-validation-quality-20260817T141123Z.log`، والتقرير `verification/daily-plan-validation-ar-2026-08-17.md`.
 
 **الحالة:** دفعة خطة اليوم ناجحة وجاهزة للاعتماد في commit مستقل.
+
+
+### دفعة تحقق الحساب العربي — 2026-08-17
+أُغلقت فجوة الفشل الصامت في نموذج تفضيلات الحساب داخل `components/account/account-workspace.tsx`. عند إرسال الاسم فارغًا تظهر الرسالة العربية inline `اكتب اسمك أولًا.` مع `noValidate` وARIA، وتمسح الرسالة أثناء إدخال قيمة صحيحة. أُعيد إدخال `اختبار الإعداد` وحُفظت التفضيلات بنجاح وظهر `تم الحفظ` دون تغيير بيانات المستخدم أو إنشاء بيانات اختبار. التقرير التفصيلي: `verification/account-validation-ar-2026-08-17.md`. سجل البوابات الأساسية: `verification/account-validation-quality-20260817T141801Z.log`؛ وسجل ownership/responsive/accessibility: `verification/account-validation-audits-20260817T141920Z.log`، وكلها PASS. الدفعة جاهزة للاعتماد بعد فحص diff ونظافة artifacts.

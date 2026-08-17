@@ -38,6 +38,7 @@ export function AccountWorkspace() {
   const { data: session } = authClient.useSession()
   const [form, setForm] = useState(profile)
   const [saved, setSaved] = useState(false)
+  const [profileError, setProfileError] = useState('')
   const [dataMessage, setDataMessage] = useState('')
   const [dataBusy, setDataBusy] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -53,7 +54,14 @@ export function AccountWorkspace() {
 
   function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    updateProfile(form)
+    const name = form.name.trim()
+    if (!name) {
+      setProfileError('اكتب اسمك أولًا.')
+      setSaved(false)
+      return
+    }
+    setProfileError('')
+    updateProfile({ ...form, name })
     setSaved(true)
   }
 
@@ -155,9 +163,10 @@ export function AccountWorkspace() {
       </ContentCard>
 
       <ContentCard title="تفضيلات المساحة" description="عدّل الإعدادات التي تؤثر على خطة اليوم والاقتراحات الشخصية.">
-        <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
+        <form onSubmit={save} noValidate className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-medium">الاسم
-            <Input value={form.name} onChange={(event) => updateField('name', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" />
+            <Input value={form.name} onChange={(event) => { updateField('name', event.target.value); if (profileError) setProfileError('') }} aria-invalid={Boolean(profileError)} aria-describedby={profileError ? 'profile-name-error' : undefined} className="mt-2 rounded-2xl px-4 py-3" />
+            {profileError && <p id="profile-name-error" role="alert" className="mt-2 text-xs text-destructive">{profileError}</p>}
           </label>
           <label className="block text-sm font-medium">المدينة
             <Input value={form.city} onChange={(event) => updateField('city', event.target.value)} className="mt-2 rounded-2xl px-4 py-3" />
