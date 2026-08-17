@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Bell, CalendarClock, Check, Clock3, Plus, Sparkles, X } from 'lucide-react'
 import { Dialog } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ReminderKind, useCommandCenter } from '@/lib/command-center-store'
 
@@ -113,7 +116,7 @@ export function RemindersWorkspace() {
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">التذكيرات</h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground">خلي الحاجات المهمة قدامك من غير زحمة. التذكيرات هنا مرتبطة بيومك وتفضل قابلة للتأجيل بدل ما تختفي.</p>
         </div>
-        <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"><Plus className="h-4 w-4" /> تذكير جديد</button>
+        <Button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center justify-center gap-2"><Plus className="h-4 w-4" /> تذكير جديد</Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -125,7 +128,7 @@ export function RemindersWorkspace() {
       {suggestions.length > 0 && <div className="rounded-3xl border border-primary/15 bg-primary/5 p-5 sm:p-6">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div><div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /><h2 className="text-lg font-semibold">اقتراحات هادئة من يومك</h2></div><p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">نحوّل العناصر المفتوحة إلى تذكيرات قابلة للتأجيل، من غير تكرار ما له تذكير موجود بالفعل. الوضع الهادئ يعرض حتى ثلاثة اقتراحات في المرة.</p></div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2"><button type="button" onClick={() => setQuietMode((value) => !value)} className={`rounded-full px-3 py-2 text-xs font-semibold ${quietMode ? 'bg-card text-primary shadow-sm' : 'bg-muted text-muted-foreground'}`}>{quietMode ? 'الوضع الهادئ مفعّل' : 'عرض اقتراحات أكثر'}</button><button type="button" onClick={generateSuggestions} className="rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground">إضافة الاقتراحات</button></div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2"><Button type="button" variant={quietMode ? 'secondary' : 'ghost'} size="sm" onClick={() => setQuietMode((value) => !value)}>{quietMode ? 'الوضع الهادئ مفعّل' : 'عرض اقتراحات أكثر'}</Button><Button type="button" size="sm" onClick={generateSuggestions}>إضافة الاقتراحات</Button></div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">{suggestions.map((suggestion) => <span key={suggestion.sourceId} className="rounded-full bg-card px-3 py-2 text-xs text-foreground shadow-sm">{suggestion.title}</span>)}</div>
       </div>}
@@ -133,7 +136,7 @@ export function RemindersWorkspace() {
       <div className="rounded-3xl bg-card p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div><h2 className="text-lg font-semibold">قائمة التذكيرات</h2><p className="mt-1 text-xs text-muted-foreground">التأجيل يغيّر الحالة فقط ولا يحذف العنصر من يومك.</p></div>
-          <div className="flex rounded-2xl bg-muted p-1 text-xs"><button type="button" onClick={() => setFilter('active')} className={`rounded-xl px-3 py-2 ${filter === 'active' ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>المفتوحة</button><button type="button" onClick={() => setFilter('all')} className={`rounded-xl px-3 py-2 ${filter === 'all' ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>الكل</button></div>
+          <div className="flex rounded-2xl bg-muted p-1 text-xs"><Button type="button" variant={filter === 'active' ? 'secondary' : 'ghost'} size="sm" onClick={() => setFilter('active')}>المفتوحة</Button><Button type="button" variant={filter === 'all' ? 'secondary' : 'ghost'} size="sm" onClick={() => setFilter('all')}>الكل</Button></div>
         </div>
         <div className="mt-5 space-y-2">
           {visibleReminders.length === 0 && <EmptyState icon={Bell} title="اليوم هادي" description="مفيش تذكيرات مفتوحة حاليًا." />}
@@ -142,7 +145,7 @@ export function RemindersWorkspace() {
             return <article key={reminder.id} id={`reminder-${reminder.id}`} className={`scroll-mt-24 flex flex-col gap-3 rounded-2xl border border-border p-4 transition-opacity sm:flex-row sm:items-center ${reminder.status === 'done' ? 'opacity-55' : ''}`}>
             <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${kindStyles[reminder.kind]}`}><Bell className="h-4 w-4" /></span>
             <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className={`text-sm font-semibold ${reminder.status === 'done' ? 'line-through' : ''}`}>{reminder.title}</h3><span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">{kindLabels[reminder.kind]}</span>{reminder.repeatLabel && <span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">{reminder.repeatLabel}</span>}{contextHref && <a href={contextHref} className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary hover:bg-primary/15">فتح السياق</a>}</div><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock3 className="h-3.5 w-3.5" /> {reminder.dueAt}</p></div>
-            <div className="flex items-center gap-2 sm:shrink-0"><button type="button" onClick={() => toggleReminder(reminder.id)} className="rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">{reminder.status === 'done' ? 'إعادة فتح' : 'تم'}</button>{reminder.status !== 'done' && <button type="button" onClick={() => snoozeReminder(reminder.id)} className="rounded-full bg-muted px-3 py-2 text-xs text-muted-foreground hover:text-foreground">تأجيل</button>}<button type="button" aria-label="أرشفة التذكير" onClick={() => archiveReminder(reminder.id)} className="rounded-full p-2 text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button></div>
+            <div className="flex items-center gap-2 sm:shrink-0"><Button type="button" size="sm" onClick={() => toggleReminder(reminder.id)}>{reminder.status === 'done' ? 'إعادة فتح' : 'تم'}</Button>{reminder.status !== 'done' && <Button type="button" variant="secondary" size="sm" onClick={() => snoozeReminder(reminder.id)}>تأجيل</Button>}<Button type="button" variant="ghost" size="icon" aria-label="أرشفة التذكير" onClick={() => archiveReminder(reminder.id)}><X className="h-4 w-4" /></Button></div>
           </article>
           })}
         </div>
@@ -155,46 +158,46 @@ export function RemindersWorkspace() {
         description="خليه واضح وقابل للتنفيذ."
         footer={
           <>
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => {
                 setAddOpen(false)
                 setRepeatLabel('')
               }}
-              className="rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted"
             >
               إلغاء
-            </button>
-            <button type="submit" form="new-reminder-form" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
+            </Button>
+            <Button type="submit" form="new-reminder-form">
               حفظ التذكير
-            </button>
+            </Button>
           </>
         }
       >
         <form id="new-reminder-form" onSubmit={submit}>
           <label htmlFor="reminder-title" className="block text-sm font-medium">عنوان التذكير</label>
-          <input id="reminder-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="مثال: دفع الاشتراك" />
+          <Input id="reminder-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} className="mt-2" placeholder="مثال: دفع الاشتراك" />
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label className="text-sm font-medium">النوع
-              <select value={kind} onChange={(event) => setKind(event.target.value as ReminderKind)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none">
+              <Select value={kind} onChange={(event) => setKind(event.target.value as ReminderKind)} className="mt-2">
                 <option value="task">مهمة</option>
                 <option value="habit">عادة</option>
                 <option value="prayer">صلاة</option>
                 <option value="quran">ورد</option>
                 <option value="finance">مالية</option>
-              </select>
+              </Select>
             </label>
             <label className="text-sm font-medium">الموعد
-              <input value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none" placeholder="اليوم، ١٨:٠٠" />
+              <Input value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2" placeholder="اليوم، ١٨:٠٠" />
             </label>
           </div>
           <label className="mt-4 block text-sm font-medium">التكرار
-            <select value={repeatLabel} onChange={(event) => setRepeatLabel(event.target.value)} className="mt-2 w-full rounded-2xl border border-input bg-background px-3 py-3 text-sm outline-none">
+            <Select value={repeatLabel} onChange={(event) => setRepeatLabel(event.target.value)} className="mt-2">
               <option value="">بدون تكرار</option>
               <option value="يوميًا">يوميًا</option>
               <option value="أسبوعيًا">أسبوعيًا</option>
               <option value="شهريًا">شهريًا</option>
-            </select>
+            </Select>
           </label>
         </form>
       </Dialog>
