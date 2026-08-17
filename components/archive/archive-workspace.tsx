@@ -19,6 +19,11 @@ type ArchivedClientItem = {
   payload: ArchivedClient
 }
 type ArchiveEntry = ArchivedItem | ArchivedClientItem
+type ClientArchiveEntry = ArchiveEntry & { kind: 'client'; payload: ArchivedClient }
+
+function isClientArchiveEntry(item: ArchiveEntry): item is ClientArchiveEntry {
+  return item.kind === 'client' && 'workspaceId' in item.payload
+}
 
 const kindLabels: Record<ArchiveFilter, string> = {
   all: 'كل الأقسام',
@@ -96,7 +101,11 @@ export function ArchiveWorkspace() {
     return () => window.clearTimeout(timer)
   }, [])
 
-  const allItems = useMemo<ArchiveEntry[]>(() => [...archive, ...clientArchive], [archive, clientArchive])
+  const allItems = useMemo<ArchiveEntry[]>(() => {
+    const unique = new Map<string, ArchiveEntry>()
+    for (const item of [...archive, ...clientArchive]) unique.set(itemKey(item), item)
+    return [...unique.values()]
+  }, [archive, clientArchive])
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase('ar')
     return allItems
@@ -126,7 +135,7 @@ export function ArchiveWorkspace() {
     })
   }
 
-  async function restoreClient(item: ArchivedClientItem) {
+  async function restoreClient(item: ClientArchiveEntry) {
     if (item.payload.id.startsWith('local-')) {
       const local = readWorkspaceFallback()
       const workspaceId = item.payload.workspaceId
@@ -142,14 +151,14 @@ export function ArchiveWorkspace() {
       setClientArchive((items) => items.filter((entry) => entry.id !== item.id))
       return
     }
-    const response = await fetch(`/api/clients/${encodeURIComponent(item.payload.id)}/restore`, { method: 'POST' })
+    const response = await fetch(`/api/archive/client/${encodeURIComponent(item.payload.id)}`, { method: 'PATCH' })
     if (!response.ok) throw new Error('remote-client-restore-failed')
     await loadClientArchive()
   }
 
   async function restore(item: ArchiveEntry) {
     try {
-      if (item.kind === 'client') await restoreClient(item)
+      if (isClientArchiveEntry(item)) await restoreClient(item)
       else restoreArchivedItem(item.id)
       setSelectedKeys((keys) => keys.filter((key) => key !== itemKey(item)))
       setMessage(`تمت استعادة «${item.title}» إلى ${kindLabels[item.kind]}.`)
@@ -164,7 +173,7 @@ export function ArchiveWorkspace() {
     let restoredCount = 0
     for (const item of selectedItems) {
       try {
-        if (item.kind === 'client') await restoreClient(item)
+        if (isClientArchiveEntry(item)) await restoreClient(item)
         else restoreArchivedItem(item.id)
         restoredCount += 1
       } catch {

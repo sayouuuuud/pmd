@@ -1,6 +1,6 @@
 import { and, eq, isNotNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
-import { entertainmentItem, financeEntry, goal, habit, journalEntry, note, project, reminder, task } from '@/server/db/schema'
+import { client, entertainmentItem, financeEntry, goal, habit, journalEntry, note, project, reminder, task } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
 
 export const dynamic = 'force-dynamic'
@@ -46,6 +46,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       item = updated
     } else if (kind === 'entertainment') {
       const [updated] = await db.update(entertainmentItem).set({ archivedAt: null, updatedAt: new Date() }).where(and(eq(entertainmentItem.id, id), eq(entertainmentItem.userId, currentUser.id), isNotNull(entertainmentItem.archivedAt))).returning()
+      item = updated
+    } else if (kind === 'client') {
+      const [updated] = await db.update(client).set({ archivedAt: null, status: 'active', updatedAt: new Date() }).where(and(eq(client.id, id), eq(client.createdBy, currentUser.id), isNotNull(client.archivedAt))).returning()
       item = updated
     } else {
       return json({ error: 'نوع الأرشيف غير معروف.' }, { status: 400 })

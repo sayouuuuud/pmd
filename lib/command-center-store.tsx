@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteProjectUpdate, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, createRemoteProjectPricing, createRemoteProjectUpdate, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteProjectPricing, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
+import type { ArchivedClient } from './workspace-types'
 
 function newLocalId(prefix: string) {
   return `${prefix}-${typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Date.now()}`
@@ -271,8 +272,8 @@ export type BoardArchivePayload = {
   boardTitle: string
 }
 
-export type ArchiveKind = 'task' | 'note' | 'habit' | 'goal' | 'project' | 'finance' | 'reminder' | 'entertainment' | 'journal' | 'board'
-export type ArchivedPayload = Task | Note | Habit | Goal | Project | FinanceEntry | Reminder | EntertainmentItem | JournalEntry | BoardArchivePayload
+export type ArchiveKind = 'task' | 'note' | 'habit' | 'goal' | 'project' | 'finance' | 'reminder' | 'entertainment' | 'journal' | 'board' | 'client'
+export type ArchivedPayload = Task | Note | Habit | Goal | Project | FinanceEntry | Reminder | EntertainmentItem | JournalEntry | BoardArchivePayload | ArchivedClient
 export type ArchivedItem = {
   id: string
   kind: ArchiveKind
@@ -708,7 +709,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   }, [])
 
   const addArchivedItem = (kind: ArchiveKind, payload: ArchivedPayload, subtitle: string) => {
-    setArchive((items) => [{ id: payload.id, kind, title: payload.title, subtitle, archivedAt: new Date().toISOString(), payload }, ...items.filter((item) => item.id !== payload.id || item.kind !== kind)])
+    const title = 'title' in payload ? payload.title : payload.name
+    setArchive((items) => [{ id: payload.id, kind, title, subtitle, archivedAt: new Date().toISOString(), payload }, ...items.filter((item) => item.id !== payload.id || item.kind !== kind)])
   }
 
   const value = useMemo<CommandCenterContextValue>(() => ({

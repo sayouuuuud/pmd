@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
-import { entertainmentItem, financeEntry, goal, habit, habitLog, journalEntry, note, project, reminder, task } from '@/server/db/schema'
+import { client, entertainmentItem, financeEntry, goal, habit, habitLog, journalEntry, note, project, reminder, task } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
 
 export const dynamic = 'force-dynamic'
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
   try {
     const db = getDb()
     const userId = currentUser.id
-    const [tasks, notes, habits, goals, projects, finances, reminders, journals, entertainment] = await Promise.all([
+    const [tasks, notes, habits, goals, projects, finances, reminders, journals, entertainment, clients] = await Promise.all([
       db.select().from(task).where(and(eq(task.userId, userId), isNotNull(task.archivedAt))).orderBy(desc(task.archivedAt)).limit(200),
       db.select().from(note).where(and(eq(note.userId, userId), isNotNull(note.archivedAt))).orderBy(desc(note.archivedAt)).limit(200),
       db.select().from(habit).where(and(eq(habit.userId, userId), isNotNull(habit.archivedAt))).orderBy(desc(habit.archivedAt)).limit(200),
@@ -51,6 +51,7 @@ export async function GET(request: Request) {
       db.select().from(reminder).where(and(eq(reminder.userId, userId), isNotNull(reminder.archivedAt))).orderBy(desc(reminder.archivedAt)).limit(200),
       db.select().from(journalEntry).where(and(eq(journalEntry.userId, userId), isNotNull(journalEntry.archivedAt))).orderBy(desc(journalEntry.archivedAt)).limit(200),
       db.select().from(entertainmentItem).where(and(eq(entertainmentItem.userId, userId), isNotNull(entertainmentItem.archivedAt))).orderBy(desc(entertainmentItem.archivedAt)).limit(200),
+      db.select().from(client).where(and(eq(client.createdBy, userId), isNotNull(client.archivedAt))).orderBy(desc(client.archivedAt)).limit(200),
     ])
     const archivedHabitIds = habits.map((item) => item.id)
     const habitLogs = archivedHabitIds.length
@@ -76,6 +77,7 @@ export async function GET(request: Request) {
       ...reminders.map((item) => ({ id: item.id, kind: 'reminder' as const, title: item.title, subtitle: `التذكيرات · ${item.dueAt}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, title: item.title, kind: item.kind === 'habit' || item.kind === 'prayer' || item.kind === 'quran' || item.kind === 'finance' ? item.kind : 'task', dueAt: item.dueAt, status: item.status === 'done' || item.status === 'snoozed' ? item.status : 'pending', sourceId: item.sourceId ?? undefined, repeatLabel: item.repeatLabel ?? undefined } })),
       ...journals.map((item) => ({ id: item.id, kind: 'journal' as const, title: item.title, subtitle: `اليوميات · ${item.localDate}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, localDate: item.localDate, title: item.title, body: item.body, mood: ['سعيد', 'هادئ', 'محايد', 'متعب', 'متوتر'].includes(item.mood) ? item.mood : 'محايد', createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt.toISOString() } })),
       ...entertainment.map((item) => ({ id: item.id, kind: 'entertainment' as const, title: item.title, subtitle: `الترفيه · ${item.type === 'series' ? 'مسلسل' : 'فيلم'}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, title: item.title, type: item.type === 'series' ? 'series' : 'movie', genre: item.genre, year: item.year ?? undefined, note: item.note ?? undefined, status: item.status === 'watching' ? 'watching' : item.status === 'done' ? 'completed' : 'want', rating: item.rating ?? undefined, impression: item.impression ?? undefined, recommend: item.recommend, downloadWanted: item.downloadWanted, createdAt: item.createdAt.toISOString() } })),
+      ...clients.map((item) => ({ id: item.id, kind: 'client' as const, title: item.name, subtitle: `العملاء · ${item.company ?? 'بدون شركة'}`, archivedAt: dateValue(item.archivedAt), payload: { id: item.id, workspaceId: item.workspaceId, name: item.name, company: item.company, email: item.email, phone: item.phone, notes: item.notes, archivedAt: dateValue(item.archivedAt) } })),
     ]
 
     return json({ items: items.sort((a, b) => b.archivedAt.localeCompare(a.archivedAt)).slice(0, 500) })
