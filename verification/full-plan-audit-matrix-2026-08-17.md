@@ -613,3 +613,17 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | حدود النطاق | PASS | لا تغيير في API أو schema أو migrations أو Better Auth أو localStorage fallback؛ لا أسرار ولا بيانات اختبارية |
 
 **الحالة:** مكتملة من حيث التنفيذ والاختبار، وتنتظر تنظيف artifacts والاعتماد في commit مستقل.
+
+## 2026-08-17 — دفعة توحيد metadata للقسم الديني
+
+| المجال | النتيجة | الدليل |
+|---|---|---|
+| metadata | PASS | `app/religious/page.tsx`: أصبح العنوان `القسم الديني | مساحتي` |
+| اختبار المتصفح | PASS | `document.title` مطابق، والصفحة محمّلة RTL بصريًا دون تغيير في التصميم |
+| TypeScript / ESLint / build | PASS | `verification/religious-metadata-quality-20260817T1903Z.log` |
+| Ownership | PASS | `verification/religious-metadata-audits-20260817T1903Z.log`: 45 route، 41 session، 41 visible ownership |
+| Responsive | PASS | السجل نفسه: 34/34 |
+| Accessibility | PASS | السجل نفسه: 34/34، صفر إخفاقات |
+| حدود النطاق | PASS | تغيير قيمة title فقط؛ لا API أو schema أو migrations أو بيانات أو أسرار |
+
+**الحالة:** مكتملة من حيث التنفيذ والاختبار، وتنتظر تنظيف artifacts والاعتماد في commit مستقل.

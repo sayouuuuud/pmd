@@ -1051,3 +1051,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 أُغلقت فجوتا وصول في `components/religious/religious-workspace.tsx` بإضافة `aria-live="assertive"` و`aria-atomic="true"` إلى `saved-dua-error` و`quran-playlist-error`. في `http://localhost:3004/religious` أُرسل نموذج الدعاء المحفوظ فارغًا فظهرت الرسالة العربية `اكتب الدعاء أولًا.`، ثم أُرسل نموذج قائمة التلاوة فارغًا فظهرت الرسالة `اكتب اسم القائمة أولًا.`. أثبت فحص DOM في المسارين `role="alert"` و`aria-live="assertive"` و`aria-atomic="true"`، مع `aria-describedby` للحقل المناسب و`aria-invalid="true"`. نجحت TypeScript وESLint وNext build وownership وresponsive وaccessibility، ولم تتغير البيانات أو API أو schema أو migrations أو Better Auth أو localStorage fallback. الأدلة: `verification/religious-error-live-region-ar-2026-08-17.md` وسجلا الجودة والتدقيق الخاصان بالدفعة.
 
 **الحالة: PASS — الدفعة جاهزة للتنظيف والاعتماد.**
+
+## 2026-08-17 — توحيد metadata للقسم الديني
+
+صُحح عنوان metadata في `app/religious/page.tsx` من `القسم الديني | مركز القيادة الشخصي` إلى `القسم الديني | مساحتي` ليتطابق مع نمط العناوين العربية الموحد في المنصة. فُتحت `http://localhost:3004/religious` بصريًا، وأكد المتصفح أن `document.title` أصبح `القسم الديني | مساحتي` مع بقاء الصفحة RTL ومحتواها وتصميمها الحاليين. نجحت بوابات TypeScript وESLint وNext build وownership (`45` route، `41` session، `41` visible ownership) وresponsive (`34/34`) وaccessibility (`34/34`، صفر إخفاقات). الأدلة: `verification/religious-metadata-browser-findings-2026-08-17.md`، `verification/religious-metadata-quality-20260817T1903Z.log`، و`verification/religious-metadata-audits-20260817T1903Z.log`.
+
+**الحالة: PASS — الدفعة جاهزة للتنظيف والاعتماد.**

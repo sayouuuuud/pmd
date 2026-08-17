@@ -3,7 +3,7 @@ import { PageShell } from '@/components/layout/page-shell'
 import { ReligiousWorkspaceLazy } from '@/components/religious/religious-workspace-lazy'
 
 export const metadata = {
-  title: 'القسم الديني | مركز القيادة الشخصي',
+  title: 'القسم الديني | مساحتي',
   description: 'متابعة الصلاة والورد والأذكار داخل نظام التشغيل الشخصي العربي.',
 }
 

@@ -1388,3 +1388,11 @@
 نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`، كما نجحت route ownership (`45` route، `41` session، `41` visible ownership)، وresponsive (`34/34`)، وaccessibility (`34/34`، صفر إخفاقات). بقي تحذير Next.js المعلوماتي بشأن تقادم convention الخاص بـmiddleware غير حاجز. لم تتغير API أو schema أو migrations أو Better Auth أو localStorage fallback، ولم تُنشأ أسرار أو بيانات اختبارية. الأدلة: `verification/religious-error-live-region-ar-2026-08-17.md`، `verification/religious-error-quality-20260817T1855Z.log`، `verification/religious-error-audits-20260817T1855Z.log`، وتحديثا `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
 
 **الحالة: PASS — التنفيذ والاختبار مكتملان؛ الدفعة جاهزة للتنظيف والاعتماد في commit مستقل.**
+
+## 2026-08-17 — توحيد metadata للقسم الديني
+
+صُحح عنوان metadata في `app/religious/page.tsx` من `القسم الديني | مركز القيادة الشخصي` إلى `القسم الديني | مساحتي` ليتطابق مع النمط العربي الموحد. أكد المتصفح المحلي `http://localhost:3004/religious` أن `document.title` يساوي `القسم الديني | مساحتي`، مع بقاء RTL والتصميم والمحتوى دون تغيير.
+
+نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` و`pnpm build`، ونجحت route ownership (`45` route، `41` session، `41` visible ownership)، وresponsive (`34/34`)، وaccessibility (`34/34`، صفر إخفاقات). بقي تحذير Next.js المعلوماتي الخاص بتقادم convention للـmiddleware غير حاجز. الأدلة: `verification/religious-metadata-browser-findings-2026-08-17.md`، `verification/religious-metadata-quality-20260817T1903Z.log`، `verification/religious-metadata-audits-20260817T1903Z.log`، وتحديثا `verification/interaction-smoke-tests.md` و`verification/full-plan-audit-matrix-2026-08-17.md`.
+
+**الحالة: PASS — التنفيذ والاختبار مكتملان؛ الدفعة جاهزة للتنظيف والاعتماد في commit مستقل.**
