@@ -327,3 +327,8 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | النطاق | التنفيذ والتحقق | Build / ownership | Responsive | Accessibility | الحالة | الأدلة |
 |---|---|---|---|---|---|---|
 | ميزانية الشهر | إضافة `noValidate` وARIA ورسالة رفض عربية للقيمة الفارغة أو غير الصالحة، ومسح الخطأ أثناء الكتابة؛ اختبار رفض فارغ، إدخال `13000` وحفظه، ثم استعادة `12000` دون تغيير العمليات | TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS — 45 route، 41 session، 41 visible ownership | PASS — 34/34 | PASS — 34/34، 0 failures | PASS | `components/money/money-workspace.tsx`، `verification/money-budget-validation-ar-2026-08-17.md`، `verification/money-budget-validation-quality-20260817T153525Z.log`، `verification/money-budget-validation-audits-20260817T153732Z.log` |
+
+## 2026-08-17 — المشاريع: تحقق عربي لمهمة المشروع المرتبطة
+| النطاق | التغيير | اختبار التفاعل | Build / ownership | Responsive / accessibility | الحالة | الأدلة |
+|---|---|---|---|---|---|---|
+| إضافة مهمة للمشروع | `noValidate` وARIA ورسالة رفض عربية inline عند الاسم الفارغ، مع مسح الخطأ أثناء الكتابة والحفاظ على منطق `projectId` | رفض فارغ، مسح الخطأ بعد إدخال `مراجعة بنية المشروع`، إنشاء المهمة مؤقتًا ثم حذفها وإزالة سطر خطة اليوم المرتبط؛ عادت القائمة إلى حالتها الأصلية | TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS — 45 route، 41 session، 41 visible ownership | responsive PASS — 34/34؛ accessibility PASS — 34/34، 0 failures | PASS | `components/projects/projects-workspace.tsx`، `verification/project-task-validation-ar-2026-08-17.md`، `verification/project-task-validation-quality-20260817T154102Z.log`، `verification/project-task-validation-audits-20260817T154313Z.log` |

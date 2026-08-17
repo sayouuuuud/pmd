@@ -840,3 +840,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - أُعيدت القيمة الأصلية `12000` وحُفظت؛ عادت الميزانية والمتبقي إلى `12,000 جنيه` و`9,480 جنيه`، ولم تترك التجربة عملية مالية أو بيانات اختبار.
 - بوابات دفعة الميزانية: TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34` و0 failures).
 - الأدلة: `components/money/money-workspace.tsx`، `verification/money-budget-validation-ar-2026-08-17.md`، `verification/money-budget-validation-quality-20260817T153525Z.log`، `verification/money-budget-validation-audits-20260817T153732Z.log`.
+
+## 2026-08-17 — المشاريع: مهمة المشروع المرتبطة
+
+اختُبر نموذج «إضافة مهمة للمشروع» على `/projects` في الواجهة العربية. أُرسل الحقل فارغًا فظهرت رسالة عربية inline بدور `alert` مرتبطة بالحقل عبر ARIA، وبقي المشروع دون مهمة جديدة. بعد إدخال `مراجعة بنية المشروع` اختفى الخطأ أثناء الكتابة، ثم نجحت الإضافة مؤقتًا. حُذفت المهمة التجريبية وحدها مع سطر خطة اليوم المرتبط بها، وأُعيد تحميل الصفحة فعاد عدد مهام المشروع إلى 1 واختفى أثر التجربة.
+
+بوابات الجودة: TypeScript وESLint و`git diff --check` وNext build PASS. تدقيق الملكية PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، وaccessibility PASS (`34/34`، `0` failures). الأدلة: `verification/project-task-validation-ar-2026-08-17.md`، `verification/project-task-validation-quality-20260817T154102Z.log`، و`verification/project-task-validation-audits-20260817T154313Z.log`.
