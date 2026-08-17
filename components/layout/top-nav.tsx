@@ -88,6 +88,7 @@ export function TopNav() {
   const { data: session } = authClient.useSession()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [type, setType] = useState<QuickAddKind>('task')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -206,7 +207,7 @@ export function TopNav() {
               {reminders.some((reminder) => reminder.status === 'pending') && <span className="absolute top-2.5 left-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">{Math.min(9, reminders.filter((reminder) => reminder.status === 'pending').length)}</span>}
             </Button>
             {session && <Button type="button" variant="ghost" onClick={() => void authClient.signOut({ fetchOptions: { onSuccess: () => { router.push('/login') } } })} className="hidden h-auto rounded-full bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted sm:block">خروج</Button>}
-            <Button type="button" variant="ghost" size="icon" aria-label="القائمة" className="rounded-full bg-card">
+            <Button type="button" variant="ghost" size="icon" aria-label="القائمة" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} className="rounded-full bg-card">
               <AlignJustify className="h-4 w-4" />
             </Button>
           </div>
@@ -234,6 +235,35 @@ export function TopNav() {
       </header>
 
       <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      <Dialog
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        title="تنقل سريع"
+        description="افتح أي مساحة من مساحات المنصة من مكان واحد."
+        className="max-w-xl"
+      >
+        <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="روابط التنقل السريع">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive ? 'page' : undefined}
+                onClick={() => setMenuOpen(false)}
+                className={isActive
+                  ? 'flex items-center gap-2 rounded-2xl bg-foreground px-3 py-3 text-sm font-semibold text-card'
+                  : 'flex items-center gap-2 rounded-2xl bg-muted px-3 py-3 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground'}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      </Dialog>
 
       <Dialog
         open={quickAddOpen}

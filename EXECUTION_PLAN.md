@@ -859,3 +859,8 @@
 الـvertical slice يدعم إنشاء المساحات والعملاء عبر قاعدة البيانات عند توفر الإعدادات، ويدعم localStorage fallback عند غياب `DATABASE_URL` أو `BETTER_AUTH_SECRET`. تم اختبار إنشاء مساحة وعميل تجريبي، عزل العميل عن المساحة الشخصية، ثم تنظيف بيانات الاختبار. نجحت TypeScript وESLint و`git diff --check` و`next build`، وظهر التحذير المعلوماتي المعتاد الخاص بـmiddleware فقط. التفاصيل الكاملة في `docs/foundation-readiness-audit.md`.
 
 الحالة: جاهز للـcommit والدفع، ثم الانتقال إلى توسعة APIs وواجهة العميل والمشاريع والتحديثات والتسعير.
+
+
+## دفعة المرحلة الثالثة — تحسين الـShell وقائمة التنقل السريع — 2026-08-17
+
+أُغلقت فجوة زر القائمة غير الوظيفي في `components/layout/top-nav.tsx` بتحويله إلى Dialog موحد بعنوان «تنقل سريع» يعرض روابط الأقسام العربية، مع الحفاظ على RTL وCairo والـsemantic tokens وبنية الـShell الحالية. اختُبر فتح Dialog من الصفحة الرئيسية ثم اختيار «مساحة العمل»، فتم الانتقال إلى `/workspace` وإغلاق القائمة دون تغيير بيانات. أكد فحص DOM في Workspace استخدام عناصر التحكم المشتركة وعدم وجود عناصر خام. نجحت بوابات TypeScript وESLint و`git diff --check` و`next build`، مع بقاء تحذير Next.js المعلوماتي الخاص بتقادم convention الخاص بـ`middleware` فقط. تم توثيق السيناريو في `verification/interaction-smoke-tests.md` وسجل تدقيق الأساس.
