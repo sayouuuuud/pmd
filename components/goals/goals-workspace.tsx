@@ -18,12 +18,17 @@ const horizonLabels: Record<GoalHorizon, string> = {
 
 export function GoalsWorkspace() {
   const { goals, projects, tasks, addGoal, updateGoal, archiveGoal, toggleTask, addTask } = useCommandCenter()
+  const [goalError, setGoalError] = useState('')
 
   function createGoal(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     const title = String(form.get('title') ?? '').trim()
-    if (!title) return
+    if (!title) {
+      setGoalError('اكتب اسم الهدف أولًا')
+      return
+    }
+    setGoalError('')
     addGoal({
       title,
       description: String(form.get('description') ?? '').trim(),
@@ -57,8 +62,9 @@ export function GoalsWorkspace() {
       </ContentCard>
 
       <ContentCard title="هدف جديد" description="اختار نتيجة قابلة للفهم، مش مجرد قائمة أمنيات.">
-        <form onSubmit={createGoal} className="space-y-3">
-          <Input name="title" required aria-label="عنوان الهدف" className="w-full rounded-2xl px-4 py-3" placeholder="مثال: إطلاق النسخة الأولى" />
+        <form onSubmit={createGoal} noValidate className="space-y-3">
+          <Input name="title" required aria-label="عنوان الهدف" aria-invalid={Boolean(goalError)} aria-describedby={goalError ? 'goal-title-error' : undefined} onChange={() => goalError && setGoalError('')} className="w-full rounded-2xl px-4 py-3" placeholder="مثال: إطلاق النسخة الأولى" />
+          {goalError && <p id="goal-title-error" role="alert" className="text-xs font-medium text-destructive">{goalError}</p>}
           <Textarea name="description" aria-label="وصف الهدف" className="min-h-20 w-full rounded-2xl px-4 py-3" placeholder="ليه الهدف ده مهم؟" />
           <div className="grid grid-cols-2 gap-2">
             <Select name="horizon" aria-label="أفق الهدف" defaultValue="quarter" className="rounded-2xl px-3 py-3">

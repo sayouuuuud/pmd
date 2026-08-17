@@ -1018,3 +1018,7 @@
 ## اعتماد جولة المصادقة العربية — 2026-08-17
 نجحت بوابات TypeScript وESLint و`git diff --check` وNext build من `2026-08-17T13:34:43Z` إلى `2026-08-17T13:35:03Z`. كما أُعيد تشغيل ownership وresponsive وaccessibility من `2026-08-17T13:35:28Z` إلى `2026-08-17T13:36:45Z`: `ownership_audit=PASS` لـ45 Route Handler، وresponsive `34/34` بلا failures، وaccessibility `34/34` بلا failures. التقارير الخام: `verification/auth-quality-run-2026-08-17.txt` و`verification/auth-final-audits-2026-08-17.txt`.
 **الحالة:** مكتمل — لم يحدث تعديل تطبيقي في هذه الجولة، ولا توجد أسرار أو migrations جديدة.
+
+## دفعة إصلاح التحقق العربي في الأهداف — 2026-08-17
+أُغلقت فجوة UX في نموذج إنشاء الهدف داخل `components/goals/goals-workspace.tsx`. أُلغي الاعتماد على رسالة المتصفح الافتراضية عبر `noValidate`، وأضيفت رسالة عربية مخصصة `اكتب اسم الهدف أولًا` مع `role="alert"` وربط `aria-invalid` و`aria-describedby`. اختُبرت حالة الإرسال الفارغ، ثم إدخال اسم هدف صحيح وحفظه وأرشفته من الواجهة المرئية مع تنظيف السجل الاختباري، دون تغيير الملكية أو التخزين أو الهوية البصرية. نجحت TypeScript وESLint و`git diff --check` وNext build بين `2026-08-17T13:39:45Z` و`2026-08-17T13:40:07Z`. كما نجحت فحوص ownership بـ45 Route Handler و`ownership_audit=PASS`، وresponsive بـ34/34 بلا فشل، وaccessibility بـ34/34 بلا فشل. التقرير: `verification/goals-validation-ar-2026-08-17.md`.
+**الحالة:** مكتمل — لا توجد migrations أو أسرار جديدة.
