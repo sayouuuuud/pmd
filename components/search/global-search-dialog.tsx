@@ -39,17 +39,17 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
     const matches = (value: string) => value.toLocaleLowerCase('ar').includes(normalizedQuery)
 
     return [
-      ...tasks.filter((item) => item.status !== 'done' && (matches(item.title) || matches(item.category) || matches(item.dueLabel))).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.category} · ${item.dueLabel}`, section: 'المهام', href: `/tasks#task-${item.id}` })),
+      ...tasks.filter((item) => matches(item.title) || matches(item.category) || matches(item.dueLabel)).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.category} · ${item.dueLabel}`, section: 'المهام', href: `/tasks#task-${item.id}` })),
       ...notes.filter((item) => matches(item.title) || matches(item.body) || matches(item.tag)).map((item) => ({ id: item.id, title: item.title, subtitle: item.tag, section: 'الملاحظات', href: `/notes#note-${item.id}` })),
-      ...goals.filter((item) => item.status !== 'completed' && (matches(item.title) || matches(item.description) || matches(item.targetLabel))).map((item) => ({ id: item.id, title: item.title, subtitle: `هدف · ${item.targetLabel}`, section: 'الأهداف', href: `/goals#${item.id}` })),
+      ...goals.filter((item) => matches(item.title) || matches(item.description) || matches(item.targetLabel)).map((item) => ({ id: item.id, title: item.title, subtitle: `هدف · ${item.targetLabel}`, section: 'الأهداف', href: `/goals#${item.id}` })),
       ...projects.filter((item) => matches(item.title) || matches(item.description) || matches(item.dueLabel)).map((item) => ({ id: item.id, title: item.title, subtitle: `مشروع · ${item.dueLabel}`, section: 'المشاريع', href: `/projects#${item.id}` })),
       ...financeEntries.filter((item) => matches(item.title) || matches(item.category) || matches(item.note ?? '')).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.category} · ${item.amount.toLocaleString('ar-EG')} جنيه`, section: 'الفلوس', href: `/money?month=${encodeURIComponent(item.localDate.slice(0, 7))}#finance-${item.id}` })),
-      ...planItems.filter((item) => item.status !== 'done' && matches(item.title)).map((item) => ({ id: item.id, title: item.title, subtitle: `خطة اليوم · ${item.time}`, section: 'خطة اليوم', href: `/daily-plan#plan-item-${item.id}` })),
-      ...reminders.filter((item) => item.status !== 'done' && (matches(item.title) || matches(item.dueAt))).map((item) => ({ id: item.id, title: item.title, subtitle: `تذكير · ${item.dueAt}`, section: 'التذكيرات', href: `/reminders#reminder-${item.id}` })),
+      ...planItems.filter((item) => matches(item.title)).map((item) => ({ id: item.id, title: item.title, subtitle: `خطة اليوم · ${item.time}`, section: 'خطة اليوم', href: `/daily-plan#plan-item-${item.id}` })),
+      ...reminders.filter((item) => matches(item.title) || matches(item.dueAt)).map((item) => ({ id: item.id, title: item.title, subtitle: `تذكير · ${item.dueAt}`, section: 'التذكيرات', href: `/reminders#reminder-${item.id}` })),
       ...entertainment.filter((item) => matches(item.title) || matches(item.genre) || matches(item.note ?? '')).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.type === 'movie' ? 'فيلم' : 'مسلسل'} · ${item.genre}`, section: 'الترفيه', href: `/entertainment#entertainment-${item.id}` })),
       ...journal.filter((item) => matches(item.title) || matches(item.body) || matches(item.mood) || matches(item.localDate)).map((item) => ({ id: item.id, title: item.title || 'يوميات بلا عنوان', subtitle: `اليوميات · ${item.localDate} · ${item.mood}`, section: 'اليوميات', href: `/journal?date=${encodeURIComponent(item.localDate)}#journal-${item.id}` })),
       ...habits.filter((item) => matches(item.title) || matches(item.target)).map((item) => ({ id: item.id, title: item.title, subtitle: `عادة · ${item.target}`, section: 'العادات', href: `/habits#${item.id}` })),
-      ...religious.prayerLogs.filter((item) => matches(item.name) || matches(item.localDate) || matches(item.time)).map((item) => ({ id: item.id, title: item.name, subtitle: `الصلاة · ${item.localDate} · ${item.time}`, section: 'الديني', href: '/religious' })),
+      ...religious.prayerLogs.filter((item) => matches(item.name) || matches(item.localDate) || matches(item.time)).map((item) => ({ id: item.id, title: item.name, subtitle: `الصلاة · ${item.localDate} · ${item.time}`, section: 'الديني', href: '/religious#prayer-tracker' })),
     ].slice(0, 24)
   }, [entertainment, financeEntries, goals, habits, journal, notes, planItems, projects, query, reminders, religious.prayerLogs, tasks])
 
@@ -73,12 +73,12 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
     <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) close() }} title="البحث الشامل" hideHeader className="max-w-2xl overflow-hidden p-0">
       <div className="flex items-center gap-3 border-b border-border px-5 py-4">
         <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-        <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} className="h-auto min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 py-0 text-sm shadow-none outline-none focus-visible:border-0 focus-visible:ring-0" placeholder="ابحث في مهامك وملاحظاتك ومشاريعك..." aria-label="اكتب كلمة البحث" aria-controls="global-search-results" />
+        <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} className="h-auto min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 py-0 text-sm shadow-none outline-none focus-visible:border-0 focus-visible:ring-0" placeholder="ابحث في كل أقسام مساحتك..." aria-label="اكتب كلمة البحث" aria-controls="global-search-results" />
         <kbd className="hidden rounded-lg bg-muted px-2 py-1 text-[10px] text-muted-foreground sm:block">Esc</kbd>
         <Button type="button" variant="ghost" size="icon-sm" aria-label="إغلاق البحث" onClick={close}><X className="h-4 w-4" aria-hidden="true" /></Button>
       </div>
       <div id="global-search-results" className="max-h-[60vh] overflow-y-auto p-3" aria-live="polite">
-        {!query.trim() && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">دور على أي حاجة في مساحتك</p><p className="mt-2 text-xs text-muted-foreground">المهام، الملاحظات، المشاريع، الأهداف، اليوميات، الترفيه، والعادات.</p></div>}
+        {!query.trim() && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">دور على أي حاجة في مساحتك</p><p className="mt-2 text-xs text-muted-foreground">المهام، الملاحظات، خطة اليوم، التذكيرات، المشاريع، الأهداف، العادات، اليوميات، الفلوس، الترفيه، والديني.</p></div>}
         {query.trim() && groups.length === 0 && <div className="px-4 py-10 text-center"><p className="text-sm font-semibold">مفيش نتائج مطابقة</p><p className="mt-2 text-xs text-muted-foreground">جرّب كلمة أقصر أو اسم القسم.</p></div>}
         {groups.length > 0 && <div className="space-y-4" aria-label={`نتائج البحث: ${results.length}`}>
           {groups.map((group) => <section key={group.section} aria-labelledby={`search-group-${group.section}`}>

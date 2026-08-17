@@ -984,3 +984,13 @@
 
 ### دفعة 2026-08-17 — تشديد عضوية مساحة العمل في استعادة العملاء
 بعد مراجعة عقد `PATCH /api/archive/[kind]/[id]`، أضيف فحص `getWorkspaceForMember` قبل استعادة نوع `client`، مع استمرار قيدي `createdBy` و`archivedAt` داخل عملية التحديث. يمنع الإصلاح استعادة عميل من مساحة لم تعد عضوية المستخدم فيها، ويطابق مسار استعادة العملاء الخاص. نجحت `tsc --noEmit` وESLint و`git diff --check` و`next build`، وحُمّلت `/archive` دون أخطاء React أو console تطبيقية. لم تُشغّل migrations ولم تُضف أسرارًا، وبقي اختبار Neon الفعلي معلقًا لغياب credentials تشغيلية.
+
+## دفعة تحسين البحث الشامل والسجلات المكتملة — 2026-08-17
+
+أُغلقت فجوة في `components/search/global-search-dialog.tsx` كانت تستبعد السجلات المكتملة من البحث بسبب فلاتر الحالة. أصبحت المهام المكتملة، والأهداف المكتملة، وعناصر خطة اليوم المكتملة، والتذكيرات المكتملة قابلة للعثور عليها، مع إبقاء الأرشيف منفصلًا عن البحث. كما أُصلح رابط نتيجة الصلاة ليصل مباشرة إلى بطاقة «صلوات اليوم» عبر `/religious#prayer-tracker` بدل الصفحة العامة فقط.
+
+اختُبرت النتائج الفعلية عبر المتصفح: `قراءة كتاب` إلى `/habits#habit-4`، `ملاحظة تدقيق شاملة` إلى `/notes#note-note-1786967049031`، `اختبار مهمة يومية` إلى `/tasks#task-task-1786912764739`، `منصة التحكم الشخصي` إلى `/projects#project-1`، `إطلاق النسخة الأولى من المنتج` إلى `/goals#goal-1`، `مواصلات` إلى `/money?month=2026-08#finance-finance-4`، `فيلم` إلى `/entertainment#entertainment-entertainment-2`، `الفجر` إلى `/religious#prayer-tracker`، `بداية هادئة` إلى `/journal?date=2026-08-15#journal-journal-1`، `إكمال تحضير العرض التقديمي` إلى `/reminders#reminder-reminder-1`، و`صلاة الظهر` إلى `/daily-plan#plan-item-plan-3`. بعد الإصلاح، عُثر على المهمة المكتملة `مراجعة تقرير الشغل الأسبوعي` وانتقلت إلى `/tasks#task-task-1` دون تغيير حالتها.
+
+لم تُضف فهرسة العملاء أو مساحات العمل في هذه الدفعة لأنهما يعيشان في عقد حالة مستقل داخل `workspace-workspace.tsx` و`workspace-types.ts` وليس في `useCommandCenter`; إبقاؤهما خارج البحث الحالي يمنع مزج مصادر الحالة أو تجاوز نطاق مساحة العمل.
+
+المرجع التفصيلي: `verification/global-search-audit-2026-08-17.md`. نجحت TypeScript وESLint و`git diff --check` و`python3 scripts/scan_direct_colors.py` و`next build`، وسُجلت المخرجات في `verification/global-search-quality-run-2026-08-17.txt`.
