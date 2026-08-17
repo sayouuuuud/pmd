@@ -267,7 +267,7 @@ export function WorkspaceWorkspace() {
         </Button>
       </div>
 
-      {notice ? <div className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{notice}</div> : null}
+      {notice ? <div role="status" aria-live="polite" aria-atomic="true" className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{notice}</div> : null}
 
       <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
         <ContentCard title="مساحات العمل" description="افصل بين حياتك الشخصية ومشاريع العمل بدون تغيير حسابك.">

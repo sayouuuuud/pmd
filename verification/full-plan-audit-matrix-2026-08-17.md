@@ -380,3 +380,16 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Responsive | PASS | 34/34 حالة |
 | Accessibility | PASS | 34/34 حالة، 0 failures |
 | التوثيق | مكتمل | `verification/calendar-status-announcement-ar-2026-08-17.md` |
+
+## 2026-08-17 — مساحة العمل: إعلان نتائج العمليات المحلية
+| البند | النتيجة | الدليل |
+|---|---|---|
+| الفجوة | رسائل نجاح/أرشفة مساحة العمل والعميل كانت مرئية دون live-region مكتملة | `components/workspace/workspace-workspace.tsx` قبل الإصلاح |
+| الإصلاح | إضافة `role="status"` و`aria-live="polite"` و`aria-atomic="true"` إلى عنصر `notice` مع الحفاظ على fallback المحلي والملكية | `components/workspace/workspace-workspace.tsx` |
+| اختبار المتصفح | إنشاء «عميل تدقيق تجريبي» محليًا؛ ظهور `تم حفظ العميل محليًا.`؛ فحص DOM أكد `status/polite/true`؛ ثم أرشفة العميل وتنظيف الحالة | `verification/workspace-status-browser-test-2026-08-17.md` |
+| TypeScript / ESLint / Build | PASS | `verification/workspace-status-quality-20260817T170017Z.log` |
+| Ownership | PASS: `45` routes، `41` session، `41` visible ownership، بلا مسارات ناقصة | `verification/workspace-status-audits-20260817T170046Z.log` |
+| Responsive | PASS: `34/34`، بلا failures | `verification/workspace-status-audits-20260817T170046Z.log` |
+| Accessibility | PASS: `34/34`، `0` failures | `verification/workspace-status-audits-20260817T170046Z.log` |
+| حدود الدليل | لا يثبت اتصال Neon أو جلسة Better Auth الإنتاجية لغياب credentials في البيئة الحالية | تقرير المتصفح |
+| القرار | دفعة مكتملة وقابلة للاعتماد؛ لا تغيير في البيانات أو الأسرار أو التصميم | سجلات الدفعة |

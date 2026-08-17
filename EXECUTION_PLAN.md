@@ -1204,3 +1204,9 @@
 الأدلة التفصيلية: `verification/calendar-status-announcement-ar-2026-08-17.md`، `verification/calendar-status-quality-20260817T165500Z.log`، `verification/calendar-status-audits-20260817T165700Z.log`، `verification/interaction-smoke-tests.md`، و`verification/full-plan-audit-matrix-2026-08-17.md`.
 
 **الحالة:** مكتملة وقابلة للاعتماد؛ الانتقال التالي هو تدقيق فجوات إعلان النتائج والحالات الدلالية في المكونات المتبقية، بدءًا باليوميات والعناوين metadata.
+
+## 2026-08-17 — إغلاق دفعة إعلان نتائج عمليات مساحة العمل
+أُغلقت فجوة وصول في `components/workspace/workspace-workspace.tsx`: كانت رسائل نتائج إنشاء مساحة العمل والعميل وتحديثه وأرشفته، بما فيها نتائج fallback المحلي، تُعرض بصريًا دون `role` وخصائص live-region مكتملة. أضيفت `role="status"` و`aria-live="polite"` و`aria-atomic="true"` إلى عنصر `notice` مع الحفاظ على النصوص العربية، عزل الملكية، localStorage fallback، والهوية البصرية الحالية.
+اختُبرت `/workspace` بإنشاء عميل غير حساس باسم «عميل تدقيق تجريبي»؛ ظهرت الرسالة `تم حفظ العميل محليًا.`، وأثبت فحص DOM خصائص `status/polite/true`. ثم أُرشِف العميل التجريبي وعادت الحالة إلى نظافتها. نجحت TypeScript وESLint وNext build، وفحوص ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، `0` failures)، و`git diff --check` بعد تنظيف artifacts.
+الأدلة: `verification/workspace-status-browser-test-2026-08-17.md`، `verification/workspace-status-quality-20260817T170017Z.log`، `verification/workspace-status-audits-20260817T170046Z.log`.
+**الحالة:** الدفعة مكتملة وقابلة للاعتماد؛ لا تغيير في عقود البيانات أو المصادقة أو الأسرار. الدفعة العملية التالية: مراجعة إعلان نتائج اليوميات وتوحيد metadata العربية المؤكدة.

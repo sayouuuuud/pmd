@@ -908,3 +908,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **السلوك الدلالي:** إعلان النتيجة لقارئات الشاشة مع الحفاظ على الحفظ المتفائل وfallback المحلي والهوية البصرية الحالية.
 - **البوابات:** TypeScript وESLint وNext build و`git diff --check` PASS؛ ownership PASS (45 route، 41 session، 41 visible ownership)؛ responsive PASS (34/34)؛ accessibility PASS (34/34، 0 failures).
 - **الأدلة:** `verification/calendar-status-announcement-ar-2026-08-17.md`، `verification/calendar-status-quality-20260817T165500Z.log`، `verification/calendar-status-audits-20260817T165700Z.log`، `verification/visual-audit-findings-20260817T1555Z.md`.
+
+## 2026-08-17 — مساحة العمل: إعلان نتائج العمليات المحلية
+أغلقت المراجعة التفاعلية فجوة وصول في `components/workspace/workspace-workspace.tsx`: كانت رسائل نتائج إنشاء مساحة العمل والعميل وتحديثه وأرشفته، بما فيها رسائل fallback المحلي، تُعرض بصريًا داخل `<div>` دون دلالة live-region مكتملة. أضيفت `role="status"` و`aria-live="polite"` و`aria-atomic="true"` إلى عنصر الإشعار مع الحفاظ على النصوص العربية ومنطق الملكية وlocalStorage fallback.
+اختُبرت `/workspace` بإنشاء عميل غير حساس باسم «عميل تدقيق تجريبي» في الوضع المحلي؛ ظهرت الرسالة `تم حفظ العميل محليًا.`، وأثبت فحص DOM القيم `role=status` و`aria-live=polite` و`aria-atomic=true`. ثم أُرشِف العميل التجريبي وعادت الصفحة إلى حالتها النظيفة. نجحت TypeScript وESLint وNext build، كما نجحت ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، `0` failures)، و`git diff --check` بعد تنظيف artifacts.
+الأدلة التفصيلية: `verification/workspace-status-browser-test-2026-08-17.md`، `verification/workspace-status-quality-20260817T170017Z.log`، و`verification/workspace-status-audits-20260817T170046Z.log`.
+**الحالة:** مكتملة وقابلة للاعتماد؛ لا تغيير في عقد البيانات أو المصادقة أو الأسرار.
