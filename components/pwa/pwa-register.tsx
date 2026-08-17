@@ -56,7 +56,7 @@ export function PwaRegister() {
   if ((!installPrompt && !updateReady) || dismissed) return null
 
   return (
-    <aside className="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-xl items-center gap-3 rounded-2xl border border-border bg-card p-3 text-sm text-foreground shadow-lg" dir="rtl" role="status">
+    <aside className="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-xl items-center gap-3 rounded-2xl border border-border bg-card p-3 text-sm text-foreground shadow-lg" dir="rtl" role="status" aria-live="polite" aria-atomic="true">
       <div className="flex-1">
         <p className="font-semibold">{updateReady ? 'تحديث جديد جاهز' : 'ثبّت مساحتي على جهازك'}</p>
         <p className="mt-1 text-xs text-muted-foreground">{updateReady ? 'طبّق التحديث الآن لتستخدم آخر تحسينات المنصة.' : 'افتحها بسرعة، واستمر في استخدام بياناتك المحلية عند ضعف الاتصال.'}</p>

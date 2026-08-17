@@ -415,3 +415,16 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Accessibility | PASS: `34/34`، `0` failures | `verification/archive-live-audits-20260817T171220Z.final.log` |
 | الحدود | لم يتغير API/DB أو user ownership أو الأسرار، ولم تُنفذ `drizzle-kit generate`؛ اتصال Neon والجلسة الإنتاجية خارج نطاق إثبات localStorage fallback | تقرير الدفعة |
 | القرار | دفعة مكتملة وقابلة للاعتماد | تقرير الدفعة وسجلات الجودة |
+
+## 2026-08-17 — PWA: live-region لإشعار التثبيت والتحديث
+| البند | النتيجة | الدليل |
+|---|---|---|
+| الفجوة | إشعار PWA كان يستخدم `role="status"` دون `aria-live` و`aria-atomic` مكتملتين | `components/pwa/pwa-register.tsx` قبل الإصلاح |
+| الإصلاح | إضافة `aria-live="polite"` و`aria-atomic="true"` إلى عنصر الإشعار مع الحفاظ على النص العربي ومنطق Service Worker والتثبيت والتحديث والإخفاء | `components/pwa/pwa-register.tsx` |
+| اختبار المتصفح | خادم إنتاج على `http://localhost:3005/` مع سياق آمن وService Worker controller فعّال؛ محاولة `beforeinstallprompt` صناعية لم تُظهر prompt الأصلي، فسُجلت كدليل محدود لا كـPASS لظهور الحالة الأصلية | `verification/pwa-live-browser-test-2026-08-17.md` |
+| TypeScript / ESLint / Build | PASS؛ تحذير middleware deprecated معلوماتي فقط | `verification/pwa-live-quality-20260817T172300Z.log` |
+| Ownership | PASS: `45` route، `41` session، `41` visible ownership، بلا مسارات ناقصة | `verification/pwa-live-audits-20260817T172400Z.log` |
+| Responsive | PASS: `34/34`، بلا failures | `verification/pwa-live-audits-20260817T172400Z.log` |
+| Accessibility | PASS: `34/34`، `0` failures | `verification/pwa-live-audits-20260817T172400Z.log` |
+| الحدود | لا يثبت الاختبار ظهور prompt الحقيقي على كل متصفح؛ يثبت تعديل live-region والبوابات فقط. لا تغييرات API/DB أو ownership أو الأسرار، ولم تُنفذ `drizzle-kit generate` | `verification/pwa-live-region-ar-2026-08-17.md` |
+| القرار | الإصلاح مكتمل وقابل للاعتماد، مع إبقاء قيد اختبار prompt موثقًا | تقرير الدفعة وسجلات الجودة |

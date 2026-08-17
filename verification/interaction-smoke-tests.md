@@ -936,3 +936,19 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 **الدليل:** `verification/archive-live-region-ar-2026-08-17.md` و`verification/archive-live-quality-20260817T171220Z.log` و`verification/archive-live-audits-20260817T171220Z.final.log`.
 
 **القرار:** مغلقة وقابلة للاعتماد.
+
+## 2026-08-17 — PWA: إعلان إشعار التثبيت والتحديث
+
+**النطاق:** `components/pwa/pwa-register.tsx`.
+
+**الإصلاح:** استكمال عنصر إشعار PWA بإضافة `aria-live="polite"` و`aria-atomic="true"` إلى `role="status"`، دون تغيير النص العربي أو منطق Service Worker أو أزرار التثبيت والتحديث والإخفاء.
+
+**اختبار المتصفح:** شُغّل build إنتاجي على `http://localhost:3005/`، وتأكدت الصفحة من اللغة العربية والسياق الآمن ووجود Service Worker controller. محاولة إرسال `beforeinstallprompt` صناعيًا لم تُظهر prompt الأصلي في Chromium؛ سُجلت النتيجة كدليل محدود لا كـPASS لظهور الحالة. الفحص الساكن للكود يثبت خصائص live-region الثلاث.
+
+**البوابات:** TypeScript وESLint وNext build PASS؛ ownership PASS — 45 route، 41 session، 41 visible ownership؛ responsive PASS — 34/34؛ accessibility PASS — 34/34 و0 failures؛ `git diff --check` PASS بعد تنظيف artifacts.
+
+**الحدود:** لا إثبات لهذا السجل بأن prompt الأصلي يظهر على كل جهاز؛ يلزم اختبار يدوي بمتصفح يدعم حدث PWA الحقيقي عند الحاجة. لا تغييرات في API/DB أو ownership أو الأسرار، ولم تُنفذ `drizzle-kit generate`.
+
+**الدليل:** `verification/pwa-live-region-ar-2026-08-17.md`، `verification/pwa-live-browser-test-2026-08-17.md`، `verification/pwa-live-quality-20260817T172300Z.log`، `verification/pwa-live-audits-20260817T172400Z.log`.
+
+**القرار:** الإصلاح مكتمل وقابل للاعتماد مع تصنيف اختبار prompt التفاعلي كاختبار محدود.
