@@ -643,3 +643,8 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | حدود النطاق | لا API أو schema أو migrations أو Auth أو localStorage changes | تقرير الدفعة |
 
 **الحالة:** PASS — التنفيذ والاختبار مكتملان، والدفعة جاهزة للتنظيف والاعتماد في commit مستقل.
+
+## 2026-08-17 — إغلاق دفعة live-region لأخطاء مساحة العمل والعميل
+تمت معالجة فجوتي الوصول في `components/workspace/workspace-workspace.tsx` بإضافة `aria-live="assertive"` و`aria-atomic="true"` إلى `#workspace-name-error` و`#client-form-error`. اختُبر إنشاء مساحة عمل فارغة فظهرت الرسالة `اكتب اسم مساحة العمل أولًا.`، واختُبرت إضافة عميل فارغ فظهرت الرسالة `اكتب اسم العميل أولًا.`. أثبت DOM في المسارين `role=alert` وخصائص live-region المطلوبة، مع بقاء الحقول مرتبطة عبر `aria-describedby` وتحمل `aria-invalid=true`.
+نجحت بوابات TypeScript وESLint وNext build، ونجحت ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`)، accessibility (`34/34`، صفر إخفاقات). لم تتغير API أو schema أو migrations أو Better Auth أو localStorage fallback. الأدلة: `verification/workspace-error-live-region-ar-2026-08-17.md`، `verification/workspace-error-browser-findings-2026-08-17.md`، `verification/workspace-error-quality-20260817T191239Z.log`، و`verification/workspace-error-audits-20260817T191239Z.log`.
+**الحالة: PASS — الدفعة جاهزة للتنظيف والاعتماد في commit مستقل.**

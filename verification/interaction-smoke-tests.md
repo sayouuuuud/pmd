@@ -1068,3 +1068,9 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 بوابات الاعتماد: TypeScript PASS، ESLint PASS، Next build PASS، ownership PASS (`45` route، `41` session، `41` visible ownership)، responsive PASS (`34/34`)، accessibility PASS (`34/34`، صفر إخفاقات)، والمسح الساكن لم يعد يرصد فجوتي `task-edit-error` و`subtask-error`. الأدلة: `verification/tasks-error-live-region-ar-2026-08-17.md`، `verification/tasks-error-browser-findings-2026-08-17.md`، `verification/tasks-error-quality-20260817T1906Z.log`، و`verification/tasks-error-audits-20260817T1906Z.log`.
 
 **الحالة: PASS — الدفعة جاهزة للتنظيف والاعتماد.**
+
+## 2026-08-17 — مساحة العمل: live-region لأخطاء إنشاء المساحة وإضافة العميل
+
+اختُبرت صفحة `http://localhost:3004/workspace` محليًا في وضع البيانات المحلية المؤقتة. أُرسل نموذج إنشاء مساحة العمل فارغًا، فظهرت الرسالة العربية `اكتب اسم مساحة العمل أولًا.`، وأثبت DOM أن `#workspace-name-error` يحمل `role=alert` و`aria-live=assertive` و`aria-atomic=true`، وأن حقل «اسم مساحة العمل الجديدة» مرتبط عبر `aria-describedby` ويحمل `aria-invalid=true`. أُرسل كذلك نموذج إضافة العميل فارغًا، فظهرت الرسالة `اكتب اسم العميل أولًا.`، وأثبت DOM أن `#client-form-error` يحمل الخصائص نفسها، وأن حقلي «اسم العميل» و«البريد الإلكتروني» مرتبطان بالرسالة ويحملان `aria-invalid=true`. لم تُحفظ بيانات جديدة أثناء الاختبار. الأدلة: `verification/workspace-error-live-region-ar-2026-08-17.md`، `verification/workspace-error-browser-findings-2026-08-17.md`، `verification/workspace-error-quality-20260817T191239Z.log`، و`verification/workspace-error-audits-20260817T191239Z.log`.
+
+**الحالة: PASS — نتائج التفاعل وDOM موثقة؛ الدفعة جاهزة للاعتماد بعد اكتمال المصفوفة وخطة التنفيذ.**

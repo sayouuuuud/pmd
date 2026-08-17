@@ -293,7 +293,7 @@ export function WorkspaceWorkspace() {
           </div>
           <div className="mt-4 space-y-3 border-t border-border pt-4">
             <Input value={workspaceName} onChange={(event) => { setWorkspaceName(event.target.value); if (workspaceError) setWorkspaceError('') }} placeholder="اسم مساحة جديدة" aria-label="اسم مساحة العمل الجديدة" aria-invalid={Boolean(workspaceError)} aria-describedby={workspaceError ? 'workspace-name-error' : undefined} />
-            {workspaceError && <p id="workspace-name-error" role="alert" className="text-xs text-destructive">{workspaceError}</p>}
+            {workspaceError && <p id="workspace-name-error" role="alert" aria-live="assertive" aria-atomic="true" className="text-xs text-destructive">{workspaceError}</p>}
             <Select value={workspaceKind} onChange={(event) => setWorkspaceKind(event.target.value)} aria-label="نوع مساحة العمل">
               <option value="work">عمل حر</option>
               <option value="team">فريق تجريبي</option>
@@ -342,7 +342,7 @@ export function WorkspaceWorkspace() {
               <Input type="email" value={clientEmail} onChange={(event) => { setClientEmail(event.target.value); if (clientError) setClientError('') }} placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني" aria-invalid={Boolean(clientError)} aria-describedby={clientError ? 'client-form-error' : undefined} />
             </div>
             <Textarea value={clientNotes} onChange={(event) => setClientNotes(event.target.value)} placeholder="ملاحظات أولية (اختياري)" aria-label="ملاحظات العميل" />
-            {clientError && <p id="client-form-error" role="alert" className="text-xs text-destructive">{clientError}</p>}
+            {clientError && <p id="client-form-error" role="alert" aria-live="assertive" aria-atomic="true" className="text-xs text-destructive">{clientError}</p>}
             <div className="flex flex-wrap gap-2">
               <Button type="button" onClick={() => void (editingClientId ? updateClient() : createClient())} disabled={!activeWorkspace || saving}>
                 {editingClientId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
