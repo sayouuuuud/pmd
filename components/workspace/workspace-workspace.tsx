@@ -272,7 +272,7 @@ export function WorkspaceWorkspace() {
       <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
         <ContentCard title="مساحات العمل" description="افصل بين حياتك الشخصية ومشاريع العمل بدون تغيير حسابك.">
           <div className="space-y-2">
-            {loading ? <p className="text-sm text-muted-foreground">جاري تحميل المساحات...</p> : null}
+            {loading ? <p role="status" aria-live="polite" aria-busy="true" className="text-sm text-muted-foreground">جاري تحميل المساحات...</p> : null}
             {data.workspaces.map((item) => (
               <Button
                 key={item.id}

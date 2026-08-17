@@ -891,3 +891,13 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 - **التحقق:** تشغيل «تنزيل نسخة محلية» أظهر `تم تنزيل نسخة احتياطية من البيانات المحلية.`، وأثبت فحص DOM وجود role/status والخصائص الثلاث. لم تُنفذ عمليات المسح أو حذف الحساب ولم يُرسل طلب DELETE.
 - **البوابات:** TypeScript وESLint وNext build PASS؛ ownership PASS (45 route، 41 session، 41 visible ownership)؛ responsive PASS (34/34)؛ accessibility PASS (34/34، 0 failures).
 - **الأدلة:** `verification/account-status-announcement-ar-2026-08-17.md`، `verification/account-status-quality-20260817T164210Z.log`، `verification/account-status-audits-20260817T164300Z.log`.
+
+## 2026-08-17 — مساحة العمل: إعلان حالة التحميل العربية
+أُصلحت حالة التحميل في `components/workspace/workspace-workspace.tsx` بإضافة `role="status"` و`aria-live="polite"` و`aria-busy="true"` إلى رسالة `جاري تحميل المساحات...`، دون تغيير منطق الجلب أو fallback المحلي أو التصميم.
+اختُبرت `/workspace` مع تأخير شبكة مؤقت داخل جلسة المتصفح فقط؛ التقطت مراقبة DOM ظهور الحالة أثناء الانتظار وخصائص status/live/busy، ثم اختفت الحالة بعد اكتمال التحميل وظهرت البيانات. لم تُنشأ أو تُعدّل أي مساحة أو عميل.
+نجحت TypeScript وESLint وNext build، كما نجحت ownership (`45` route، `41` session، `41` visible ownership)، responsive (`34/34`) وaccessibility (`34/34`، 0 failures). التقرير: `verification/workspace-loading-status-ar-2026-08-17.md`.
+
+## سجل تقدم الدفعة
+- **الحالة:** مكتملة وقابلة للاعتماد بعد تنظيف artifacts وإجراء diff check.
+- **النطاق:** دلالة حالة تحميل مساحات العمل فقط؛ لا تغيير في البيانات أو العقود أو الأسرار.
+- **القرار:** إغلاق فجوة إعلان التحميل والانتقال إلى تدقيق تفاعلي جديد بعد اعتماد commit مستقل.
