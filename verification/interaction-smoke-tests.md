@@ -815,3 +815,12 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 | المراجعة والحفظ | ظهرت معاينة `مهمة · النهاردة` ثم نجح `تأكيد وحفظ` وظهرت المهمة في الصفحة الرئيسية وصفحة المهام | `verification/quick-add-validation-ar-2026-08-17.md` |
 | التنظيف | أزيل العنصر التجريبي المحدد وحده من الحالة المحلية، ثم عادت صفحة المهام إلى 7 إجمالًا و5 مفتوحة و5 لمهام اليوم | `verification/quick-add-validation-ar-2026-08-17.md` |
 | بوابات الجودة والتدقيق | TypeScript وESLint وdiff check وNext build PASS؛ ownership PASS؛ responsive `34/34`؛ accessibility `34/34` | `verification/quick-add-validation-quality-20260817T151414Z.log`، `verification/quick-add-validation-audits-20260817T151622Z.log` |
+
+## 2026-08-17 — المهام: تحقق عربي لنموذج التعديل والخطوات الفرعية
+
+- **نموذج تعديل المهمة:** فُرّغ عنوان المهمة الأصلية، فظهر `اكتب عنوان المهمة والموعد والتصنيف أولًا.` داخل `role="alert"`، مع `aria-invalid` و`aria-describedby` على الحقول المطلوبة، وبقيت المهمة دون تغيير.
+- **مسح خطأ التعديل:** أُعيد إدخال العنوان الأصلي، فاختفى التنبيه وحالات `aria-invalid` من DOM أثناء الكتابة.
+- **نموذج الخطوة الفرعية:** أُرسل فارغًا، فظهر `اكتب الخطوة الفرعية أولًا.`، ثم أُدخل `تجهيز ملخص اليوم` فاختفى الخطأ وأُضيفت الخطوة بنجاح.
+- **التنظيف:** حُذفت الخطوة التجريبية، وعاد عداد الخطوات إلى الصفر والحالة الأصلية.
+- **البوابات:** TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership PASS؛ responsive `34/34`؛ accessibility `34/34` و0 failures.
+- **الأدلة:** `verification/tasks-validation-ar-2026-08-17.md`، `verification/tasks-validation-quality-20260817T152030Z.log`، `verification/tasks-validation-audits-20260817T152404Z.log`.

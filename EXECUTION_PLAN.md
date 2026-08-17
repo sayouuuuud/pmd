@@ -1100,3 +1100,11 @@
 ## 2026-08-17 — Quick Add: تحقق عربي وARIA
 أُغلقت فجوة التحقق في `components/layout/top-nav.tsx` بإضافة `noValidate` إلى نموذج Quick Add، وربط رسالة الرفض العربية بالحقل الأساسي عبر `aria-describedby` و`role="alert"`، وإضافة `aria-invalid` ومسح الخطأ أثناء الكتابة، مع إبقاء parser وأنواع الإضافة والتصميم الحالي دون تغيير. أُرسل النموذج فارغًا فظهر الرفض العربي المرئي، ثم أُدخلت مهمة عربية وظهرت المعاينة ونجح الحفظ. أزيلت المهمة التجريبية المحددة وحدها من الحالة المحلية وعادت صفحة المهام إلى حالتها الأصلية.
 الأدلة: `verification/quick-add-validation-ar-2026-08-17.md`، `verification/quick-add-validation-quality-20260817T151414Z.log`، `verification/quick-add-validation-audits-20260817T151622Z.log`. البوابات: TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership `45` Route Handler (`41` session و`41` visible ownership)؛ responsive `34/34`؛ accessibility `34/34` و0 failures. **الحالة: PASS — فجوة Quick Add مغلقة ولا توجد بيانات اختبار متبقية.**
+
+## 2026-08-17 — المهام: تحقق عربي لنماذج التعديل والخطوات الفرعية
+| النطاق | التغيير | اختبار التفاعل | Build / ownership | Responsive / accessibility | الحالة | الأدلة |
+|---|---|---|---|---|---|---|
+| تعديل المهمة | إضافة `noValidate` ورفض عربي مرئي و`role="alert"` وARIA للحقول المطلوبة، مع مسح الخطأ أثناء الكتابة | تفريغ عنوان المهمة ورفض الحفظ برسالة `اكتب عنوان المهمة والموعد والتصنيف أولًا.`، ثم إعادة العنوان واختفاء `alert` و`aria-invalid` من DOM | TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership `45` route، `41` session، `41` visible ownership | responsive `34/34`؛ accessibility `34/34` و0 failures | PASS | `components/tasks/tasks-workspace.tsx`، `verification/tasks-validation-ar-2026-08-17.md`، `verification/tasks-validation-quality-20260817T152030Z.log` |
+| إضافة الخطوة الفرعية | إضافة `noValidate` ورفض عربي مرئي وARIA للحقل الفارغ، مع مسح الخطأ أثناء الكتابة | رفض النموذج الفارغ، مسح الخطأ بعد إدخال `تجهيز ملخص اليوم`، إضافة الخطوة بنجاح، ثم حذفها وعودة عداد الخطوات إلى الصفر | نفس بوابات الجودة والملكية أعلاه | نفس نتائج responsive وaccessibility أعلاه | PASS | `components/tasks/tasks-workspace.tsx`، `verification/tasks-validation-ar-2026-08-17.md`، `verification/tasks-validation-audits-20260817T152404Z.log` |
+
+النتيجة: **PASS** — أُغلقت فجوة التحقق المرئي في نموذجي تعديل المهمة وإضافة الخطوة الفرعية مع بقاء بيانات الحالة الأصلية دون أثر تجريبي.

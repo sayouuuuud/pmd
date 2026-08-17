@@ -309,3 +309,10 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | النطاق | التغيير | اختبار التفاعل | Build / ownership | Responsive / accessibility | الحالة | الأدلة |
 |---|---|---|---|---|---|---|
 | Quick Add للمهمة | إضافة `noValidate` وARIA للحقل الأساسي ورسالة رفض عربية ومسح الخطأ أثناء الكتابة، مع الحفاظ على parser والتصميم الحالي | رفض فارغ، مسح الخطأ، معاينة، حفظ مهمة عربية، ثم إزالة المهمة التجريبية المحددة واستعادة الحالة الأصلية | TypeScript وESLint و`git diff --check` وNext build PASS؛ ownership `45` route، `41` session، `41` visible ownership | responsive `34/34`؛ accessibility `34/34` و0 failures | PASS | `components/layout/top-nav.tsx`، `verification/quick-add-validation-ar-2026-08-17.md`، `verification/quick-add-validation-quality-20260817T151414Z.log`، `verification/quick-add-validation-audits-20260817T151622Z.log` |
+
+## 2026-08-17 — المهام: تحقق عربي للنماذج
+
+| النطاق | التنفيذ والتحقق | Ownership | Responsive | Accessibility | Quality gates | الحالة | الأدلة |
+|---|---|---:|---:|---:|---|---|---|
+| تعديل المهمة | رفض عنوان فارغ برسالة `اكتب عنوان المهمة والموعد والتصنيف أولًا.` مع `role="alert"` وARIA؛ مسح الخطأ أثناء الكتابة وإبقاء البيانات الأصلية | PASS — 45 route، 41 session، 41 visible ownership | PASS — 34/34 | PASS — 34/34، 0 failures | TypeScript، ESLint، diff check، Next build PASS | PASS | `components/tasks/tasks-workspace.tsx`، `verification/tasks-validation-ar-2026-08-17.md`، `verification/tasks-validation-quality-20260817T152030Z.log` |
+| الخطوة الفرعية | رفض الاسم الفارغ برسالة `اكتب الخطوة الفرعية أولًا.`؛ مسح الخطأ، إضافة `تجهيز ملخص اليوم`، ثم حذف العنصر التجريبي وعودة العداد للصفر | PASS — نفس نتائج الملكية | PASS — 34/34 | PASS — 34/34، 0 failures | نفس البوابات PASS | PASS | `components/tasks/tasks-workspace.tsx`، `verification/tasks-validation-ar-2026-08-17.md`، `verification/tasks-validation-audits-20260817T152404Z.log` |
