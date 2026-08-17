@@ -643,6 +643,10 @@ export function updateRemoteProjectPricing(id: string, patch: Partial<Pick<Proje
   return request<{ item: RemoteProjectPricing }>(`/api/projects/pricing/${id}`, { method: 'PATCH', body: JSON.stringify(patch) })
 }
 
+export function collectRemoteProjectPricing(id: string) {
+  return request<{ item: RemoteProjectPricing; financeEntry: RemoteFinanceEntry }>(`/api/projects/pricing/${id}/collect`, { method: 'POST' })
+}
+
 export function createRemoteFinanceEntry(input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId' | 'recurrence'>>) {
   return request<{ item: RemoteFinanceEntry }>('/api/finance', { method: 'POST', body: JSON.stringify(input) })
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteProjectUpdate, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, createRemoteEntertainment, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, createRemoteProjectPricing, createRemoteProjectUpdate, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteProjectPricing, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
+import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteProjectUpdate, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, collectRemoteProjectPricing, createRemoteEntertainment, mapRemoteFinanceEntry, mapRemoteProjectPricing, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, createRemoteProjectPricing, createRemoteProjectUpdate, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteProjectPricing, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
 import type { ArchivedClient } from './workspace-types'
 
@@ -324,6 +324,7 @@ type CommandCenterContextValue = {
   addProjectPricing: (input: Pick<ProjectPricing, 'projectId' | 'title' | 'amount' | 'currency'> & Partial<Pick<ProjectPricing, 'clientId' | 'status' | 'expectedDate' | 'receivedAt' | 'notes'>>) => void
   updateProjectPricing: (id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'financeEntryId' | 'notes'>> & { clientId?: string | null }) => void
   addFinanceEntryFromPricing: (pricingId: string) => void
+  collectProjectPricing: (pricingId: string) => void
   addFinanceEntry: (input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId' | 'recurrence'>>) => void
   updateFinanceEntry: (id: string, patch: Partial<FinanceEntry>) => void
   archiveFinanceEntry: (id: string) => void
@@ -949,6 +950,26 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         setProjectPricings((items) => items.map((item) => item.id === pricingId ? { ...item, financeEntryId: remoteId } : item))
       }).catch(() => {
         // Keep the local entry and temporary link so the user can retry without losing data.
+      })
+    },
+    collectProjectPricing: (pricingId) => {
+      const pricing = projectPricings.find((item) => item.id === pricingId)
+      if (!pricing || pricing.status === 'cancelled' || pricing.financeEntryId) return
+      const receivedAt = pricing.receivedAt ?? new Date().toISOString()
+      const financeId = newLocalId('finance')
+      const entry: FinanceEntry = { id: financeId, title: pricing.title, amount: Math.max(0, Math.round(pricing.amount)), kind: 'income', category: 'دخل', localDate: receivedAt.slice(0, 10), recurrence: 'none', note: `تحصيل دفعة مشروع: ${pricing.title}`, projectId: pricing.projectId }
+      setFinanceEntries((items) => items.some((item) => item.id === financeId) ? items : [entry, ...items])
+      setProjectPricings((items) => items.map((item) => item.id === pricingId ? { ...item, status: 'received', receivedAt, financeEntryId: financeId } : item))
+      void collectRemoteProjectPricing(pricingId).then((result) => {
+        const remotePricing = result?.item
+        const remoteFinance = result?.financeEntry
+        if (!remotePricing || !remoteFinance) throw new Error('تعذر مزامنة التحصيل')
+        const nextPricing = { ...pricing, ...mapRemoteProjectPricing(remotePricing) }
+        const nextFinance = mapRemoteFinanceEntry(remoteFinance)
+        setProjectPricings((items) => items.map((item) => item.id === pricingId ? nextPricing : item))
+        setFinanceEntries((items) => items.some((item) => item.id === nextFinance.id) ? items.map((item) => item.id === nextFinance.id ? nextFinance : item) : items.map((item) => item.id === financeId ? nextFinance : item))
+      }).catch(() => {
+        // Keep the local income and temporary link; retrying the visible sync action is idempotent.
       })
     },
     addFinanceEntry: (input) => {
