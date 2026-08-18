@@ -1569,3 +1569,14 @@
 تحديث واجهة `/workspace` ليعرض الدور الحالي وقدرات الإدارة، ويخفي أفعال العملاء وإدارة الأعضاء عن الأدوار غير المخولة، مع إعادة تصفير الصلاحيات عند فشل تحميل العضوية. أُضيفت أنواع WorkspaceRole typed إلى `lib/workspace-types.ts`. عند غياب `DATABASE_URL` تستمر الواجهة في localStorage fallback مع إظهار `وضع محلي مؤقت` بدل ادعاء اتصال إنتاجي.
 
 نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` بلا تحذيرات و`NEXT_TELEMETRY_DISABLED=1 pnpm exec next build --webpack`. نجح `audit_route_ownership.py` بعدد 48 مسارًا، 44 مسارًا بجلسة وملكية ظاهرة، و`ownership_audit=PASS`. نجح تدقيق responsive لجميع 34 مسارًا دون failures، وتدقيق accessibility لجميع 34 مسارًا مع `failures=0`. فُحصت `/workspace` بصريًا على `localhost:3004` بعد إعادة تشغيل build الحالي؛ ظهر الدور `مالك` وحالات الأعضاء والدعوات وRTL دون overflow. يبقى اختبار الجلسات متعددة المستخدمين وNeon الفعلي مفتوحًا إلى حين توفر credentials، ولا تُعد حالة localStorage تحققًا إنتاجيًا.
+
+
+## سجل المرحلة الأولى من خطة الفجوات المحلية — تثبيت النطاق والعقود — 2026-08-18
+
+أُعيد ترتيب الفجوات المتبقية إلى عشر مراحل متسلسلة في `docs/local-first-phases.md`. المراحل 1–8 محلية أولًا، والمرحلة 9 فقط مخصصة لربط Neon وBetter Auth الإنتاجي وحل migrations واختبارات الجلسات والمزامنة، بينما تختص المرحلة 10 بالاعتماد والإطلاق. هذا الترتيب لا يغيّر حواجز الملكية وRBAC الموجودة، بل يمنع خلط تنفيذ المنتج بمشاكل credentials والبنية التحتية.
+
+أُضيف `lib/local-first-contracts.ts` كعقد TypeScript مركزي للميزات القادمة. يعرّف `LocalScope` لنطاق المستخدم والـWorkspace والدور، و`LocalEntityMeta` لحقول الهوية والملكية والتواريخ، و`LocalRecord` لحالة المزامنة الصريحة (`local` و`pending` و`synced` و`failed`)، و`LocalStorageEnvelope` لنسخة التخزين، و`LocalRepository` لعمليات القراءة والإنشاء والتعديل والأرشفة والاسترجاع مع تمرير النطاق إلى كل عملية. أضيفت كذلك دوال فحص النطاق وتحديث حالة المزامنة لإعادة استخدامها في المراحل التالية.
+
+لم تُضف جداول أو migrations، ولم يتغير `server/db/schema.ts`، ولم يُستخدم `DATABASE_URL`، ولم يُشغّل `drizzle-kit generate`. يظل العقد محليًا ومهيأً لاستبدال adapter لاحقًا دون ادعاء وجود اتصال إنتاجي. لم يُعثر على `references/domain_model.md` في مساره المتوقع، لذلك لم يُفترض محتوى غير موجود؛ استُخدمت عقود `workspace-types.ts` وschema الحالية كمرجعين فعليين فقط.
+
+**حالة التنفيذ:** PASS مبدئي — العقد والتوثيق مكتملان، وتبقى بوابات TypeScript وESLint وWebpack واختبار المتصفح وتدقيقات RTL/responsive/accessibility قبل إغلاق المرحلة والانتظار دقيقتين فعليتين.
