@@ -774,3 +774,13 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Quality gates | TypeScript، ESLint، Webpack، diff check | PASS | `verification/archive-restore-sync-quality-20260818T011058Z.log` |
 | Ownership / responsive / accessibility | لا تغيير في العقود أو المسارات السابقة | PASS سابق مستمر | آخر قياس معتمد `48/44/44` و`34/34` و`34/34` |
 | Production backend | تحقق session/ownership وremote restore على Neon | مؤجل | لا credentials؛ لا يُدّعى إغلاقه بهذه الدفعة |
+
+
+## اعتماد دفعة 2FA التجريبية — 2026-08-18
+
+| محور الخطة | الحالة | الدليل والحدود |
+|---|---|---|
+| Feature-gated 2FA challenge | منفذ تجريبيًا | `lib/auth-client.ts` و`components/auth/auth-form.tsx`؛ TOTP وbackup-code toggle وtrust-device وcancel جرى التحقق منها بصريًا عند فتح flag |
+| Recovery-code configuration | منفذ على مستوى العقد | `server/auth.ts` يضبط 10 رموز بطول 10 وتخزينًا مشفرًا؛ الاستهلاك والتدوير الفعليان يحتاجان session وNeon حقيقيين |
+| Session revocation / production verification | مفتوح | لا توجد credentials إنتاجية في بيئة الاختبار؛ لا تُعد الجلسات أو إبطالها مغلقة |
+| Quality gates | PASS | TypeScript وESLint وWebpack وOwnership `48/44/44` وResponsive `34/34` وAccessibility `34/34` |

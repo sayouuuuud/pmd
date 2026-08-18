@@ -1,0 +1,24 @@
+started=2026-08-18T02:18:50Z
+=== OWNERSHIP ===
+route_count=48
+routes_with_session=44
+routes_with_visible_ownership=44
+missing_session_routes:
+missing_visible_ownership_routes:
+ownership_audit=PASS
+ownership_exit=0
+=== RESPONSIVE ===
+{
+  "total": 34,
+  "failures": [],
+  "reportPath": "/home/ubuntu/pmd/docs/responsive-audit-results.json"
+}
+responsive_exit=0
+=== ACCESSIBILITY ===
+{
+  "total": 34,
+  "failures": 0,
+  "reportPath": "/home/ubuntu/pmd/docs/accessibility-audit-results.json",
+  "failureSummary": []
+}
+accessibility_exit=0

@@ -34,6 +34,11 @@ export function getAuth() {
         ? [twoFactor({
             issuer: 'Personal Command Center',
             twoFactorTable: 'twoFactor',
+            backupCodes: {
+              amount: 10,
+              length: 10,
+              storeBackupCodes: 'encrypted',
+            },
             twoFactorCookieMaxAge: 10 * 60,
             trustDeviceMaxAge: 30 * 24 * 60 * 60,
           })]

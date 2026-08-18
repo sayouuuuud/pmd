@@ -50,6 +50,7 @@ export function AccountWorkspace() {
   const [twoFactorPassword, setTwoFactorPassword] = useState('')
   const [twoFactorCode, setTwoFactorCode] = useState('')
   const [twoFactorSetup, setTwoFactorSetup] = useState<{ totpURI: string; backupCodes: string[] } | null>(null)
+  const [twoFactorBackupCodes, setTwoFactorBackupCodes] = useState<string[] | null>(null)
   const [twoFactorBusy, setTwoFactorBusy] = useState(false)
   const [twoFactorMessage, setTwoFactorMessage] = useState('')
   const [twoFactorError, setTwoFactorError] = useState('')
@@ -169,6 +170,7 @@ export function AccountWorkspace() {
       const result = await authClient.twoFactor.enable({ password: twoFactorPassword, issuer: 'Personal Command Center' })
       if (result.error) throw new Error(result.error.message || 'تعذر بدء إعداد التحقق بخطوتين.')
       setTwoFactorSetup(result.data)
+      setTwoFactorBackupCodes(result.data.backupCodes)
       setTwoFactorCode('')
       setTwoFactorMessage('تم إنشاء إعداد التحقق. أدخل الرمز الظاهر في تطبيق المصادقة لتأكيده.')
     } catch (error) {
@@ -196,6 +198,23 @@ export function AccountWorkspace() {
     }
   }
 
+  async function regenerateBackupCodes() {
+    setTwoFactorBusy(true)
+    setTwoFactorError('')
+    setTwoFactorMessage('')
+    try {
+      const result = await authClient.twoFactor.generateBackupCodes({ password: twoFactorPassword })
+      if (result.error) throw new Error(result.error.message || 'تعذر إصدار رموز استرداد جديدة.')
+      setTwoFactorBackupCodes(result.data.backupCodes)
+      setTwoFactorPassword('')
+      setTwoFactorMessage('تم إصدار مجموعة جديدة من رموز الاسترداد. الرموز السابقة لم تعد صالحة.')
+    } catch (error) {
+      setTwoFactorError(error instanceof Error ? error.message : 'تعذر إصدار رموز استرداد جديدة.')
+    } finally {
+      setTwoFactorBusy(false)
+    }
+  }
+
   async function disableTwoFactor() {
     setTwoFactorBusy(true)
     setTwoFactorError('')
@@ -203,6 +222,7 @@ export function AccountWorkspace() {
       const result = await authClient.twoFactor.disable({ password: twoFactorPassword })
       if (result.error) throw new Error(result.error.message || 'تعذر تعطيل التحقق بخطوتين.')
       setTwoFactorPassword('')
+      setTwoFactorBackupCodes(null)
       setTwoFactorMessage('تم تعطيل التحقق بخطوتين.')
       await authClient.getSession()
     } catch (error) {
@@ -278,7 +298,10 @@ export function AccountWorkspace() {
                   <Input type="password" value={twoFactorPassword} onChange={(event) => setTwoFactorPassword(event.target.value)} autoComplete="current-password" className="mt-2 rounded-2xl px-4 py-3" placeholder="مطلوبة للتأكيد" />
                 </label>
                 {!twoFactorEnabled && <Button type="button" onClick={enableTwoFactor} disabled={twoFactorBusy || !twoFactorPassword} className="self-end rounded-full px-5 py-3">{twoFactorBusy ? 'جاري التجهيز…' : 'بدء إعداد 2FA'}</Button>}
-                {twoFactorEnabled && <Button type="button" onClick={disableTwoFactor} disabled={twoFactorBusy || !twoFactorPassword} variant="outline" className="self-end rounded-full px-5 py-3">{twoFactorBusy ? 'جاري التعطيل…' : 'تعطيل 2FA'}</Button>}
+                {twoFactorEnabled && <div className="flex flex-wrap gap-2 self-end sm:col-span-2">
+                  <Button type="button" onClick={regenerateBackupCodes} disabled={twoFactorBusy || !twoFactorPassword} variant="outline" className="rounded-full px-5 py-3">{twoFactorBusy ? 'جاري الإصدار…' : 'إصدار رموز استرداد جديدة'}</Button>
+                  <Button type="button" onClick={disableTwoFactor} disabled={twoFactorBusy || !twoFactorPassword} variant="outline" className="rounded-full px-5 py-3">{twoFactorBusy ? 'جاري التعطيل…' : 'تعطيل 2FA'}</Button>
+                </div>}
               </div>
               {twoFactorSetup && (
                 <div className="grid gap-3 rounded-2xl border border-border p-4">
@@ -294,6 +317,11 @@ export function AccountWorkspace() {
                   </div>
                 </div>
               )}
+              {twoFactorEnabled && twoFactorBackupCodes && !twoFactorSetup && <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-foreground">
+                <p className="font-semibold">رموز الاسترداد الحالية — احفظها خارج الجهاز</p>
+                <p className="mt-1 text-muted-foreground">كل رمز يُستخدم مرة واحدة. عند إصدار مجموعة جديدة تُلغى المجموعة السابقة.</p>
+                <code dir="ltr" className="mt-3 block break-all leading-7">{twoFactorBackupCodes.join(' · ')}</code>
+              </div>}
               {twoFactorError && <p id="two-factor-error" role="alert" aria-live="assertive" aria-atomic="true" className="text-xs text-destructive">{twoFactorError}</p>}
               {twoFactorMessage && <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-muted-foreground">{twoFactorMessage}</p>}
             </div>

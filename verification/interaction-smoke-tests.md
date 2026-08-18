@@ -1171,3 +1171,18 @@ _تم التسجيل في 2026-08-16 وفق تاريخ جلسة المتصفح �
 | تنظيف الاختبار | عدم ترك fixture خارج الأرشيف بعد نهاية السيناريو | PASS — `يوم هادئ للتجربة` ظاهر مجددًا تحت فلتر اليوميات |
 
 الدليل التفصيلي: `verification/archive-restore-sync-browser-20260818T0112Z.md`.
+
+## 2026-08-18 — Experimental 2FA challenge — 02:18Z
+
+| السيناريو | النتيجة |
+|---|---|
+| فتح `/login?twoFactor=1&next=/` مع flag 2FA مفعّل | PASS — ظهر تحدي TOTP العربي مع حقل رمز وخيار الوثوق بالجهاز |
+| التحويل من TOTP إلى backup code والعودة | PASS — تغيّر الحقل والـplaceholder وظهرت إمكانية الرجوع لتطبيق المصادقة |
+| إرسال رمز استرداد غير صالح قصير | PASS — بقي المستخدم داخل التحدي وظهرت رسالة خطأ عربية دون طلب مكتمل غير صالح |
+| إلغاء التحدي | PASS بالكود — إزالة destination والعودة إلى `/login` عبر router آمن |
+| الوضع المحلي في `/account` | PASS — يظهر تنبيه صريح بأن تسجيل الدخول مطلوب، ولا تُعرض حالة remote مضللة |
+| 2FA flag مغلق | PASS — بطاقة 2FA والإضافة لا تظهران في البناء الافتراضي |
+| TOTP/backup-code success على Better Auth حقيقي | BLOCKED — لا توجد credentials أو session أو Neon database في البيئة الحالية |
+| إبطال الجلسات واستهلاك/تدوير recovery codes | BLOCKED — يحتاج اختبار backend إنتاجي حقيقي |
+
+الدليل التفصيلي: `verification/twofactor-browser-20260818.md` و`verification/twofactor-final-gates-20260818.log`.

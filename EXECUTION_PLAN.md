@@ -1535,3 +1535,28 @@
 **الحدود:** هذا الإغلاق يثبت بوابة تشغيل 2FA التجريبية ولا يعلن جاهزية 2FA للإنتاج؛ ما تزال login challenge وrecovery وإبطال الجلسات والاختبارات الإنتاجية مفتوحة. متغيرات `NEXT_PUBLIC_*` ليست طبقة صلاحيات، وتظل فحوص الجلسة والملكية على الخادم إلزامية.
 
 **السجلات:** [`verification/feature-flags-browser-20260818.md`](verification/feature-flags-browser-20260818.md)، وسجلات البناء في `verification/feature-flags-*-build-*.log`.
+
+---
+## سجل دفعة 2026-08-18 — توسيع 2FA التجريبي
+**النطاق:** تنفيذ المرحلة الثانية من فجوات الخطة فوق عقد Feature Flags، مع إبقاء 2FA تجريبيًا ومتوقفًا افتراضيًا.
+
+**التنفيذ:**
+- رُبط `twoFactorClient` بمسار تحدي واضح `/login?twoFactor=1` عند فتح flag 2FA فقط.
+- وُسّع `AuthForm` ليستوعب تحدي TOTP، والتحويل إلى رمز استرداد، وخيار الوثوق بالجهاز لمدة 30 يومًا، والإلغاء والعودة الآمنة إلى صفحة الدخول.
+- أُضيفت رسائل خطأ عربية وحالات تحميل وخصائص accessibility للتحدي، مع الحفاظ على التسجيل والدخول العادي عند غياب challenge.
+- ضُبط خادم Better Auth على 10 رموز استرداد بطول 10 أحرف مع تخزين مشفر، ومدة trust-device مقدارها 30 يومًا ومدة challenge مقدارها 10 دقائق، وكل ذلك خلف flag 2FA.
+- أُضيف سجل متصفح مستقل يفرق بين تغطية الواجهة المحلية وبين الاختبار الإنتاجي المتوقف على session وقاعدة بيانات حقيقيين.
+
+**التحقق:**
+- TypeScript: PASS.
+- ESLint: PASS؛ تحذير hooks سابق غير حاجز في `components/workspace/workspace-workspace.tsx`.
+- Webpack production build: PASS؛ بقيت تحذيرات Next/Edge السابقة غير الحاجزة.
+- Ownership: PASS — 48 route، منها 44 بجلسة و44 بملكية مرئية، دون مسارات ناقصة.
+- Responsive: PASS — 34/34.
+- Accessibility: PASS — 34/34، دون failures.
+- Browser: PASS لتدفق عرض تحدي TOTP، التبديل إلى backup code، خيار trust-device، الإلغاء، والتحقق من الرسائل في الوضع المحلي/fixture.
+- `git diff --check`: PASS.
+
+**الحدود:** لم تُدّعَ جاهزية الإنتاج. ما تزال نتيجة TOTP الناجحة، استهلاك وتدوير recovery codes، إصدار trust-device cookie، إبطال الجلسات، واختبار cross-session بحاجة إلى Better Auth/Neon credentials وحساب اختبار حقيقي. لم يتم تشغيل `drizzle-kit generate`.
+
+**السجلات:** `verification/twofactor-browser-20260818.md` و`verification/twofactor-final-gates-20260818.log` و`verification/twofactor-ui-gates-20260818.log`.

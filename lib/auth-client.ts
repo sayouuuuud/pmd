@@ -6,5 +6,7 @@ import { featureFlags } from '@/lib/feature-flags'
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL ?? undefined,
-  plugins: featureFlags.experimental.twoFactor ? [twoFactorClient()] : [],
+  plugins: featureFlags.experimental.twoFactor
+    ? [twoFactorClient({ twoFactorPage: '/login?twoFactor=1' })]
+    : [],
 })
