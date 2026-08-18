@@ -6,7 +6,9 @@ import { archiveRemoteEntertainment,   archiveRemoteFinanceEntry,
 import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
 import type { ArchivedClient } from './workspace-types'
 import { normalizeBillingLines, normalizeInvoice, normalizeQuote, type Invoice, type Quote } from './billing'
+import { createDemoActivitySessions, normalizeActivitySession, normalizeActivitySettings, type ActivitySession, type ActivitySessionInput, type ActivitySettings } from './activity'
 export type { BillingLineItem, Invoice, InvoiceStatus, Quote, QuoteStatus } from './billing'
+export type { ActivityCategory, ActivitySession, ActivitySessionInput, ActivitySettings, ActivitySource, ActivitySyncState } from './activity'
 
 function newLocalId(prefix: string) {
   return `${prefix}-${typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Date.now()}`
@@ -349,6 +351,8 @@ type CommandCenterContextValue = {
   weeklyReview: WeeklyReview
   archive: ArchivedItem[]
   resources: Resource[]
+  activitySessions: ActivitySession[]
+  activitySettings: ActivitySettings
   updateProfile: (patch: Partial<Profile>) => void
   completeOnboarding: (profile: Omit<Profile, 'onboardingComplete'>) => void
   toggleTask: (id: string) => void
@@ -431,6 +435,14 @@ type CommandCenterContextValue = {
   archiveResource: (id: string) => void
   restoreResource: (id: string) => void
   toggleResourceFavorite: (id: string) => void
+  addActivitySession: (input: import('./activity').ActivitySessionInput) => void
+  updateActivitySession: (id: string, patch: Partial<Omit<ActivitySession, 'id' | 'createdAt'>>) => void
+  deleteActivitySession: (id: string) => void
+  clearActivityData: () => void
+  markActivitySessionsSynced: (ids: string[], error?: string) => void
+  updateActivitySettings: (patch: Partial<ActivitySettings>) => void
+  toggleActivityCollector: () => void
+  toggleActivityPause: () => void
   toggleHabit: (id: string) => void
   togglePlanItem: (id: string) => void
   updatePlanItem: (id: string, patch: Partial<Pick<PlanItem, 'title' | 'time'>>) => void
@@ -556,10 +568,10 @@ const initialJournal: JournalEntry[] = [
 
 const STORAGE_KEY = 'personal-command-center-state-v2'
 const initialWeeklyReview: WeeklyReview = { id: 'weekly-review-current', weekStart: '2026-08-10', weekEnd: '2026-08-16', wentWell: '', blockers: '', nextGoal: '', status: 'draft', updatedAt: 'لم تُحفظ بعد' }
-type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; projectUpdates: ProjectUpdate[]; projectPricings: ProjectPricing[]; financeEntries: FinanceEntry[]; quotes: Quote[]; invoices: Invoice[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview; archive: ArchivedItem[]; resources: Resource[] }
+type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; projectUpdates: ProjectUpdate[]; projectPricings: ProjectPricing[]; financeEntries: FinanceEntry[]; quotes: Quote[]; invoices: Invoice[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview; archive: ArchivedItem[]; resources: Resource[]; activitySessions: ActivitySession[]; activitySettings: ActivitySettings }
 
 function getDefaultState(): PersistedState {
-  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, projectUpdates: [], projectPricings: [], financeEntries: initialFinanceEntries, quotes: initialQuotes, invoices: initialInvoices, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview, archive: [], resources: initialResources }
+  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, projectUpdates: [], projectPricings: [], financeEntries: initialFinanceEntries, quotes: initialQuotes, invoices: initialInvoices, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview, archive: [], resources: initialResources, activitySessions: createDemoActivitySessions(), activitySettings: normalizeActivitySettings(undefined) }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -755,6 +767,8 @@ function normalizeState(value: unknown): PersistedState | null {
     weeklyReview: { ...defaults.weeklyReview, ...weeklyReview },
     archive: arrayOr(source.archive, defaults.archive),
     resources: arrayOr(source.resources, defaults.resources).map((resource, index) => normalizeResource(resource, defaults.resources[index] ?? defaults.resources[0])).filter((resource) => resource.title),
+    activitySessions: arrayOr(source.activitySessions, defaults.activitySessions).filter(isRecord).slice(0, 2000).map((session, index) => normalizeActivitySession(session, defaults.activitySessions[index] ?? defaults.activitySessions[0])).filter((session) => session.appName && session.startedAt),
+    activitySettings: normalizeActivitySettings(source.activitySettings, defaults.activitySettings),
   }
 }
 
@@ -794,6 +808,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [weeklyReview, setWeeklyReview] = useState<WeeklyReview>(initial.weeklyReview ?? initialWeeklyReview)
   const [archive, setArchive] = useState<ArchivedItem[]>(initial.archive ?? [])
   const [resources, setResources] = useState<Resource[]>(initial.resources ?? [])
+  const [activitySessions, setActivitySessions] = useState<ActivitySession[]>(initial.activitySessions ?? [])
+  const [activitySettings, setActivitySettings] = useState<ActivitySettings>(initial.activitySettings)
   const [hydrated, setHydrated] = useState(false)
   const remoteHydrated = useRef(false)
 
@@ -819,13 +835,15 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     setWeeklyReview(saved.weeklyReview ?? initialWeeklyReview)
     setArchive(saved.archive ?? [])
     setResources(saved.resources ?? [])
+    setActivitySessions(saved.activitySessions ?? [])
+    setActivitySettings(saved.activitySettings ?? normalizeActivitySettings(undefined))
     setHydrated(true)
   }, [])
 
   useEffect(() => {
     if (!hydrated) return
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources }))
-  }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources])
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings }))
+  }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings])
 
   useEffect(() => {
     if (remoteHydrated.current) return
@@ -859,7 +877,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const value = useMemo<CommandCenterContextValue>(() => ({
     profile,
     tasks,
-    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 2, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources } }, null, 2),
+    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 2, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings } }, null, 2),
     importData: (raw) => {
       try {
         const next = normalizeState(JSON.parse(raw))
@@ -884,6 +902,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         setWeeklyReview(next.weeklyReview)
         setArchive(next.archive)
         setResources(next.resources)
+        setActivitySessions(next.activitySessions)
+        setActivitySettings(next.activitySettings)
         return { ok: true, message: 'تمت استعادة النسخة الاحتياطية محليًا.' }
       } catch {
         return { ok: false, message: 'تعذر قراءة ملف النسخة الاحتياطية.' }
@@ -912,6 +932,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setWeeklyReview(defaults.weeklyReview)
       setArchive(defaults.archive)
       setResources(defaults.resources)
+      setActivitySessions(defaults.activitySessions)
+      setActivitySettings(defaults.activitySettings)
     },
     notes,
     habits,
@@ -931,6 +953,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     weeklyReview,
     archive,
     resources,
+    activitySessions,
+    activitySettings,
     updateProfile: (patch) => {
       setProfile((current) => ({ ...current, ...patch }))
       void updateRemoteProfile(patch)
@@ -1626,6 +1650,58 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     toggleResourceFavorite: (id) => {
       setResources((items) => items.map((resource) => resource.id === id ? { ...resource, favorite: !resource.favorite, updatedAt: new Date().toISOString() } : resource))
     },
+    addActivitySession: (input) => {
+      const appName = input.appName.trim().slice(0, 160)
+      const startedAt = input.startedAt.trim()
+      if (!appName || !startedAt || !Number.isFinite(Date.parse(startedAt))) return
+      const now = new Date().toISOString()
+      const item: ActivitySession = {
+        id: newLocalId('activity'),
+        source: input.source === 'manual' ? 'manual' : 'windows-agent',
+        category: input.category === 'browser' || input.category === 'idle' ? input.category : 'application',
+        appName,
+        windowTitle: input.windowTitle?.trim().slice(0, 240) || undefined,
+        browserDomain: input.browserDomain?.trim().slice(0, 180) || undefined,
+        startedAt,
+        endedAt: input.endedAt?.trim() || undefined,
+        idleSeconds: Math.max(0, Math.min(86400, Math.round(input.idleSeconds ?? 0))),
+        syncState: input.syncState ?? 'pending',
+        syncError: null,
+        createdAt: now,
+      }
+      setActivitySessions((items) => [item, ...items].slice(0, 2000))
+    },
+    updateActivitySession: (id, patch) => {
+      setActivitySessions((items) => items.map((session) => session.id === id ? {
+        ...session,
+        ...patch,
+        appName: patch.appName === undefined ? session.appName : patch.appName.trim().slice(0, 160) || session.appName,
+        windowTitle: patch.windowTitle === undefined ? session.windowTitle : patch.windowTitle?.trim().slice(0, 240) || undefined,
+        browserDomain: patch.browserDomain === undefined ? session.browserDomain : patch.browserDomain?.trim().slice(0, 180) || undefined,
+        idleSeconds: patch.idleSeconds === undefined ? session.idleSeconds : Math.max(0, Math.min(86400, Math.round(patch.idleSeconds))),
+      } : session))
+    },
+    deleteActivitySession: (id) => {
+      setActivitySessions((items) => items.filter((session) => session.id !== id))
+    },
+    clearActivityData: () => {
+      setActivitySessions([])
+      setActivitySettings((settings) => ({ ...settings, lastSyncAt: undefined, lastSyncError: null }))
+    },
+    markActivitySessionsSynced: (ids, error) => {
+      const idSet = new Set(ids)
+      setActivitySessions((items) => items.map((session) => idSet.has(session.id) ? { ...session, syncState: error ? 'failed' : 'synced', syncError: error ?? null } : session))
+      setActivitySettings((settings) => ({ ...settings, lastSyncAt: error ? settings.lastSyncAt : new Date().toISOString(), lastSyncError: error ?? null }))
+    },
+    updateActivitySettings: (patch) => {
+      setActivitySettings((settings) => normalizeActivitySettings({ ...settings, ...patch }, settings))
+    },
+    toggleActivityCollector: () => {
+      setActivitySettings((settings) => ({ ...settings, collectorEnabled: !settings.collectorEnabled }))
+    },
+    toggleActivityPause: () => {
+      setActivitySettings((settings) => ({ ...settings, paused: !settings.paused }))
+    },
     archiveHabit: (id) => {
       const item = habits.find((habit) => habit.id === id)
       if (!item) return
@@ -1752,7 +1828,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'pending' } : item))
       void updateRemotePlanItem(id, { status: 'pending' })
     },
-  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources])
+  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

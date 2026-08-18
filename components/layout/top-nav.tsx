@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import {
+  Activity,
   AlignJustify,
   Archive,
   Bell,
@@ -51,6 +52,7 @@ const navItems = [
   { href: '/goals', label: 'الأهداف', icon: Target },
   { href: '/journal', label: 'اليوميات', icon: BookHeart },
   { href: '/money', label: 'الفلوس', icon: Wallet },
+  { href: '/activity', label: 'النشاط', icon: Activity },
   { href: '/entertainment', label: 'الترفيه', icon: Clapperboard },
   { href: '/religious', label: 'الديني', icon: Moon },
   { href: '/archive', label: 'الأرشيف', icon: Archive },
