@@ -89,6 +89,15 @@ export function normalizeActivitySession(value: unknown, fallback: ActivitySessi
   }
 }
 
+export function pruneActivitySessions(sessions: ActivitySession[], retentionDays: number, now = Date.now()) {
+  const safeDays = Math.max(1, Math.min(365, Math.round(retentionDays)))
+  const cutoff = now - safeDays * 24 * 60 * 60 * 1000
+  return sessions.filter((session) => {
+    const timestamp = Date.parse(session.startedAt)
+    return Number.isFinite(timestamp) && timestamp >= cutoff
+  })
+}
+
 export function activityDurationSeconds(session: Pick<ActivitySession, 'startedAt' | 'endedAt'>) {
   const started = Date.parse(session.startedAt)
   const ended = session.endedAt ? Date.parse(session.endedAt) : Date.now()

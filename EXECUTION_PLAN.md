@@ -1749,3 +1749,22 @@
 | Browser Console | PASS — لا أخطاء JavaScript جديدة |
 
 أُنشئ `sql/phase-12-billing-experimental.sql` كملف SQL مؤجل للجداول `billing_quote` و`billing_invoice` و`billing_line_item` مع `user_id` و`workspace_id` والعلاقات والفهارس والقيود وتعليقات الملكية وRLS. لم يُشغّل SQL، ولم تُشغّل `drizzle-kit generate`، ولم تُضف أسرار. محضر الجودة التفصيلي: `verification/phase-12-billing-quality-20260818.md`، وأدلة المتصفح: `verification/phase-12-browser-evidence-20260818.md`. **الحالة: PASS — المرحلة الثانية عشرة مكتملة محليًا وواجهياً، جاهزة للـcommit والـpush، ثم الانتظار دقيقتين فعليتين قبل بدء المرحلة الثالثة عشرة.**
+
+
+## المرحلة 14 — التقوية والجاهزية النهائية (2026-08-18)
+
+**الحالة:** مكتملة محليًا وقابلة للاعتماد البرمجي، مع قيود إنتاجية موثقة.
+
+**ما أُنجز:**
+
+- تقوية تصدير الحساب باستبعاد أسرار بيانات اعتماد العملاء، رموز الدعوات، أسرار 2FA، ورموز الاسترداد القابلة لإعادة الاستخدام.
+- تطبيق `retentionDays` فعليًا على جلسات النشاط المحلية عند الإضافة أو تغيير الإعداد، مع الإيقاف المؤقت والاستثناءات والحذف الانتقائي والكامل.
+- إضافة Security Headers متدرجة ومتوافقة مع HTTP المحلي وPWA، مع تأجيل HSTS/CSP الكاملين إلى خط HTTPS الإنتاجي ذي nonces أو hashes.
+- تثبيت بروتوكول جامع Windows التجريبي بحيث لا يجمع كلمات مرور أو محتوى رسائل أو لقطات شاشة أو ضغطات مفاتيح.
+- تشغيل اختبارات النشاط، التصدير، الجلسة المحلية، المزامنة الاختيارية، الحذف، والـConsole دون أخطاء.
+
+**البوابات:** TypeScript PASS، ESLint PASS، Webpack production build PASS، route ownership PASS، responsive audit PASS (34/34)، accessibility audit PASS (34/34)، وفحص Security Headers و401 للتصدير غير الموثق PASS.
+
+**القيود الإنتاجية:** لا توجد `DATABASE_URL` أو `BETTER_AUTH_SECRET` في البيئة الحالية؛ لذلك تبقى اختبارات Better Auth/2FA الحقيقية، cross-user وcross-workspace، HTTPS وService Worker على النطاق المنشور، object storage وفحص المرفقات، وbackup/restore في Neon معلقة حتى توفير بيئة الإنتاج. لم يُشغّل `drizzle-kit generate` أو أي SQL مؤجل.
+
+**المراجع:** `verification/phase-14-production-readiness-quality-20260818.md` و`verification/final-plan-inventory-20260818.md`.

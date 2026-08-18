@@ -6,7 +6,7 @@ import { archiveRemoteEntertainment,   archiveRemoteFinanceEntry,
 import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
 import type { ArchivedClient } from './workspace-types'
 import { normalizeBillingLines, normalizeInvoice, normalizeQuote, type Invoice, type Quote } from './billing'
-import { createDemoActivitySessions, normalizeActivitySession, normalizeActivitySettings, type ActivitySession, type ActivitySessionInput, type ActivitySettings } from './activity'
+import { createDemoActivitySessions, normalizeActivitySession, normalizeActivitySettings, pruneActivitySessions, type ActivitySession, type ActivitySessionInput, type ActivitySettings } from './activity'
 export type { BillingLineItem, Invoice, InvoiceStatus, Quote, QuoteStatus } from './billing'
 export type { ActivityCategory, ActivitySession, ActivitySessionInput, ActivitySettings, ActivitySource, ActivitySyncState } from './activity'
 
@@ -1669,7 +1669,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         syncError: null,
         createdAt: now,
       }
-      setActivitySessions((items) => [item, ...items].slice(0, 2000))
+      setActivitySessions((items) => pruneActivitySessions([item, ...items].slice(0, 2000), activitySettings.retentionDays))
     },
     updateActivitySession: (id, patch) => {
       setActivitySessions((items) => items.map((session) => session.id === id ? {
@@ -1694,7 +1694,11 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setActivitySettings((settings) => ({ ...settings, lastSyncAt: error ? settings.lastSyncAt : new Date().toISOString(), lastSyncError: error ?? null }))
     },
     updateActivitySettings: (patch) => {
-      setActivitySettings((settings) => normalizeActivitySettings({ ...settings, ...patch }, settings))
+      setActivitySettings((settings) => {
+        const next = normalizeActivitySettings({ ...settings, ...patch }, settings)
+        setActivitySessions((items) => pruneActivitySessions(items, next.retentionDays))
+        return next
+      })
     },
     toggleActivityCollector: () => {
       setActivitySettings((settings) => ({ ...settings, collectorEnabled: !settings.collectorEnabled }))
