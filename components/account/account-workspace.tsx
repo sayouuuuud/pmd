@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useCommandCenter } from '@/lib/command-center-store'
 import { authClient } from '@/lib/auth-client'
+import { featureFlags } from '@/lib/feature-flags'
 
 function downloadJson(filename: string, content: string) {
   const blob = new Blob([content], { type: 'application/json;charset=utf-8' })
@@ -211,7 +212,7 @@ export function AccountWorkspace() {
     }
   }
 
-  const twoFactorEnabled = Boolean((session?.user as { twoFactorEnabled?: boolean } | undefined)?.twoFactorEnabled)
+  const twoFactorEnabled = featureFlags.experimental.twoFactor && Boolean((session?.user as { twoFactorEnabled?: boolean } | undefined)?.twoFactorEnabled)
 
   return (
     <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr]">
@@ -259,44 +260,46 @@ export function AccountWorkspace() {
         </form>
       </ContentCard>
 
-      <ContentCard className="lg:col-span-2" title="التحقق بخطوتين — تجريبي" description="فعّل TOTP لحماية جلسة الحساب. لا تفعّل هذه الميزة في الإنتاج قبل مراجعة التخزين والاستعادة واختبار تدفق تسجيل الدخول بالكامل.">
-        {!session ? (
-          <p className="rounded-2xl bg-muted/60 p-4 text-sm text-muted-foreground">سجّل الدخول أولًا لإدارة التحقق بخطوتين. يظل الوضع المحلي متاحًا دون إعداد أمني بعيد.</p>
-        ) : (
-          <div className="grid gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-muted/60 p-4">
-              <div>
-                <p className="font-semibold">{twoFactorEnabled ? 'التحقق بخطوتين مفعّل' : 'التحقق بخطوتين غير مفعّل'}</p>
-                <p className="mt-1 text-xs text-muted-foreground">يستخدم تطبيق مصادقة متوافقًا مع TOTP ورموز استرداد لمرة واحدة.</p>
-              </div>
-              <ShieldCheck className="h-6 w-6 text-primary" aria-hidden="true" />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block text-sm font-medium">كلمة مرور الحساب
-                <Input type="password" value={twoFactorPassword} onChange={(event) => setTwoFactorPassword(event.target.value)} autoComplete="current-password" className="mt-2 rounded-2xl px-4 py-3" placeholder="مطلوبة للتأكيد" />
-              </label>
-              {!twoFactorEnabled && <Button type="button" onClick={enableTwoFactor} disabled={twoFactorBusy || !twoFactorPassword} className="self-end rounded-full px-5 py-3">{twoFactorBusy ? 'جاري التجهيز…' : 'بدء إعداد 2FA'}</Button>}
-              {twoFactorEnabled && <Button type="button" onClick={disableTwoFactor} disabled={twoFactorBusy || !twoFactorPassword} variant="outline" className="self-end rounded-full px-5 py-3">{twoFactorBusy ? 'جاري التعطيل…' : 'تعطيل 2FA'}</Button>}
-            </div>
-            {twoFactorSetup && (
-              <div className="grid gap-3 rounded-2xl border border-border p-4">
-                <p className="text-sm font-semibold">أضف هذا الحساب إلى تطبيق المصادقة ثم أدخل الرمز:</p>
-                <code dir="ltr" className="block overflow-x-auto rounded-xl bg-muted p-3 text-xs">{twoFactorSetup.totpURI}</code>
-                <label className="block text-sm font-medium">رمز التحقق
-                  <Input inputMode="numeric" value={twoFactorCode} onChange={(event) => setTwoFactorCode(event.target.value)} aria-invalid={Boolean(twoFactorError)} aria-describedby={twoFactorError ? 'two-factor-error' : undefined} className="mt-2 rounded-2xl px-4 py-3" placeholder="123456" />
-                </label>
-                <Button type="button" onClick={verifyTwoFactor} disabled={twoFactorBusy || twoFactorCode.trim().length < 6} className="w-fit rounded-full px-5 py-3">تأكيد وتفعيل</Button>
-                <div className="rounded-xl bg-amber-500/10 p-3 text-xs text-foreground">
-                  <p className="font-semibold">رموز الاسترداد — احفظها خارج الجهاز</p>
-                  <code dir="ltr" className="mt-2 block break-all">{twoFactorSetup.backupCodes.join(' · ')}</code>
+      {featureFlags.experimental.twoFactor && (
+        <ContentCard className="lg:col-span-2" title="التحقق بخطوتين — تجريبي" description="فعّل TOTP لحماية جلسة الحساب. لا تفعّل هذه الميزة في الإنتاج قبل مراجعة التخزين والاستعادة واختبار تدفق تسجيل الدخول بالكامل.">
+          {!session ? (
+            <p className="rounded-2xl bg-muted/60 p-4 text-sm text-muted-foreground">سجّل الدخول أولًا لإدارة التحقق بخطوتين. يظل الوضع المحلي متاحًا دون إعداد أمني بعيد.</p>
+          ) : (
+            <div className="grid gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-muted/60 p-4">
+                <div>
+                  <p className="font-semibold">{twoFactorEnabled ? 'التحقق بخطوتين مفعّل' : 'التحقق بخطوتين غير مفعّل'}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">يستخدم تطبيق مصادقة متوافقًا مع TOTP ورموز استرداد لمرة واحدة.</p>
                 </div>
+                <ShieldCheck className="h-6 w-6 text-primary" aria-hidden="true" />
               </div>
-            )}
-            {twoFactorError && <p id="two-factor-error" role="alert" aria-live="assertive" aria-atomic="true" className="text-xs text-destructive">{twoFactorError}</p>}
-            {twoFactorMessage && <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-muted-foreground">{twoFactorMessage}</p>}
-          </div>
-        )}
-      </ContentCard>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block text-sm font-medium">كلمة مرور الحساب
+                  <Input type="password" value={twoFactorPassword} onChange={(event) => setTwoFactorPassword(event.target.value)} autoComplete="current-password" className="mt-2 rounded-2xl px-4 py-3" placeholder="مطلوبة للتأكيد" />
+                </label>
+                {!twoFactorEnabled && <Button type="button" onClick={enableTwoFactor} disabled={twoFactorBusy || !twoFactorPassword} className="self-end rounded-full px-5 py-3">{twoFactorBusy ? 'جاري التجهيز…' : 'بدء إعداد 2FA'}</Button>}
+                {twoFactorEnabled && <Button type="button" onClick={disableTwoFactor} disabled={twoFactorBusy || !twoFactorPassword} variant="outline" className="self-end rounded-full px-5 py-3">{twoFactorBusy ? 'جاري التعطيل…' : 'تعطيل 2FA'}</Button>}
+              </div>
+              {twoFactorSetup && (
+                <div className="grid gap-3 rounded-2xl border border-border p-4">
+                  <p className="text-sm font-semibold">أضف هذا الحساب إلى تطبيق المصادقة ثم أدخل الرمز:</p>
+                  <code dir="ltr" className="block overflow-x-auto rounded-xl bg-muted p-3 text-xs">{twoFactorSetup.totpURI}</code>
+                  <label className="block text-sm font-medium">رمز التحقق
+                    <Input inputMode="numeric" value={twoFactorCode} onChange={(event) => setTwoFactorCode(event.target.value)} aria-invalid={Boolean(twoFactorError)} aria-describedby={twoFactorError ? 'two-factor-error' : undefined} className="mt-2 rounded-2xl px-4 py-3" placeholder="123456" />
+                  </label>
+                  <Button type="button" onClick={verifyTwoFactor} disabled={twoFactorBusy || twoFactorCode.trim().length < 6} className="w-fit rounded-full px-5 py-3">تأكيد وتفعيل</Button>
+                  <div className="rounded-xl bg-amber-500/10 p-3 text-xs text-foreground">
+                    <p className="font-semibold">رموز الاسترداد — احفظها خارج الجهاز</p>
+                    <code dir="ltr" className="mt-2 block break-all">{twoFactorSetup.backupCodes.join(' · ')}</code>
+                  </div>
+                </div>
+              )}
+              {twoFactorError && <p id="two-factor-error" role="alert" aria-live="assertive" aria-atomic="true" className="text-xs text-destructive">{twoFactorError}</p>}
+              {twoFactorMessage && <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-muted-foreground">{twoFactorMessage}</p>}
+            </div>
+          )}
+        </ContentCard>
+      )}
 
       <ContentCard className="lg:col-span-2" title="بياناتي ونسختي الاحتياطية" description="صدّر بياناتك، استعد نسخة سابقة، أو افصل بياناتك عن هذا الجهاز.">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">

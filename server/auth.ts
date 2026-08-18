@@ -3,6 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 import { twoFactor } from 'better-auth/plugins'
 import { getDb } from './db'
+import { featureFlags } from '@/lib/feature-flags'
 
 export function isAuthConfigured() {
   return Boolean(process.env.DATABASE_URL && process.env.BETTER_AUTH_SECRET)
@@ -29,12 +30,14 @@ export function getAuth() {
     },
     plugins: [
       nextCookies(),
-      twoFactor({
-        issuer: 'Personal Command Center',
-        twoFactorTable: 'twoFactor',
-        twoFactorCookieMaxAge: 10 * 60,
-        trustDeviceMaxAge: 30 * 24 * 60 * 60,
-      }),
+      ...(featureFlags.experimental.twoFactor
+        ? [twoFactor({
+            issuer: 'Personal Command Center',
+            twoFactorTable: 'twoFactor',
+            twoFactorCookieMaxAge: 10 * 60,
+            trustDeviceMaxAge: 30 * 24 * 60 * 60,
+          })]
+        : []),
     ],
   })
 }

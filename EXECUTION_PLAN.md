@@ -1507,3 +1507,31 @@
 | GitHub synchronization | PASS؛ `origin/main = 9bc822d` | تحقق `git ls-remote` في ختم الدفعة |
 
 تبقى اختبارات backend الإنتاجية الفعلية، وعقود الجلسة، وتغطية كل الدومينات المكتملة/المنتهية، و2FA الإنتاجي، وDrizzle journal المختلف خارج هذه الدفعة ولا تُعد مغلقة بهذا السجل.
+
+
+---
+
+## سجل دفعة 2026-08-18 — اعتماد النطاق وFeature Flags
+
+**النطاق:** إغلاق أول فجوة في تقرير المقارنة مع الخطة المدمجة: تثبيت عقد Feature Flags موحد، فصل الميزات المستقرة عن التجريبية، وإبقاء الميزات الحساسة متوقفة افتراضيًا.
+
+**التنفيذ:**
+
+- أُضيف `lib/feature-flags.ts` كعقد مركزي typed يعرّف الميزات المستقرة والتجريبية والمحظورة.
+- رُبط 2FA التجريبي بالـflag نفسه في العميل (`lib/auth-client.ts`) وواجهة الحساب (`components/account/account-workspace.tsx`) وخادم Better Auth (`server/auth.ts`).
+- أُضيفت أسماء متغيرات البيئة التجريبية إلى `.env.example` مع قيمة إيقاف افتراضية موثقة، دون إضافة secrets.
+- أُنشئت وثيقة [`docs/feature-flags.md`](docs/feature-flags.md) لتثبيت شروط فتح كل ميزة وحدودها، مع إبقاء Client Portal وClient Credentials وWorkspace Sharing وResource Library وBilling وWindows Agent والجمع الحساس متوقفة حتى إغلاق عقودها واختباراتها.
+
+**التحقق:**
+
+- TypeScript: PASS.
+- ESLint: PASS، مع تحذير hooks سابق غير حاجز في `components/workspace/workspace-workspace.tsx`.
+- Webpack production build مع flags الافتراضية المتوقفة: PASS.
+- Webpack production build مع `NEXT_PUBLIC_PMD_ENABLE_EXPERIMENTAL_2FA=1`: PASS.
+- اختبار بصري على `localhost:3004` في الوضع الافتراضي: صفحة الحساب حملت بنجاح ولم تظهر بطاقة 2FA.
+- اختبار بصري على `localhost:3006` مع تفعيل 2FA صراحةً: ظهرت بطاقة «التحقق بخطوتين — تجريبي» فقط، مع بقاء باقي الميزات التجريبية مغلقة.
+- `git diff --check`: PASS.
+
+**الحدود:** هذا الإغلاق يثبت بوابة تشغيل 2FA التجريبية ولا يعلن جاهزية 2FA للإنتاج؛ ما تزال login challenge وrecovery وإبطال الجلسات والاختبارات الإنتاجية مفتوحة. متغيرات `NEXT_PUBLIC_*` ليست طبقة صلاحيات، وتظل فحوص الجلسة والملكية على الخادم إلزامية.
+
+**السجلات:** [`verification/feature-flags-browser-20260818.md`](verification/feature-flags-browser-20260818.md)، وسجلات البناء في `verification/feature-flags-*-build-*.log`.
