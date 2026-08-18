@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Textarea } from '@/components/ui/textarea'
 import { isPrayerCompletedStatus, useCommandCenter } from '@/lib/command-center-store'
+import { contextHref } from '@/lib/context-links'
 
 export function WeeklyReviewWorkspace() {
   const { tasks, habits, notes, goals, projects, financeEntries, religious, entertainment, weeklyReview, saveWeeklyReview, addTask } = useCommandCenter()
@@ -127,10 +128,10 @@ export function WeeklyReviewWorkspace() {
 
         <ContentCard className="lg:col-span-12" title="ارجع إلى السياق" description="المراجعة لا تعيش منفصلة عن يومك؛ افتح العنصر الذي يحتاج قرارًا وعدّل ما يلزم.">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {context.openTask && <ContextShortcut href={`/tasks#task-${context.openTask.id}`} label="المهمة المفتوحة" value={context.openTask.title} />}
-            {context.focusHabit && <ContextShortcut href={`/habits#${context.focusHabit.id}`} label="العادة التالية" value={context.focusHabit.title} />}
-            {context.activeProject && <ContextShortcut href={`/projects#${context.activeProject.id}`} label="المشروع النشط" value={context.activeProject.title} />}
-            {context.activeGoal && <ContextShortcut href={`/goals#${context.activeGoal.id}`} label="الهدف النشط" value={context.activeGoal.title} />}
+            {context.openTask && <ContextShortcut href={contextHref('task', context.openTask.id)} label="المهمة المفتوحة" value={context.openTask.title} />}
+            {context.focusHabit && <ContextShortcut href={contextHref('habit', context.focusHabit.id)} label="العادة التالية" value={context.focusHabit.title} />}
+            {context.activeProject && <ContextShortcut href={contextHref('project', context.activeProject.id)} label="المشروع النشط" value={context.activeProject.title} />}
+            {context.activeGoal && <ContextShortcut href={contextHref('goal', context.activeGoal.id)} label="الهدف النشط" value={context.activeGoal.title} />}
             <ContextShortcut href="/religious" label="المساحة الدينية" value={`${metrics.prayerRate}% من الصلوات المسجلة`} />
             <ContextShortcut href="/money" label="المراجعة المالية" value={`${currency(metrics.expenses)} مصروفات الأسبوع`} />
           </div>

@@ -1641,3 +1641,8 @@
 توسّع `app/api/account/export/route.ts` ليشمل بيانات workspace والعملاء والتقويم والمكتبة والجلسات و2FA وتحديثات/تسعير/مشاركة المشاريع، مع تقييد القراءات بـ`currentUser.id` أو حقل الملكية المناسب. وتوسّع `app/api/account/route.ts` لحذف هذه البيانات داخل transaction قبل حذف المستخدم، مع الاعتماد على علاقات `onDelete: cascade` الموجودة. التفاصيل في `verification/phase-5-backend-data-quality-20260818.md`.
 
 يبقى اعتماد Neon وBetter Auth الإنتاجي مشروطًا بإضافة `DATABASE_URL` و`BETTER_AUTH_SECRET`، كما بقي اختلاف migration journal موثقًا ولم يتم تشغيل `drizzle-kit generate` أو تطبيق migration تلقائيًا. هذه الحدود لا تمثل فشلًا في الكود المحلي، لكنها تمنع الادعاء باختبار إنتاجي حقيقي قبل توفير credentials وحل journal بأمان.
+
+
+## سجل اعتماد المرحلة السادسة — 2026-08-18
+
+أُغلقت دفعة التلميع والروابط العميقة ضمن المرحلة السادسة. أُنشئ `lib/context-links.ts` كعقد مركزي typed لأنواع المهمة والعادة والمشروع والهدف والصلاة والورد والفلوس، ثم طُبق على Weekly Review وDaily Plan وNotes وGlobal Search وHabits وCalendar وReligious وMoney. نجحت TypeScript وESLint وWebpack build وRoute ownership وResponsive وAccessibility، كما نجح الفحص البصري لمسارات `/review` و`/notes` و`/habits` و`/calendar` و`/money` على RTL. لم تُشغّل migrations جديدة، ولم تُنشأ بيانات اختبار خلال الجولة الأخيرة. الأدلة التفصيلية في `verification/phase-6-deep-links-quality-20260818.md`، مع بقاء اختبار Neon/Better Auth الإنتاجي مشروطًا بتوفير credentials وحل اختلاف migration journal.

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { useCommandCenter } from '@/lib/command-center-store'
+import { contextHref } from '@/lib/context-links'
 
 type SearchResult = {
   id: string
@@ -46,18 +47,18 @@ export function GlobalSearchDialog({ open, onClose, triggerRef }: GlobalSearchDi
     const matches = (value: string) => value.toLocaleLowerCase('ar').includes(normalizedQuery)
 
     return [
-      ...tasks.filter((item) => matches(item.title) || matches(item.category) || matches(item.dueLabel)).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.category} · ${item.dueLabel}`, section: 'المهام', href: `/tasks#task-${item.id}` })),
+      ...tasks.filter((item) => matches(item.title) || matches(item.category) || matches(item.dueLabel)).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.category} · ${item.dueLabel}`, section: 'المهام', href: contextHref('task', item.id) })),
       ...notes.filter((item) => matches(item.title) || matches(item.body) || matches(item.tag)).map((item) => ({ id: item.id, title: item.title, subtitle: item.tag, section: 'الملاحظات', href: `/notes#note-${item.id}` })),
-      ...goals.filter((item) => matches(item.title) || matches(item.description) || matches(item.targetLabel)).map((item) => ({ id: item.id, title: item.title, subtitle: `هدف · ${item.targetLabel}`, section: 'الأهداف', href: `/goals#${item.id}` })),
-      ...projects.filter((item) => matches(item.title) || matches(item.description) || matches(item.dueLabel)).map((item) => ({ id: item.id, title: item.title, subtitle: `مشروع · ${item.dueLabel}`, section: 'المشاريع', href: `/projects#${item.id}` })),
+      ...goals.filter((item) => matches(item.title) || matches(item.description) || matches(item.targetLabel)).map((item) => ({ id: item.id, title: item.title, subtitle: `هدف · ${item.targetLabel}`, section: 'الأهداف', href: contextHref('goal', item.id) })),
+      ...projects.filter((item) => matches(item.title) || matches(item.description) || matches(item.dueLabel)).map((item) => ({ id: item.id, title: item.title, subtitle: `مشروع · ${item.dueLabel}`, section: 'المشاريع', href: contextHref('project', item.id) })),
       ...financeEntries.filter((item) => matches(item.title) || matches(item.category) || matches(item.note ?? '')).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.category} · ${item.amount.toLocaleString('ar-EG')} جنيه`, section: 'الفلوس', href: `/money?month=${encodeURIComponent(item.localDate.slice(0, 7))}#finance-${item.id}` })),
       ...planItems.filter((item) => matches(item.title)).map((item) => ({ id: item.id, title: item.title, subtitle: `خطة اليوم · ${item.time}`, section: 'خطة اليوم', href: `/daily-plan#plan-item-${item.id}` })),
       ...reminders.filter((item) => matches(item.title) || matches(item.dueAt)).map((item) => ({ id: item.id, title: item.title, subtitle: `تذكير · ${item.dueAt}`, section: 'التذكيرات', href: `/reminders#reminder-${item.id}` })),
       ...calendarItems.filter((item) => matches(item.title) || matches(item.subtitle)).map((item) => ({ ...item, section: 'التقويم' })),
       ...entertainment.filter((item) => matches(item.title) || matches(item.genre) || matches(item.note ?? '')).map((item) => ({ id: item.id, title: item.title, subtitle: `${item.type === 'movie' ? 'فيلم' : 'مسلسل'} · ${item.genre}`, section: 'الترفيه', href: `/entertainment#entertainment-${item.id}` })),
       ...journal.filter((item) => matches(item.title) || matches(item.body) || matches(item.mood) || matches(item.localDate)).map((item) => ({ id: item.id, title: item.title || 'يوميات بلا عنوان', subtitle: `اليوميات · ${item.localDate} · ${item.mood}`, section: 'اليوميات', href: `/journal?date=${encodeURIComponent(item.localDate)}#journal-${item.id}` })),
-      ...habits.filter((item) => matches(item.title) || matches(item.target)).map((item) => ({ id: item.id, title: item.title, subtitle: `عادة · ${item.target}`, section: 'العادات', href: `/habits#${item.id}` })),
-      ...religious.prayerLogs.filter((item) => matches(item.name) || matches(item.localDate) || matches(item.time)).map((item) => ({ id: item.id, title: item.name, subtitle: `الصلاة · ${item.localDate} · ${item.time}`, section: 'الديني', href: '/religious#prayer-tracker' })),
+      ...habits.filter((item) => matches(item.title) || matches(item.target)).map((item) => ({ id: item.id, title: item.title, subtitle: `عادة · ${item.target}`, section: 'العادات', href: contextHref('habit', item.id) })),
+      ...religious.prayerLogs.filter((item) => matches(item.name) || matches(item.localDate) || matches(item.time)).map((item) => ({ id: item.id, title: item.name, subtitle: `الصلاة · ${item.localDate} · ${item.time}`, section: 'الديني', href: contextHref('prayer') })),
       ...archive.filter((item) => matches(item.title) || matches(item.subtitle)).map((item) => ({ id: `${item.kind}-${item.id}`, title: item.title, subtitle: `أرشيف · ${item.subtitle}`, section: 'الأرشيف', href: `/archive?q=${encodeURIComponent(item.title)}` })),
     ].slice(0, 24)
   }, [archive, calendarItems, entertainment, financeEntries, goals, habits, journal, notes, planItems, projects, query, reminders, religious.prayerLogs, tasks])

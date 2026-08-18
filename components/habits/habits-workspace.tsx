@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { useCommandCenter } from '@/lib/command-center-store'
+import { contextHref } from '@/lib/context-links'
 
 function cairoToday() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
@@ -97,7 +98,7 @@ export function HabitsWorkspace() {
             <Button type="button" onClick={() => toggleHabit(habit.id)} aria-pressed={habit.doneToday} variant="ghost" className="h-auto min-w-0 flex-1 justify-start gap-3 rounded-2xl p-0 text-right hover:bg-transparent"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${habit.doneToday ? 'bg-positive text-positive-foreground' : 'bg-card text-muted-foreground'}`}>{habit.doneToday ? <Check className="h-5 w-5" /> : <Repeat className="h-5 w-5" />}</span><span className="min-w-0 flex-1"><span className={`block text-sm font-semibold ${habit.doneToday ? 'text-muted-foreground line-through' : ''}`}>{habit.title}</span><span className="mt-1 block text-xs text-muted-foreground">هدف {habit.frequency === 'weekly' ? 'الأسبوع' : 'اليوم'}: {habit.target}</span></span><span className="flex items-center gap-1 text-xs font-semibold text-warning-foreground"><Flame className="h-4 w-4" />{habit.streak}</span></Button>
             <Button type="button" onClick={() => archiveHabit(habit.id)} aria-label={`أرشفة ${habit.title}`} variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:bg-warning/20 hover:text-warning-foreground"><Archive className="h-4 w-4" /></Button>
           </div>
-          {(task || project || goal) && <div className="mt-3 flex flex-wrap gap-1.5 text-[10px]"><span className="inline-flex items-center gap-1 text-muted-foreground"><Link2 className="h-3 w-3 text-primary" />مرتبط بـ</span>{task && <Link href={`/tasks#task-${task.id}`} className="rounded-full bg-accent px-2 py-1 text-accent-foreground hover:underline">مهمة: {task.title}</Link>}{project && <Link href={`/projects#${project.id}`} className="rounded-full bg-card px-2 py-1 hover:underline">مشروع: {project.title}</Link>}{goal && <Link href={`/goals#${goal.id}`} className="rounded-full bg-primary/10 px-2 py-1 text-primary hover:underline">هدف: {goal.title}</Link>}</div>}
+          {(task || project || goal) && <div className="mt-3 flex flex-wrap gap-1.5 text-[10px]"><span className="inline-flex items-center gap-1 text-muted-foreground"><Link2 className="h-3 w-3 text-primary" />مرتبط بـ</span>{task && <Link href={contextHref('task', task.id)} className="rounded-full bg-accent px-2 py-1 text-accent-foreground hover:underline">مهمة: {task.title}</Link>}{project && <Link href={contextHref('project', project.id)} className="rounded-full bg-card px-2 py-1 hover:underline">مشروع: {project.title}</Link>}{goal && <Link href={contextHref('goal', goal.id)} className="rounded-full bg-primary/10 px-2 py-1 text-primary hover:underline">هدف: {goal.title}</Link>}</div>}
           <HabitHeatmap dates={recentDates} history={{ ...(habit.history ?? {}), [today]: habit.doneToday }} title={habit.title} />
         </div>
       })}</div>}

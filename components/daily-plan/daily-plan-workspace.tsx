@@ -8,6 +8,7 @@ import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Input } from '@/components/ui/input'
 import { useCommandCenter } from '@/lib/command-center-store'
+import { contextHref } from '@/lib/context-links'
 
 function cairoToday() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
@@ -136,12 +137,12 @@ function PlanContext({ item, tasks, habits, projects, goals }: { item: { kind: s
 
   return <div className="mt-2 flex flex-wrap items-center gap-2 pr-[3.75rem] text-[11px] text-muted-foreground">
     <span className="inline-flex items-center gap-1"><Link2 className="h-3 w-3 text-primary" />السياق</span>
-    {task && <Link href={`/tasks#task-${task.id}`} className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">مهمة: {task.title}</Link>}
-    {habit && <Link href={`/habits#${habit.id}`} className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">عادة: {habit.title}</Link>}
-    {prayer && <Link href="/religious#prayer-tracker" className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">المساحة الدينية: الصلاة</Link>}
-    {quran && <Link href="/religious#quran-progress" className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">المساحة الدينية: الورد</Link>}
-    {project && <Link href={`/projects#${project.id}`} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"><FolderKanban className="h-3 w-3" /> مشروع: {project.title}</Link>}
-    {goal && <Link href={`/goals#${goal.id}`} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"><Target className="h-3 w-3" /> هدف: {goal.title}</Link>}
+    {task && <Link href={contextHref('task', task.id)} className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">مهمة: {task.title}</Link>}
+    {habit && <Link href={contextHref('habit', habit.id)} className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">عادة: {habit.title}</Link>}
+    {prayer && <Link href={contextHref('prayer')} className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">المساحة الدينية: الصلاة</Link>}
+    {quran && <Link href={contextHref('quran')} className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 transition-colors hover:bg-accent/80 hover:text-accent-foreground">المساحة الدينية: الورد</Link>}
+    {project && <Link href={contextHref('project', project.id)} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"><FolderKanban className="h-3 w-3" /> مشروع: {project.title}</Link>}
+    {goal && <Link href={contextHref('goal', goal.id)} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"><Target className="h-3 w-3" /> هدف: {goal.title}</Link>}
   </div>
 }
 
