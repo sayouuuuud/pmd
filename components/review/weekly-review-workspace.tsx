@@ -8,6 +8,7 @@ import { ContentCard } from '@/components/ui/content-card'
 import { Textarea } from '@/components/ui/textarea'
 import { isPrayerCompletedStatus, useCommandCenter } from '@/lib/command-center-store'
 import { contextHref } from '@/lib/context-links'
+import { PersonalSuggestions } from '@/components/review/personal-suggestions'
 
 export function WeeklyReviewWorkspace() {
   const { tasks, habits, notes, goals, projects, financeEntries, religious, entertainment, weeklyReview, saveWeeklyReview, addTask } = useCommandCenter()
@@ -162,6 +163,8 @@ export function WeeklyReviewWorkspace() {
             </div>
           </div>
         </ContentCard>
+
+        <PersonalSuggestions />
       </div>
     </div>
   )
