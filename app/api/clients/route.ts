@@ -2,7 +2,7 @@ import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { client } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
-import { getOrCreatePersonalWorkspace, getWorkspaceForMember } from '@/server/workspaces/access'
+import { canManageClients, getOrCreatePersonalWorkspace, getWorkspaceForMember, getWorkspaceMember } from '@/server/workspaces/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -53,6 +53,8 @@ export async function POST(request: Request) {
     const db = getDb()
     const currentWorkspace = await resolveWorkspace(request, currentUser.id, db)
     if (!currentWorkspace) return json({ error: 'مساحة العمل غير متاحة.' }, { status: 403 })
+    const actor = await getWorkspaceMember(db, currentWorkspace.id, currentUser.id)
+    if (!actor || !canManageClients(actor.role)) return json({ error: 'لا تملك صلاحية إضافة عملاء في مساحة العمل.' }, { status: 403 })
 
     const [created] = await db.insert(client).values({
       id: crypto.randomUUID(),

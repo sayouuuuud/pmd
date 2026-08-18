@@ -1,10 +1,12 @@
 'use client'
 
+export type WorkspaceRole = 'owner' | 'admin' | 'member'
+
 export type Workspace = {
   id: string
   name: string
   kind: string
-  role: string
+  role: WorkspaceRole
 }
 
 export type Client = {
@@ -25,7 +27,7 @@ export type WorkspaceMember = {
   id: string
   workspaceId: string
   userId: string
-  role: string
+  role: WorkspaceRole
   status: string
   joinedAt: string | Date | null
   name: string
@@ -36,7 +38,7 @@ export type WorkspaceInvitation = {
   id: string
   workspaceId: string
   invitedEmail: string
-  role: string
+  role: WorkspaceRole
   status: string
   expiresAt: string | Date
   acceptedAt: string | Date | null

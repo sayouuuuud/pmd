@@ -2,7 +2,7 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { client } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
-import { getWorkspaceForMember } from '@/server/workspaces/access'
+import { canManageClients, getWorkspaceMember } from '@/server/workspaces/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,11 +15,16 @@ function textValue(value: unknown, fallback = '', maxLength = 240) {
   return value.trim().slice(0, maxLength)
 }
 
-async function ownedClient(db: ReturnType<typeof getDb>, clientId: string, userId: string) {
-  const [row] = await db.select({ item: client }).from(client).where(and(eq(client.id, clientId), eq(client.createdBy, userId), isNull(client.archivedAt))).limit(1)
+async function workspaceScopedClient(db: ReturnType<typeof getDb>, clientId: string, userId: string) {
+  const [row] = await db
+    .select({ item: client })
+    .from(client)
+    .where(and(eq(client.id, clientId), isNull(client.archivedAt)))
+    .limit(1)
   if (!row) return null
-  const workspace = await getWorkspaceForMember(db, row.item.workspaceId, userId)
-  return workspace ? row.item : null
+
+  const actor = await getWorkspaceMember(db, row.item.workspaceId, userId)
+  return actor ? { item: row.item, actor } : null
 }
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -29,9 +34,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   try {
     const { id } = await context.params
     const db = getDb()
-    const item = await ownedClient(db, id, currentUser.id)
-    if (!item) return json({ error: 'العميل غير موجود.' }, { status: 404 })
-    return json({ client: item })
+    const scoped = await workspaceScopedClient(db, id, currentUser.id)
+    if (!scoped) return json({ error: 'العميل غير موجود.' }, { status: 404 })
+    return json({ client: scoped.item })
   } catch {
     return backendUnavailable()
   }
@@ -45,8 +50,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const { id } = await context.params
     const body = await request.json() as Record<string, unknown>
     const db = getDb()
-    const existing = await ownedClient(db, id, currentUser.id)
-    if (!existing) return json({ error: 'العميل غير موجود.' }, { status: 404 })
+    const scoped = await workspaceScopedClient(db, id, currentUser.id)
+    if (!scoped) return json({ error: 'العميل غير موجود.' }, { status: 404 })
+    if (!canManageClients(scoped.actor.role)) return json({ error: 'لا تملك صلاحية تعديل العملاء في مساحة العمل.' }, { status: 403 })
 
     const patch: Record<string, unknown> = { updatedAt: new Date() }
     if (body.name !== undefined) {
@@ -64,7 +70,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       patch.status = status
     }
 
-    const [updated] = await db.update(client).set(patch).where(and(eq(client.id, existing.id), eq(client.createdBy, currentUser.id), isNull(client.archivedAt))).returning()
+    const [updated] = await db
+      .update(client)
+      .set(patch)
+      .where(and(eq(client.id, scoped.item.id), isNull(client.archivedAt)))
+      .returning()
     if (!updated) return json({ error: 'تعذر تحديث العميل.' }, { status: 409 })
     return json({ client: updated })
   } catch {
@@ -79,9 +89,15 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   try {
     const { id } = await context.params
     const db = getDb()
-    const existing = await ownedClient(db, id, currentUser.id)
-    if (!existing) return json({ error: 'العميل غير موجود.' }, { status: 404 })
-    const [archived] = await db.update(client).set({ archivedAt: new Date(), status: 'archived', updatedAt: new Date() }).where(and(eq(client.id, existing.id), eq(client.createdBy, currentUser.id), isNull(client.archivedAt))).returning()
+    const scoped = await workspaceScopedClient(db, id, currentUser.id)
+    if (!scoped) return json({ error: 'العميل غير موجود.' }, { status: 404 })
+    if (!canManageClients(scoped.actor.role)) return json({ error: 'لا تملك صلاحية أرشفة العملاء في مساحة العمل.' }, { status: 403 })
+
+    const [archived] = await db
+      .update(client)
+      .set({ archivedAt: new Date(), status: 'archived', updatedAt: new Date() })
+      .where(and(eq(client.id, scoped.item.id), isNull(client.archivedAt)))
+      .returning()
     if (!archived) return json({ error: 'تعذر أرشفة العميل.' }, { status: 409 })
     return json({ client: archived })
   } catch {

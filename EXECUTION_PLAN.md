@@ -1560,3 +1560,12 @@
 **الحدود:** لم تُدّعَ جاهزية الإنتاج. ما تزال نتيجة TOTP الناجحة، استهلاك وتدوير recovery codes، إصدار trust-device cookie، إبطال الجلسات، واختبار cross-session بحاجة إلى Better Auth/Neon credentials وحساب اختبار حقيقي. لم يتم تشغيل `drizzle-kit generate`.
 
 **السجلات:** `verification/twofactor-browser-20260818.md` و`verification/twofactor-final-gates-20260818.log` و`verification/twofactor-ui-gates-20260818.log`.
+
+
+### سجل دفعة 2026-08-18 — مصفوفة RBAC وعزل Workspace والعملاء
+
+أُضيفت مصفوفة RBAC typed في `server/workspaces/access.ts` بالأدوار `owner` و`admin` و`member` وقدرات القراءة وإدارة الأعضاء والعملاء، مع دوال مركزية `canManageMembers` و`canManageClients` و`compareWorkspaceRoles`. طُبقت الحواجز في مسارات الدعوات والعضوية والعملاء: أصبحت إدارة الأعضاء محصورة في المالك/المدير، ولا يستطيع المدير منح دور مدير لعضو آخر، ولا يُخفض دور المالك عند قبول دعوة، ويحافظ المستخدم الموجود على دوره الأعلى. أصبحت قراءة العملاء متاحة للعضو النشط داخل نفس الـWorkspace، بينما إنشاء وتعديل وأرشفة العملاء محصورة في `owner` و`admin` داخل الـWorkspace نفسه، مع استمرار عزل الجلسة.
+
+تحديث واجهة `/workspace` ليعرض الدور الحالي وقدرات الإدارة، ويخفي أفعال العملاء وإدارة الأعضاء عن الأدوار غير المخولة، مع إعادة تصفير الصلاحيات عند فشل تحميل العضوية. أُضيفت أنواع WorkspaceRole typed إلى `lib/workspace-types.ts`. عند غياب `DATABASE_URL` تستمر الواجهة في localStorage fallback مع إظهار `وضع محلي مؤقت` بدل ادعاء اتصال إنتاجي.
+
+نجحت بوابات `pnpm exec tsc --noEmit` و`pnpm lint` بلا تحذيرات و`NEXT_TELEMETRY_DISABLED=1 pnpm exec next build --webpack`. نجح `audit_route_ownership.py` بعدد 48 مسارًا، 44 مسارًا بجلسة وملكية ظاهرة، و`ownership_audit=PASS`. نجح تدقيق responsive لجميع 34 مسارًا دون failures، وتدقيق accessibility لجميع 34 مسارًا مع `failures=0`. فُحصت `/workspace` بصريًا على `localhost:3004` بعد إعادة تشغيل build الحالي؛ ظهر الدور `مالك` وحالات الأعضاء والدعوات وRTL دون overflow. يبقى اختبار الجلسات متعددة المستخدمين وNeon الفعلي مفتوحًا إلى حين توفر credentials، ولا تُعد حالة localStorage تحققًا إنتاجيًا.

@@ -3,7 +3,7 @@ import { and, desc, eq, gt, ne } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { user, workspace, workspaceInvitation, workspaceMember } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
-import { canManageWorkspace, getWorkspaceMember } from '@/server/workspaces/access'
+import { canManageClients, canManageMembers, compareWorkspaceRoles, getWorkspaceMember } from '@/server/workspaces/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,7 +85,10 @@ export async function GET(request: Request) {
 
     return json({
       workspaceId,
-      canManage: canManageWorkspace(access.member.role),
+      currentRole: access.member.role,
+      canManage: canManageMembers(access.member.role),
+      canManageMembers: canManageMembers(access.member.role),
+      canManageClients: canManageClients(access.member.role),
       members,
       invitations: invitations.map(safeInvitation),
     })
@@ -123,16 +126,22 @@ export async function POST(request: Request) {
           eq(workspaceMember.userId, currentUser.id),
         ))
         .limit(1)
+      if (existingMembership?.status === 'active' && existingMembership.role === 'owner') {
+        return json({ error: 'مالك مساحة العمل لا يحتاج إلى قبول دعوة.' }, { status: 409 })
+      }
+      const effectiveRole = existingMembership && compareWorkspaceRoles(existingMembership.role, invitation.role) > 0
+        ? existingMembership.role
+        : invitation.role
       const member = existingMembership
         ? (await db.update(workspaceMember)
-          .set({ status: 'active', role: invitation.role, joinedAt: existingMembership.joinedAt ?? new Date(), updatedAt: new Date() })
+          .set({ status: 'active', role: effectiveRole, joinedAt: existingMembership.joinedAt ?? new Date(), updatedAt: new Date() })
           .where(eq(workspaceMember.id, existingMembership.id))
           .returning())[0]
         : (await db.insert(workspaceMember).values({
           id: crypto.randomUUID(),
           workspaceId: invitation.workspaceId,
           userId: currentUser.id,
-          role: invitation.role,
+          role: effectiveRole,
           status: 'active',
           joinedAt: new Date(),
         }).returning())[0]
@@ -156,7 +165,8 @@ export async function POST(request: Request) {
     if (!['member', 'admin'].includes(requestedRole)) return json({ error: 'دور العضو غير متاح.' }, { status: 400 })
 
     const access = await getWorkspaceAccess(db, workspaceId, currentUser.id)
-    if (!access || !canManageWorkspace(access.member.role)) return json({ error: 'لا تملك صلاحية دعوة أعضاء.' }, { status: 403 })
+    if (!access || !canManageMembers(access.member.role)) return json({ error: 'لا تملك صلاحية دعوة أعضاء.' }, { status: 403 })
+    if (access.member.role === 'admin' && requestedRole === 'admin') return json({ error: 'المدير لا يستطيع منح دور مدير لعضو آخر.' }, { status: 403 })
 
     const [existingUser] = await db.select({ id: user.id }).from(user).where(eq(user.email, invitedEmail)).limit(1)
     if (existingUser) {
@@ -203,7 +213,7 @@ export async function DELETE(request: Request) {
 
     const db = getDb()
     const access = await getWorkspaceAccess(db, workspaceId, currentUser.id)
-    if (!access || !canManageWorkspace(access.member.role)) return json({ error: 'لا تملك صلاحية إبطال الدعوة.' }, { status: 403 })
+    if (!access || !canManageMembers(access.member.role)) return json({ error: 'لا تملك صلاحية إبطال الدعوة.' }, { status: 403 })
 
     const [revoked] = await db.update(workspaceInvitation)
       .set({ status: 'revoked', updatedAt: new Date() })

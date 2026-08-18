@@ -28,7 +28,9 @@ export function WorkspaceWorkspace() {
   const [saving, setSaving] = useState(false)
   const [members, setMembers] = useState<WorkspaceMember[]>([])
   const [invitations, setInvitations] = useState<WorkspaceInvitation[]>([])
+  const [currentRole, setCurrentRole] = useState<'owner' | 'admin' | 'member' | null>(null)
   const [canManageMembers, setCanManageMembers] = useState(false)
+  const [canManageClients, setCanManageClients] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState('member')
   const [inviteToken, setInviteToken] = useState('')
@@ -56,21 +58,28 @@ export function WorkspaceWorkspace() {
     if (!backendAvailable || workspaceId.startsWith('local-')) {
       setMembers([])
       setInvitations([])
+      setCurrentRole(activeWorkspace?.role ?? 'owner')
       setCanManageMembers(false)
+      setCanManageClients(activeWorkspace?.role === 'owner' || activeWorkspace?.role === 'admin')
       return
     }
     setAccessLoading(true)
     try {
       const response = await fetch(`/api/workspaces/invitations?workspaceId=${encodeURIComponent(workspaceId)}`, { cache: 'no-store' })
       if (!response.ok) throw new Error('workspace-access-failed')
-      const payload = await response.json() as { members?: WorkspaceMember[]; invitations?: WorkspaceInvitation[]; canManage?: boolean }
+      const payload = await response.json() as { members?: WorkspaceMember[]; invitations?: WorkspaceInvitation[]; currentRole?: 'owner' | 'admin' | 'member'; canManage?: boolean; canManageMembers?: boolean; canManageClients?: boolean }
       setMembers(payload.members ?? [])
       setInvitations(payload.invitations ?? [])
-      setCanManageMembers(Boolean(payload.canManage))
+      setCurrentRole(payload.currentRole ?? null)
+      setCanManageMembers(Boolean(payload.canManageMembers ?? payload.canManage))
+      setCanManageClients(Boolean(payload.canManageClients))
+      if (payload.currentRole === 'admin' && inviteRole === 'admin') setInviteRole('member')
     } catch {
       setMembers([])
       setInvitations([])
+      setCurrentRole(null)
       setCanManageMembers(false)
+      setCanManageClients(false)
     } finally {
       setAccessLoading(false)
     }
@@ -109,7 +118,9 @@ export function WorkspaceWorkspace() {
       setActiveWorkspaceId(local.workspaces[0]?.id ?? 'local-personal')
       setMembers([])
       setInvitations([])
+      setCurrentRole('owner')
       setCanManageMembers(false)
+      setCanManageClients(true)
       setNotice('تعمل مساحة العمل بالبيانات المحلية مؤقتًا لأن قاعدة البيانات غير متاحة.')
     } finally {
       setLoading(false)
@@ -118,6 +129,8 @@ export function WorkspaceWorkspace() {
 
   useEffect(() => {
     void loadData()
+    // loadData intentionally runs once on mount; action handlers are defined inside the component.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function createWorkspace() {
@@ -458,20 +471,22 @@ export function WorkspaceWorkspace() {
                 </div>
                 {item.email ? <p className="mt-3 truncate text-xs text-muted-foreground">{item.email}</p> : null}
                 <div className="mt-4 flex items-center gap-2">
-                  <Button type="button" variant="ghost" size="sm" onClick={() => beginEditClient(item)} disabled={saving} aria-label={`تعديل ${item.name}`}>
-                    <Pencil className="h-4 w-4" />
-                    تعديل
-                  </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => void archiveClient(item)} disabled={saving} aria-label={`أرشفة ${item.name}`}>
-                    <Archive className="h-4 w-4" />
-                    أرشفة
-                  </Button>
+                  {canManageClients ? <>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => beginEditClient(item)} disabled={saving} aria-label={`تعديل ${item.name}`}>
+                      <Pencil className="h-4 w-4" />
+                      تعديل
+                    </Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => void archiveClient(item)} disabled={saving} aria-label={`أرشفة ${item.name}`}>
+                      <Archive className="h-4 w-4" />
+                      أرشفة
+                    </Button>
+                  </> : <span className="text-xs text-muted-foreground">للقراءة فقط</span>}
                 </div>
               </div>
             ))}
             {!loading && visibleClients.length === 0 ? <p className="text-sm text-muted-foreground sm:col-span-2">{clients.length ? 'لا توجد نتائج مطابقة للبحث.' : 'لا يوجد عملاء في هذه المساحة بعد.'}</p> : null}
           </div>
-          <div className="mt-5 space-y-3 border-t border-border pt-4">
+          {canManageClients ? <div className="mt-5 space-y-3 border-t border-border pt-4">
             <Input value={clientName} onChange={(event) => { setClientName(event.target.value); if (clientError) setClientError('') }} placeholder="اسم العميل" aria-label="اسم العميل" aria-invalid={Boolean(clientError)} aria-describedby={clientError ? 'client-form-error' : undefined} />
             <div className="grid gap-3 sm:grid-cols-2">
               <Input value={clientCompany} onChange={(event) => setClientCompany(event.target.value)} placeholder="الشركة أو النشاط" aria-label="الشركة أو النشاط" />
@@ -486,7 +501,7 @@ export function WorkspaceWorkspace() {
               </Button>
               {editingClientId ? <Button type="button" variant="outline" onClick={resetClientEditor} disabled={saving}><X className="h-4 w-4" />إلغاء</Button> : null}
             </div>
-          </div>
+          </div> : <p className="mt-5 border-t border-border pt-4 text-sm text-muted-foreground">يمكنك استعراض العملاء، بينما تقتصر الإضافة والتعديل والأرشفة على مالك مساحة العمل ومديريها.</p>}
         </ContentCard>
       </div>
 
@@ -504,7 +519,7 @@ export function WorkspaceWorkspace() {
             <Input type="email" value={inviteEmail} onChange={(event) => { setInviteEmail(event.target.value); if (inviteError) setInviteError('') }} placeholder="البريد الإلكتروني للعضو" aria-label="البريد الإلكتروني للعضو" />
             <Select value={inviteRole} onChange={(event) => setInviteRole(event.target.value)} aria-label="دور العضو">
               <option value="member">عضو</option>
-              <option value="admin">مدير</option>
+              {currentRole === 'owner' ? <option value="admin">مدير</option> : null}
             </Select>
             <Button type="button" onClick={() => void inviteMember()} disabled={saving || activeWorkspace.id.startsWith('local-')}>
               <Mail className="h-4 w-4" />
@@ -521,7 +536,10 @@ export function WorkspaceWorkspace() {
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <div className="rounded-2xl border border-border p-4">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <p className="font-medium">الأعضاء الحاليون</p>
+              <div>
+                <p className="font-medium">الأعضاء الحاليون</p>
+                {currentRole ? <p className="mt-1 text-xs text-muted-foreground">دورك الحالي: {currentRole === 'owner' ? 'مالك' : currentRole === 'admin' ? 'مدير' : 'عضو'}</p> : null}
+              </div>
               <span className="text-xs text-muted-foreground">{members.length}</span>
             </div>
             <div className="space-y-2">
@@ -532,7 +550,7 @@ export function WorkspaceWorkspace() {
                   <span dir="ltr" className="block truncate text-right text-xs text-muted-foreground">{member.email}</span>
                 </span>
                 <span className="text-xs text-muted-foreground">{member.role === 'owner' ? 'مالك' : member.role === 'admin' ? 'مدير' : 'عضو'}</span>
-                {canManageMembers && member.role !== 'owner' ? <Button type="button" variant="ghost" size="sm" onClick={() => void removeMember(member)} disabled={saving} aria-label={`إبطال وصول ${member.name}`}><UserMinus className="h-4 w-4" /></Button> : null}
+                {canManageMembers && member.role !== 'owner' && (currentRole === 'owner' || member.role !== 'admin') ? <Button type="button" variant="ghost" size="sm" onClick={() => void removeMember(member)} disabled={saving} aria-label={`إبطال وصول ${member.name}`}><UserMinus className="h-4 w-4" /></Button> : null}
               </div>)}
               {!accessLoading && members.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد عضويات ظاهرة لهذه المساحة.</p> : null}
             </div>

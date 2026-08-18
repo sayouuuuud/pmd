@@ -784,3 +784,19 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Recovery-code configuration | منفذ على مستوى العقد | `server/auth.ts` يضبط 10 رموز بطول 10 وتخزينًا مشفرًا؛ الاستهلاك والتدوير الفعليان يحتاجان session وNeon حقيقيين |
 | Session revocation / production verification | مفتوح | لا توجد credentials إنتاجية في بيئة الاختبار؛ لا تُعد الجلسات أو إبطالها مغلقة |
 | Quality gates | PASS | TypeScript وESLint وWebpack وOwnership `48/44/44` وResponsive `34/34` وAccessibility `34/34` |
+
+
+## RBAC وWorkspace isolation — 2026-08-18
+
+| المجال | النتيجة | الدليل أو القيد |
+|---|---|---|
+| مصفوفة الأدوار | PASS | `server/workspaces/access.ts` يعرّف `owner/admin/member` وقدرات القراءة وإدارة الأعضاء والعملاء typed. |
+| الدعوات | PASS ساكنًا | `app/api/workspaces/invitations/route.ts` يمنع المدير من منح admin، يحمي المالك من downgrade، ويحافظ على الدور الأعلى للمستخدم الموجود. |
+| إزالة الأعضاء | PASS ساكنًا | `app/api/workspaces/members/[memberId]/route.ts` يستخدم `members:manage` مع منع إزالة المالك وحماية المديرين من بعضهم. |
+| عزل العملاء | PASS ساكنًا | `app/api/clients/route.ts` و`app/api/clients/[id]/route.ts` يفرضان العضوية النشطة و`clients:manage` حسب العملية داخل نفس الـWorkspace. |
+| واجهة Workspace | PASS بصريًا | `/workspace` على `localhost:3004` عرضت الدور الحالي وحالات القدرات، وأخفت الأفعال الإدارية للأدوار غير المخولة مع RTL سليم. |
+| ملكية المسارات | PASS | `audit_route_ownership.py`: `route_count=48`، و`ownership_audit=PASS`. |
+| Responsive | PASS | `responsive-audit.py`: `total=34`، `failures=[]`. |
+| Accessibility | PASS | `accessibility-audit.py`: `total=34`، `failures=0`. |
+| Build gates | PASS | TypeScript وESLint وWebpack production build نجحت؛ تحذير Next عن تقادم middleware convention غير حاجز. |
+| اختبار متعدد المستخدمين | OPEN | لا يوجد `DATABASE_URL` أو credentials إنتاجية في البيئة الحالية؛ لم يُدّعَ تحقق Neon الفعلي بين جلسات مختلفة. |

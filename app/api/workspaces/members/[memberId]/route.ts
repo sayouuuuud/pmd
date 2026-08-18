@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm'
 import { getDb } from '@/server/db'
 import { workspace, workspaceMember } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
-import { canManageWorkspace, getWorkspaceMember } from '@/server/workspaces/access'
+import { canManageMembers, getWorkspaceMember } from '@/server/workspaces/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,7 +25,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ memb
     if (!target) return json({ error: 'العضو غير موجود.' }, { status: 404 })
 
     const actor = await getWorkspaceMember(db, target.member.workspaceId, currentUser.id)
-    if (!actor || !canManageWorkspace(actor.role)) return json({ error: 'لا تملك صلاحية إبطال وصول هذا العضو.' }, { status: 403 })
+    if (!actor || !canManageMembers(actor.role)) return json({ error: 'لا تملك صلاحية إبطال وصول هذا العضو.' }, { status: 403 })
     if (target.member.role === 'owner' || target.member.userId === target.workspace.ownerId) {
       return json({ error: 'لا يمكن إزالة مالك مساحة العمل.' }, { status: 400 })
     }
