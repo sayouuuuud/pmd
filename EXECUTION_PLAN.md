@@ -1683,3 +1683,16 @@
 | Portal smoke test | PASS — `/portal/test-token` يعيد HTTP 200 ويعرض حالة رابط غير صالح دون كشف بيانات |
 | Browser visual/interactions | PASS — اختبار صفحة المشاريع السابق، واختبار تركيب لوحة Workspace وتدفق المراحل والتسعير، دون أخطاء JavaScript جديدة |
 الأدلة التفصيلية محفوظة في `verification/phase-8-scope-audit-20260818.md` و`verification/phase-8-client-portal-quality-20260818.md` و`verification/phase-7-browser-check-20260818.md`. **الحالة: PASS — المرحلة الثامنة مكتملة ضمن النطاق المحلي، مع ترقية المصادقة والمشاركة الخادمية الإنتاجية كفجوة لاحقة صريحة.**
+
+
+## سجل المرحلة التاسعة — جاهزية Neon وBetter Auth والإنتاج — 2026-08-18
+
+أُجري تدقيق جاهزية المرحلة التاسعة الخاصة بربط Neon وBetter Auth والمزامنة الإنتاجية. تبين أن `DATABASE_URL` و`BETTER_AUTH_SECRET` غير موجودين في بيئة التنفيذ الحالية، ولذلك لم يُفتح اتصال Neon ولم تُفعّل Better Auth فعليًا. يظل `server/db/index.ts` رافضًا إنشاء الاتصال عند غياب `DATABASE_URL`، ويظل `server/auth.ts` مشروطًا بوجود السر وقاعدة البيانات قبل إنشاء Better Auth.
+
+راجعت طبقة `backend-sync.ts` وعقود local-first، وتأكدت من استخدام `credentials: include` في الطلبات البعيدة، ومن استمرار fallback المحلي عند فشل الشبكة أو HTTP، ومن أن الحواجز البعيدة تعتمد على الجلسة بدل بيانات يرسلها العميل. اختُبرت المسارات الحساسة دون جلسة محلية، فأعادت `/api/tasks` و`/api/projects` و`/api/clients` و`/api/workspaces/invitations` و`/api/profile` و`/api/finance` و`/api/calendar-events` الحالة `401`. أعاد `/api/auth/session` الحالة `503` المتوقعة بسبب عدم تهيئة Better Auth.
+
+لم تُشغّل `drizzle-kit generate` ولم تُطبّق migrations، لأن سجل `server/db/migrations/meta/_journal.json` يتوقف عند `0006` بينما توجد ملفات SQL لاحقة حتى `0011`، ولأن credentials غير متاحة. لا يُعد هذا السجل إثباتًا لاختبار Neon أو جلسات متعددة المستخدمين أو مزامنة إنتاجية.
+
+**الحالة:** الجاهزية المحلية موثقة ومراجعة، أما الإغلاق الإنتاجي للمرحلة التاسعة فمعلق إلى حين توفير credentials حقيقية معتمدة، إصلاح/اعتماد تسلسل migrations، ثم تشغيل اختبارات ownership والمزامنة والجلسات الفعلية. المرجع: `verification/phase-9-production-readiness-20260818.md`.
+
+**القيود:** لا secrets في الريبو، لا migrations جديدة، ولا ادعاء اتصال إنتاجي في غياب البيئة المطلوبة.
