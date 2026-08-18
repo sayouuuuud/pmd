@@ -1632,3 +1632,12 @@
 
 التفصيل في `verification/phase-4-life-system-quality-20260818.md`، وسجل السيناريوهات البصرية في `verification/phase-4-daily-plan-browser-20260818.md`. لا أسرار في الريبو، ولم يُشغّل `drizzle-kit generate`. تظل مزامنة Neon/Drizzle الإنتاجية، التحقق بجلسة فعلية، واختبارات ownership متعددة المستخدمين، والتغطية الإنتاجية الكاملة للأرشيف والعلاقات ضمن المرحلة الخامسة/بوابات الإصدار بسبب غياب credentials في البيئة الحالية.
 **حالة المرحلة:** PASS — المرحلة الرابعة مغلقة ضمن نطاقها المحلي، وجاهزة لتنظيف artifacts ثم commit وpush والانتظار دقيقتين فعليتين قبل المرحلة التالية.
+
+
+### سجل دفعة 2026-08-18 — المرحلة الخامسة: Backend والبيانات
+
+أُغلقت المرحلة الخامسة محليًا من ناحية عقود Backend والبيانات. راجعت `server/db/schema.ts` وعزل الملكية في Route Handlers، ونجح `scripts/audit_route_ownership.py` بنتيجة 48 Route، منها 44 session/visible و44 ذات ملكية ظاهرة دون فجوات. أُعيد تشغيل TypeScript وESLint وWebpack build، ونجحت جميعها، كما نجح Responsive audit بنتيجة 34/34 وAccessibility audit بنتيجة 34/34.
+
+توسّع `app/api/account/export/route.ts` ليشمل بيانات workspace والعملاء والتقويم والمكتبة والجلسات و2FA وتحديثات/تسعير/مشاركة المشاريع، مع تقييد القراءات بـ`currentUser.id` أو حقل الملكية المناسب. وتوسّع `app/api/account/route.ts` لحذف هذه البيانات داخل transaction قبل حذف المستخدم، مع الاعتماد على علاقات `onDelete: cascade` الموجودة. التفاصيل في `verification/phase-5-backend-data-quality-20260818.md`.
+
+يبقى اعتماد Neon وBetter Auth الإنتاجي مشروطًا بإضافة `DATABASE_URL` و`BETTER_AUTH_SECRET`، كما بقي اختلاف migration journal موثقًا ولم يتم تشغيل `drizzle-kit generate` أو تطبيق migration تلقائيًا. هذه الحدود لا تمثل فشلًا في الكود المحلي، لكنها تمنع الادعاء باختبار إنتاجي حقيقي قبل توفير credentials وحل journal بأمان.
