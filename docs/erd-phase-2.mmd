@@ -1,0 +1,146 @@
+erDiagram
+    USER ||--o{ SESSION : owns
+    USER ||--o{ WORKSPACE_MEMBER : joins
+    USER ||--o{ WORKSPACE_INVITATION : sends
+    USER ||--o{ CLIENT : creates
+    USER ||--o{ PROJECT : owns
+    USER ||--o{ TASK : owns
+    USER ||--o{ NOTE : owns
+    USER ||--o{ FINANCE_ENTRY : owns
+    USER ||--o{ ACTIVITY_SESSION : records
+
+    WORKSPACE ||--o{ WORKSPACE_MEMBER : contains
+    WORKSPACE ||--o{ WORKSPACE_INVITATION : invites
+    WORKSPACE ||--o{ CLIENT : serves
+    WORKSPACE ||--o{ PROJECT : scopes
+    WORKSPACE ||--o{ PROJECT_UPDATE : scopes
+    WORKSPACE ||--o{ PROJECT_PRICING : scopes
+    WORKSPACE ||--o{ PROJECT_SHARE : scopes
+    WORKSPACE ||--o{ CALENDAR_EVENT : schedules
+    WORKSPACE ||--o{ LIBRARY_RESOURCE : stores
+    WORKSPACE ||--o{ ACTIVITY_SESSION : collects
+
+    CLIENT ||--o{ CLIENT_CREDENTIAL : has
+    CLIENT ||--o{ PROJECT_PRICING : billed
+    CLIENT ||--o{ LIBRARY_RESOURCE : references
+
+    PROJECT ||--o{ PROJECT_UPDATE : receives
+    PROJECT ||--o{ PROJECT_PRICING : prices
+    PROJECT ||--o{ PROJECT_SHARE : shares
+    PROJECT ||--o{ TASK : groups
+    PROJECT ||--o{ LIBRARY_RESOURCE : references
+
+    TASK ||--o{ SUBTASK : contains
+    TASK ||--o{ NOTE : links
+    USER ||--o{ SUBTASK : owns
+
+    USER {
+      text id PK
+      text email
+    }
+    WORKSPACE {
+      text id PK
+      text owner_id FK
+      text name
+      text kind
+    }
+    WORKSPACE_MEMBER {
+      text id PK
+      text workspace_id FK
+      text user_id FK
+      text role
+      text status
+    }
+    WORKSPACE_INVITATION {
+      text id PK
+      text workspace_id FK
+      text invited_by FK
+      text invited_email
+      text token_hash UK
+      text role
+      text status
+      timestamp expires_at
+    }
+    CLIENT {
+      text id PK
+      text workspace_id FK
+      text created_by FK
+      text name
+      text company
+      text status
+      timestamp archived_at
+    }
+    PROJECT {
+      text id PK
+      text user_id FK
+      text workspace_id FK
+      text name
+      text status
+    }
+    PROJECT_UPDATE {
+      text id PK
+      text workspace_id FK
+      text project_id FK
+      text created_by FK
+      text body
+    }
+    PROJECT_PRICING {
+      text id PK
+      text workspace_id FK
+      text project_id FK
+      text client_id FK
+      integer amount
+      text status
+    }
+    PROJECT_SHARE {
+      text id PK
+      text workspace_id FK
+      text project_id FK
+      text member_user_id FK
+      text role
+      text status
+    }
+    TASK {
+      text id PK
+      text user_id FK
+      text project_id
+      text title
+      text status
+    }
+    SUBTASK {
+      text id PK
+      text user_id FK
+      text task_id
+      text title
+      boolean completed
+    }
+    NOTE {
+      text id PK
+      text user_id FK
+      text source_task_id
+      text body
+    }
+    LIBRARY_RESOURCE {
+      text id PK
+      text workspace_id FK
+      text created_by FK
+      text client_id FK
+      text project_id
+      text type
+      text title
+    }
+    CALENDAR_EVENT {
+      text id PK
+      text workspace_id FK
+      text created_by FK
+      text title
+      timestamp starts_at
+      text timezone
+    }
+    ACTIVITY_SESSION {
+      text id PK
+      text workspace_id FK
+      text user_id FK
+      text app_name
+      timestamp started_at
+    }

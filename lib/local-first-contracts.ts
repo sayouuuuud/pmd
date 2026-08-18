@@ -1,9 +1,43 @@
 export type LocalSyncState = 'local' | 'pending' | 'synced' | 'failed'
 
+export type LocalWorkspaceRole = 'owner' | 'admin' | 'member'
+
+/**
+ * External actors are scoped to a shared project or resource in the portal.
+ * They are deliberately distinct from workspace membership roles and are
+ * enforced by the sharing layer in the collaboration phase.
+ */
+export type LocalExternalRole = 'client' | 'reader' | 'reviewer'
+
+export type LocalShareRole = 'viewer' | 'commenter' | 'approver'
+
 export type LocalScope = {
   userId: string
   workspaceId?: string
-  role?: 'owner' | 'admin' | 'member'
+  role?: LocalWorkspaceRole
+}
+
+export type LocalOwnership =
+  | { kind: 'personal'; userId: string }
+  | { kind: 'workspace'; workspaceId: string; createdBy?: string }
+  | { kind: 'shared'; workspaceId: string; resourceId: string; role: LocalShareRole | LocalExternalRole }
+
+export type LocalRoleCapability =
+  | 'read'
+  | 'comment'
+  | 'review'
+  | 'approve'
+
+export const LOCAL_EXTERNAL_ROLE_CAPABILITIES: Record<LocalExternalRole, readonly LocalRoleCapability[]> = {
+  client: ['read', 'comment', 'review'],
+  reader: ['read'],
+  reviewer: ['read', 'review'],
+}
+
+export const LOCAL_SHARE_ROLE_CAPABILITIES: Record<LocalShareRole, readonly LocalRoleCapability[]> = {
+  viewer: ['read'],
+  commenter: ['read', 'comment'],
+  approver: ['read', 'comment', 'review', 'approve'],
 }
 
 export type LocalEntityMeta = {
@@ -36,9 +70,22 @@ export type LocalRepository<T extends LocalEntityMeta> = {
 }
 
 export function isLocalRecordInScope(record: LocalEntityMeta, scope: LocalScope): boolean {
-  if (record.userId && record.userId !== scope.userId) return false
-  if (record.workspaceId && record.workspaceId !== scope.workspaceId) return false
+  const hasUserOwnership = Boolean(record.userId)
+  const hasWorkspaceOwnership = Boolean(record.workspaceId)
+
+  // A local record without an explicit owner must never enter a user envelope.
+  if (!hasUserOwnership && !hasWorkspaceOwnership) return false
+  if (hasUserOwnership && record.userId !== scope.userId) return false
+  if (hasWorkspaceOwnership && record.workspaceId !== scope.workspaceId) return false
   return true
+}
+
+export function getLocalOwnership(record: LocalEntityMeta): LocalOwnership | null {
+  if (record.workspaceId) {
+    return { kind: 'workspace', workspaceId: record.workspaceId, createdBy: record.userId }
+  }
+  if (record.userId) return { kind: 'personal', userId: record.userId }
+  return null
 }
 
 export function createLocalStorageEnvelope<T extends LocalEntityMeta>(records: LocalRecord<T>[], version = 1): LocalStorageEnvelope<T> {

@@ -1,7 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { Archive, BriefcaseBusiness, Building2, Mail, Pencil, Plus, RefreshCw, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
+import { Archive, ArrowLeft, BriefcaseBusiness, Building2, LayoutDashboard, Mail, Pencil, Plus, RefreshCw, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Input } from '@/components/ui/input'
@@ -410,10 +411,13 @@ export function WorkspaceWorkspace() {
           <span className={`h-2.5 w-2.5 rounded-full ${backendAvailable ? 'bg-primary' : 'bg-warning'}`} />
           {backendAvailable ? 'مزامنة قاعدة البيانات مفعّلة' : 'وضع محلي مؤقت'}
         </div>
-        <Button variant="outline" size="sm" onClick={() => void loadData()} disabled={loading}>
-          <RefreshCw className="h-4 w-4" />
-          تحديث
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/workspace/dashboard" className="inline-flex items-center gap-2 rounded-full bg-card px-3 py-2 text-xs font-semibold"><LayoutDashboard className="h-4 w-4" /> لوحة العمل <ArrowLeft className="h-3.5 w-3.5" /></Link>
+          <Button variant="outline" size="sm" onClick={() => void loadData()} disabled={loading}>
+            <RefreshCw className="h-4 w-4" />
+            تحديث
+          </Button>
+        </div>
       </div>
 
       {notice ? <div role="status" aria-live="polite" aria-atomic="true" className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{notice}</div> : null}
@@ -463,14 +467,15 @@ export function WorkspaceWorkspace() {
             {visibleClients.map((item) => (
               <div key={item.id} className="rounded-2xl border border-border bg-muted/20 p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
+                  <Link href={`/workspace/clients/${encodeURIComponent(item.id)}`} className="min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <p className="truncate font-medium">{item.name}</p>
                     {item.company ? <p className="mt-1 truncate text-xs text-muted-foreground">{item.company}</p> : null}
-                  </div>
+                  </Link>
                   <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </div>
                 {item.email ? <p className="mt-3 truncate text-xs text-muted-foreground">{item.email}</p> : null}
-                <div className="mt-4 flex items-center gap-2">
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <Link href={`/workspace/clients/${encodeURIComponent(item.id)}`} className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-2 text-xs font-semibold text-primary">فتح الملف <ArrowLeft className="h-3.5 w-3.5" /></Link>
                   {canManageClients ? <>
                     <Button type="button" variant="ghost" size="sm" onClick={() => beginEditClient(item)} disabled={saving} aria-label={`تعديل ${item.name}`}>
                       <Pencil className="h-4 w-4" />

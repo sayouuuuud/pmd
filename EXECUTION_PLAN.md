@@ -1580,3 +1580,14 @@
 لم تُضف جداول أو migrations، ولم يتغير `server/db/schema.ts`، ولم يُستخدم `DATABASE_URL`، ولم يُشغّل `drizzle-kit generate`. يظل العقد محليًا ومهيأً لاستبدال adapter لاحقًا دون ادعاء وجود اتصال إنتاجي. لم يُعثر على `references/domain_model.md` في مساره المتوقع، لذلك لم يُفترض محتوى غير موجود؛ استُخدمت عقود `workspace-types.ts` وschema الحالية كمرجعين فعليين فقط.
 
 **حالة التنفيذ:** PASS مبدئي — العقد والتوثيق مكتملان، وتبقى بوابات TypeScript وESLint وWebpack واختبار المتصفح وتدقيقات RTL/responsive/accessibility قبل إغلاق المرحلة والانتظار دقيقتين فعليتين.
+
+## سجل المرحلة الثانية من الخطة الأصلية — الأساس وعقود البيانات والملكية — 2026-08-18
+أُغلقت المرحلة الثانية على نطاقها الأصلي بعد مطابقة بندية مع `الخطةالمدمجةالكاملة—PersonalCommandCenter.md`. أُضيف `docs/repository-inventory-phase-2.md` لجرد Routes وComponents وStores وAPI وجداول البيانات، وأُضيفت/رُوجعت ملفات `docs/data-dictionary.md` و`docs/erd-phase-2.mmd` و`docs/ownership-and-roles.md` و`docs/migration-inventory-phase-2.md`.
+
+تمت تقوية `lib/local-first-contracts.ts` ليمنع إدخال سجل بلا مالك معروف إلى التخزين المحلي، ويميز السجل الشخصي عن سجل Workspace والسجل المشترك، مع حالات مزامنة صريحة `local/pending/synced/failed`. أُضيفت أدوار typed منفصلة للعضوية الداخلية `owner/admin/member` وللأدوار الخارجية `client/reader/reviewer` وأدوار المشاركة `viewer/commenter/approver` مع قدرات أولية. التفعيل التنفيذي للمشاركة مؤجل إلى مرحلة بوابة العميل، ولا تُعامل هذه الأنواع كعضوية Workspace عامة.
+
+تمت مراجعة علاقات المستخدم وWorkspace والعضوية والعميل والمشروع والمهام والتحديثات والموارد والفوترة والتقويم، وتوثيق timestamps وtimezone وحالات archive وروابط الأب/التابع. جرى توثيق اختلاف Drizzle journal والمigrations اليدوية في inventory مستقل، ولم يُشغّل `drizzle-kit generate` ولم تُطبق migrations ولم يُستخدم Neon أو `DATABASE_URL`.
+
+نجحت بوابات المرحلة: `pnpm exec tsc --noEmit`، `pnpm lint`، و`NEXT_TELEMETRY_DISABLED=1 pnpm exec next build --webpack`. نجح `audit_route_ownership.py` بعدد 48 مسارًا و`ownership_audit=PASS`، ونجح `responsive-audit.py` بنتيجة 34/34 دون failures، و`accessibility-audit.py` بنتيجة 34/34 مع `failures=0`. فُحصت بصريًا مسارات `/workspace/dashboard` و`/workspace/clients/[id]` على `localhost:3004`، ونُفذ render لملف ERD بنجاح إلى `verification/assets/erd-phase-2.png`.
+
+**حالة المرحلة:** PASS — **100% ضمن نطاق المرحلة الثانية الأصلي**. التوثيق التفصيلي في `verification/phase-2-local-contracts-quality-20260818.md`. ما يزال ربط Neon والمigrations والاختبار متعدد المستخدمين والعمل remote synchronization مؤجلًا إلى المرحلة الخامسة من الخطة الأصلية، بينما تنفيذ Portal/share مؤجل إلى المرحلة الثامنة.
