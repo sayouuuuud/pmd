@@ -515,6 +515,10 @@ export function archiveRemoteJournal(id: string) {
   return request<{ ok: boolean }>(`/api/journal/${id}`, { method: 'DELETE' })
 }
 
+export function archiveRemoteCalendarEvent(id: string) {
+  return request<{ item: unknown }>(`/api/calendar-events/${id}`, { method: 'DELETE' })
+}
+
 export function restoreRemoteArchive(kind: ArchiveKind, id: string) {
   return request<{ item: unknown }>(`/api/archive/${kind}/${id}`, { method: 'PATCH' })
 }

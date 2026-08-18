@@ -85,7 +85,7 @@ export function CalendarWorkspace() {
   const searchParams = useSearchParams()
   const linkedDateParam = searchParams.get('date')
   const linkedDate = isDateKey(linkedDateParam) ? linkedDateParam : null
-  const { tasks, reminders, planItems, projectPricings } = useCommandCenter()
+  const { tasks, reminders, planItems, projectPricings, archiveCalendarEvent } = useCommandCenter()
   const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([])
   const [storageLoaded, setStorageLoaded] = useState(false)
   const [month, setMonth] = useState(() => new Date(2000, 0, 1))
@@ -256,11 +256,9 @@ export function CalendarWorkspace() {
 
   async function removeEvent(item: CalendarItem) {
     if (item.source !== 'custom') return
+    archiveCalendarEvent(item)
     setCustomEvents((current) => current.filter((event) => event.id !== item.id))
-    setNotice('تم حذف الحدث محليًا.')
-    if (!item.id.startsWith('calendar-local-')) {
-      try { await fetch(`/api/calendar-events/${item.id}`, { method: 'DELETE' }) } catch { /* الإزالة المحلية مقصودة كـfallback */ }
-    }
+    setNotice('تم نقل الحدث إلى الأرشيف.')
   }
 
   return <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">

@@ -1,7 +1,8 @@
 'use client'
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { archiveRemoteEntertainment, archiveRemoteFinanceEntry, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteProjectUpdate, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, collectRemoteProjectPricing, createRemoteEntertainment, mapRemoteFinanceEntry, mapRemoteProjectPricing, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, createRemoteProjectPricing, createRemoteProjectUpdate, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteProjectPricing, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
+import { archiveRemoteEntertainment,   archiveRemoteFinanceEntry,
+  archiveRemoteCalendarEvent, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteProjectUpdate, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, collectRemoteProjectPricing, createRemoteEntertainment, mapRemoteFinanceEntry, mapRemoteProjectPricing, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, createRemoteProjectPricing, createRemoteProjectUpdate, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteProjectPricing, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
 import type { ArchivedClient } from './workspace-types'
 
@@ -272,8 +273,8 @@ export type BoardArchivePayload = {
   boardTitle: string
 }
 
-export type ArchiveKind = 'task' | 'note' | 'habit' | 'goal' | 'project' | 'finance' | 'reminder' | 'entertainment' | 'journal' | 'board' | 'client'
-export type ArchivedPayload = Task | Note | Habit | Goal | Project | FinanceEntry | Reminder | EntertainmentItem | JournalEntry | BoardArchivePayload | ArchivedClient
+export type ArchiveKind = 'task' | 'note' | 'habit' | 'goal' | 'project' | 'finance' | 'reminder' | 'entertainment' | 'journal' | 'calendar' | 'board' | 'client'
+export type ArchivedPayload = Task | Note | Habit | Goal | Project | FinanceEntry | Reminder | EntertainmentItem | JournalEntry | CalendarEvent | BoardArchivePayload | ArchivedClient
 export type ArchivedItem = {
   id: string
   kind: ArchiveKind
@@ -362,6 +363,7 @@ type CommandCenterContextValue = {
   saveJournalEntry: (input: Pick<JournalEntry, 'localDate' | 'title' | 'body' | 'mood'> & Partial<Pick<JournalEntry, 'id'>>) => void
   updateJournalEntry: (id: string, patch: Partial<Pick<JournalEntry, 'localDate' | 'title' | 'body' | 'mood'>>) => void
   archiveJournalEntry: (id: string) => void
+  archiveCalendarEvent: (event: CalendarEvent) => void
   archiveHabit: (id: string) => void
   archiveBoardNote: (payload: BoardArchivePayload) => void
   addHabit: (input: Pick<Habit, 'title' | 'target'> & Partial<Pick<Habit, 'icon' | 'frequency' | 'taskId' | 'projectId' | 'goalId'>>) => void
@@ -1349,6 +1351,20 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     archiveBoardNote: (payload) => {
       addArchivedItem('board', payload, `السبورة · ${payload.boardTitle}`)
     },
+    archiveCalendarEvent: (event) => {
+      addArchivedItem('calendar', event, `التقويم · ${event.startsAt}`)
+      if (event.id.startsWith('calendar-local-')) {
+        try {
+          const current = JSON.parse(window.localStorage.getItem('personal-command-center-calendar-events-v1') ?? '[]')
+          const events = Array.isArray(current) ? current as CalendarEvent[] : []
+          window.localStorage.setItem('personal-command-center-calendar-events-v1', JSON.stringify(events.filter((item) => item.id !== event.id)))
+        } catch {
+          // الأرشيف المركزي يظل محفوظًا حتى عند تعذر localStorage.
+        }
+      } else {
+        void archiveRemoteCalendarEvent(event.id)
+      }
+    },
     addHabit: (input) => {
       const title = input.title.trim().slice(0, 100)
       if (!title) return
@@ -1382,6 +1398,17 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         case 'reminder': setReminders((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Reminder, ...items]); break
         case 'entertainment': setEntertainment((items) => items.some((entry) => entry.id === id) ? items : [item.payload as EntertainmentItem, ...items]); break
         case 'journal': setJournal((items) => items.some((entry) => entry.id === id) ? items : [item.payload as JournalEntry, ...items]); break
+        case 'calendar': {
+          try {
+            const current = JSON.parse(window.localStorage.getItem('personal-command-center-calendar-events-v1') ?? '[]')
+            const events = Array.isArray(current) ? current as CalendarEvent[] : []
+            const restored = item.payload as CalendarEvent
+            if (!events.some((entry) => entry.id === id)) window.localStorage.setItem('personal-command-center-calendar-events-v1', JSON.stringify([restored, ...events]))
+          } catch {
+            // التقويم البعيد سيُستعاد عبر endpoint؛ التخزين المحلي يبقى fallback فقط.
+          }
+          break
+        }
         case 'board': {
           try {
             const queue = JSON.parse(window.localStorage.getItem('personal-command-center-board-restore-queue') ?? '[]')

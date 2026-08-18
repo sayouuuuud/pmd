@@ -37,11 +37,12 @@ const kindLabels: Record<ArchiveFilter, string> = {
   reminder: 'التذكيرات',
   entertainment: 'الترفيه',
   journal: 'اليوميات',
+  calendar: 'التقويم',
   board: 'السبورة',
   client: 'العملاء',
 }
 
-const kindOptions: ArchiveFilter[] = ['all', 'task', 'note', 'habit', 'goal', 'project', 'finance', 'reminder', 'entertainment', 'journal', 'board', 'client']
+const kindOptions: ArchiveFilter[] = ['all', 'task', 'note', 'habit', 'goal', 'project', 'finance', 'reminder', 'entertainment', 'journal', 'calendar', 'board', 'client']
 
 function formatDate(value: string) {
   const date = new Date(value)
@@ -170,7 +171,7 @@ export function ArchiveWorkspace() {
       setSelectedKeys((keys) => keys.filter((key) => key !== itemKey(item)))
       setMessage(`تمت استعادة «${item.title}» إلى ${kindLabels[item.kind]}.`)
     } catch {
-      setMessage('تعذر استعادة العميل الآن. تحقق من الاتصال ثم حاول مرة أخرى.')
+      setMessage('تعذرت الاستعادة الآن. تحقق من الاتصال ثم حاول مرة أخرى.')
     }
     window.setTimeout(() => setMessage(''), 3200)
   }
@@ -246,7 +247,7 @@ export function ArchiveWorkspace() {
       {!ready ? (
         <div className="grid gap-4 md:grid-cols-2" aria-label="جارٍ تحميل الأرشيف" aria-busy="true">{[1, 2, 3, 4].map((item) => <div key={item} className="h-36 animate-pulse rounded-2xl border border-border/60 bg-muted/50" />)}</div>
       ) : filteredItems.length === 0 ? (
-        <EmptyState icon={Archive} title="لا توجد عناصر هنا" description={allItems.length === 0 ? 'عندما تؤرشف مهمة أو ملاحظة أو عميلاً أو أي عنصر آخر، ستجده هنا مع إمكانية استعادته.' : 'جرّب تغيير القسم أو كلمة البحث لرؤية عناصر أخرى.'} />
+        <EmptyState icon={Archive} title="لا توجد عناصر هنا" description={allItems.length === 0 ? 'عندما تؤرشف مهمة أو ملاحظة أو حدث تقويم أو أي عنصر آخر، ستجده هنا مع إمكانية استعادته.' : 'جرّب تغيير القسم أو كلمة البحث لرؤية عناصر أخرى.'} />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {filteredItems.map((item) => (

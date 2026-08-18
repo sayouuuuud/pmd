@@ -746,3 +746,18 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 
 ## 2026-08-17 — Final gate correction — 22:55Z
 أُعيد تشغيل البوابات بعد اكتمال إصلاح PWA وOnboarding: Responsive `34/34` مع `failures: []`، وAccessibility `34/34` مع `failures: 0` و`failureSummary: []`. يثبت سجل Onboarding الأخير عدم وجود أخطاء في `10/10` تشغيلات. هذه هي النتائج المعتمدة، أما سجلات الجولات السابقة ذات الأخطاء المتقطعة فتبقى تاريخًا تشخيصيًا ولا تمثل حالة البناء النهائي.
+
+## 2026-08-18 — Milestone 4.5 Calendar archive + personal suggestions — 00:05Z
+
+| المجال | التنفيذ والتحقق | الحالة |
+|---|---|---|
+| Calendar archive | توسيع `ArchiveKind` و`ArchivedPayload`، إضافة archive/restore محلي وremote لأحداث `CalendarEvent`، وإضافة استعلامات/فلتر التقويم في الأرشيف | PASS محلي |
+| Calendar round-trip | إنشاء حدث محلي، نقله من Calendar إلى Archive، ثم استعادته إلى Calendar على `localhost:3004` مع رسائل عربية صحيحة | PASS بصري |
+| Personal suggestions | نقل المهمة المتأخرة إلى اليوم، تقديم عنصر الخطة إلى بداية نافذة العمل، وتنبيه الميزانية عند 80% أو تجاوز السقف؛ كل اقتراح يعرض السبب والمصدر وقبول/رفض مستقلين | PASS ضمن النطاق |
+| Suggestion click-through | اختبار الإجرائين الأولين بحالة localStorage مؤقتة؛ اختفى كل اقتراح بعد قبول الإجراء الصحيح وبقي اقتراح العادة؛ أزيلت fixture IDs وأعيد تحميل الصفحة | PASS بصري |
+| Responsive | `34/34` دون failures | PASS |
+| Accessibility | `34/34`، `0` failures | PASS |
+| Ownership | `48` route، `44` session-aware، `44` visible ownership، لا routes ناقصة | PASS |
+| Scope limits | لا `DATABASE_URL`/جلسة Better Auth لاختبار الإنتاج؛ لم تُشغّل `drizzle-kit generate` بسبب اختلاف journal؛ تبقى تغطية كل دومينات الأرشيف مفتوحة | موثق |
+
+**قرار المصفوفة:** نطاق Calendar archive والاقتراحات الشخصية الموسعة مغلق ومختبر محليًا، والدفعة جاهزة للاعتماد بعد إعادة TypeScript/ESLint/build وتنظيف artifacts. الأدلة في `verification/milestone-4-5-calendar-archive-20260817T2354Z.md`.

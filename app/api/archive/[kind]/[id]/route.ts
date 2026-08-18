@@ -1,6 +1,6 @@
 import { and, eq, isNotNull } from 'drizzle-orm'
 import { getDb } from '@/server/db'
-import { client, entertainmentItem, financeEntry, goal, habit, journalEntry, note, project, reminder, task } from '@/server/db/schema'
+import { calendarEvent, client, entertainmentItem, financeEntry, goal, habit, journalEntry, note, project, reminder, task } from '@/server/db/schema'
 import { backendUnavailable, getCurrentUser, unauthorized } from '@/server/auth/session'
 import { getWorkspaceForMember } from '@/server/workspaces/access'
 
@@ -47,6 +47,18 @@ export async function PATCH(request: Request, context: RouteContext) {
       item = updated
     } else if (kind === 'entertainment') {
       const [updated] = await db.update(entertainmentItem).set({ archivedAt: null, updatedAt: new Date() }).where(and(eq(entertainmentItem.id, id), eq(entertainmentItem.userId, currentUser.id), isNotNull(entertainmentItem.archivedAt))).returning()
+      item = updated
+    } else if (kind === 'calendar') {
+      const [archivedEvent] = await db.select({ id: calendarEvent.id, workspaceId: calendarEvent.workspaceId })
+        .from(calendarEvent)
+        .where(and(eq(calendarEvent.id, id), eq(calendarEvent.createdBy, currentUser.id), isNotNull(calendarEvent.archivedAt)))
+        .limit(1)
+      if (archivedEvent && !(await getWorkspaceForMember(db, archivedEvent.workspaceId, currentUser.id))) {
+        return json({ error: 'مساحة العمل غير متاحة.' }, { status: 403 })
+      }
+      const [updated] = await db.update(calendarEvent).set({ archivedAt: null, updatedAt: new Date() })
+        .where(and(eq(calendarEvent.id, id), eq(calendarEvent.createdBy, currentUser.id), isNotNull(calendarEvent.archivedAt)))
+        .returning()
       item = updated
     } else if (kind === 'client') {
       const [archivedClient] = await db.select({ id: client.id, workspaceId: client.workspaceId })
