@@ -79,6 +79,9 @@ type RemoteProject = {
   title: string
   description: string
   goalId: string | null
+  clientId?: string | null
+  nextStep?: string | null
+  milestones?: unknown
   status: string
   progress: number
   dueLabel: string
@@ -284,7 +287,13 @@ export function mapRemoteGoal(item: RemoteGoal): Goal {
 }
 
 export function mapRemoteProject(item: RemoteProject): Project {
-  return { id: item.id, title: item.title, description: item.description, goalId: item.goalId ?? undefined, status: asProjectStatus(item.status), progress: Math.max(0, Math.min(100, item.progress)), dueLabel: item.dueLabel }
+  const milestones = Array.isArray(item.milestones) ? item.milestones.flatMap((milestone) => {
+    if (!milestone || typeof milestone !== 'object') return []
+    const value = milestone as Record<string, unknown>
+    if (typeof value.id !== 'string' || typeof value.title !== 'string') return []
+    return [{ id: value.id, title: value.title, status: value.status === 'done' ? 'done' as const : 'pending' as const }]
+  }) : []
+  return { id: item.id, title: item.title, description: item.description, goalId: item.goalId ?? undefined, clientId: item.clientId ?? undefined, nextStep: item.nextStep?.trim() || undefined, milestones, status: asProjectStatus(item.status), progress: Math.max(0, Math.min(100, item.progress)), dueLabel: item.dueLabel }
 }
 
 function asProjectUpdateKind(value: string): ProjectUpdate['kind'] {

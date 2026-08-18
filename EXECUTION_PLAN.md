@@ -1646,3 +1646,25 @@
 ## سجل اعتماد المرحلة السادسة — 2026-08-18
 
 أُغلقت دفعة التلميع والروابط العميقة ضمن المرحلة السادسة. أُنشئ `lib/context-links.ts` كعقد مركزي typed لأنواع المهمة والعادة والمشروع والهدف والصلاة والورد والفلوس، ثم طُبق على Weekly Review وDaily Plan وNotes وGlobal Search وHabits وCalendar وReligious وMoney. نجحت TypeScript وESLint وWebpack build وRoute ownership وResponsive وAccessibility، كما نجح الفحص البصري لمسارات `/review` و`/notes` و`/habits` و`/calendar` و`/money` على RTL. لم تُشغّل migrations جديدة، ولم تُنشأ بيانات اختبار خلال الجولة الأخيرة. الأدلة التفصيلية في `verification/phase-6-deep-links-quality-20260818.md`، مع بقاء اختبار Neon/Better Auth الإنتاجي مشروطًا بتوفير credentials وحل اختلاف migration journal.
+
+
+## سجل اعتماد المرحلة السابعة — المشاريع والتحديثات والتسعير والمال — 2026-08-18
+
+أُغلقت المرحلة السابعة ضمن نطاقها المحلي والواجهاتي. أضيفت إلى عقد المشروع المحلي الحقول `clientId` و`nextStep` و`milestones` مع `ProjectMilestone` وتطبيع آمن عند hydration، كما توسعت طبقة `RemoteProject` و`mapRemoteProject` للحفاظ على التوافق مع البيانات القادمة من الخادم. بقيت هذه الحقول محلية عمدًا لأن جدول `project` الحالي لا يحتويها، ولم تُشغّل `drizzle-kit generate` بسبب اختلاف journal المعروف.
+
+في `components/projects/projects-workspace.tsx` أضيف اختيار العميل وحقل الخطوة التالية إلى نموذج إنشاء المشروع، وأصبحت تفاصيل المشروع تعرض العميل والخطوة التالية أو حالات عربية فارغة، وقائمة المراحل مع الإضافة والتعليم كمكتملة والعداد الفوري. أُضيف كذلك ملخص تبويب التسعير الذي يحسب الإجمالي، المحصل من الدفعات ذات الحالة `received`، والمتبقي من الدفعات ذات الحالة `expected` أو `due`. ظلّت التحديثات الزمنية، حالات الدفعات الأربع، والتحصيل المرتبط بالمالية كما أُغلقت في الدفعات السابقة.
+
+اختُبرت صفحة `/projects` بصريًا وتفاعليًا على `localhost:3004` بعد تشغيل build إنتاجي: ظهر نموذج العميل والخطوة التالية، وفُتح مشروع موجود، وأُضيفت مرحلة «تجهيز النسخة الأولى» ثم عُلّمت مكتملة مع انتقال العداد من `0/1` إلى `1/1`. في تبويب التسعير ظهر إجمالي `١٬٧٥٠ دولار`، محصل `١٬٧٥٠ دولار`، ومتَبقٍ `٠ دولار`. لم يظهر إخراج في Console بعد التفاعل.
+
+| البوابة | النتيجة |
+|---|---|
+| TypeScript | PASS — `pnpm exec tsc --noEmit`، exit 0 |
+| ESLint | PASS — `pnpm lint`، exit 0 |
+| Webpack production build | PASS — `next build --webpack`، exit 0؛ 28 صفحة ثابتة وRoutes ديناميكية |
+| Route ownership | PASS وفق تشغيل المرحلة |
+| Responsive audit | PASS وفق تشغيل المرحلة، دون overflow أفقي في صفحة المشاريع |
+| Accessibility audit | PASS وفق تشغيل المرحلة، دون فشل جديد في صفحة المشاريع |
+| Browser visual/interactions | PASS — نموذج الإنشاء، تفاصيل العميل والخطوة والمراحل، وملخص التسعير |
+| Git diff check | PASS |
+
+الأدلة التفصيلية محفوظة في `verification/phase-7-projects-quality-20260818.md` و`verification/phase-7-browser-check-20260818.md`، مع سجلات التشغيل `verification/phase-7-gates-final-20260818.log` و`verification/phase-7-build-final-20260818.log`. لم تُضف أسرار أو migrations. **الحالة: PASS — المرحلة السابعة مكتملة وجاهزة للـcommit والـpush، ثم الانتظار دقيقتين فعليتين قبل بدء المرحلة الثامنة.**

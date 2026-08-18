@@ -55,11 +55,19 @@ export type Goal = {
   targetLabel: string
 }
 
+export type ProjectMilestone = {
+  id: string
+  title: string
+  status: 'pending' | 'done'
+}
 export type Project = {
   id: string
   title: string
   description: string
   goalId?: string
+  clientId?: string
+  nextStep?: string
+  milestones?: ProjectMilestone[]
   status: ProjectStatus
   progress: number
   dueLabel: string
@@ -322,7 +330,7 @@ type CommandCenterContextValue = {
   addGoal: (input: Pick<Goal, 'title' | 'horizon' | 'targetLabel'> & Partial<Pick<Goal, 'description' | 'status' | 'progress'>>) => void
   updateGoal: (id: string, patch: Partial<Goal>) => void
   archiveGoal: (id: string) => void
-  addProject: (input: Pick<Project, 'title' | 'dueLabel'> & Partial<Pick<Project, 'description' | 'goalId' | 'status' | 'progress'>>) => void
+  addProject: (input: Pick<Project, 'title' | 'dueLabel'> & Partial<Pick<Project, 'description' | 'goalId' | 'clientId' | 'nextStep' | 'milestones' | 'status' | 'progress'>>) => void
   updateProject: (id: string, patch: Partial<Project>) => void
   archiveProject: (id: string) => void
   addProjectUpdate: (input: Pick<ProjectUpdate, 'projectId' | 'body' | 'kind'>) => void
@@ -576,6 +584,32 @@ function normalizeProgress(value: unknown, fallback: Record<string, number>): Re
   return entries.length ? Object.fromEntries(entries.map(([id, count]) => [id, Math.max(0, Math.min(100, Math.round(count as number)))])) : fallback
 }
 
+function normalizeProjectMilestones(value: unknown): ProjectMilestone[] {
+  if (!Array.isArray(value)) return []
+  return value.filter(isRecord).slice(0, 30).map((item, index) => ({
+    id: typeof item.id === 'string' && item.id.trim() ? item.id.slice(0, 100) : `milestone-${index + 1}`,
+    title: typeof item.title === 'string' ? item.title.trim().slice(0, 160) : '',
+    status: item.status === 'done' ? 'done' as const : 'pending' as const,
+  })).filter((item) => item.title)
+}
+
+function normalizeProject(value: unknown, fallback: Project): Project {
+  if (!isRecord(value)) return fallback
+  const status = value.status === 'in-progress' || value.status === 'paused' || value.status === 'done' ? value.status : 'backlog'
+  return {
+    id: typeof value.id === 'string' && value.id.trim() ? value.id.slice(0, 100) : fallback.id,
+    title: typeof value.title === 'string' && value.title.trim() ? value.title.trim().slice(0, 160) : fallback.title,
+    description: typeof value.description === 'string' ? value.description.slice(0, 1000) : '',
+    goalId: typeof value.goalId === 'string' && value.goalId.trim() ? value.goalId : undefined,
+    clientId: typeof value.clientId === 'string' && value.clientId.trim() ? value.clientId : undefined,
+    nextStep: typeof value.nextStep === 'string' && value.nextStep.trim() ? value.nextStep.trim().slice(0, 300) : undefined,
+    milestones: normalizeProjectMilestones(value.milestones),
+    status,
+    progress: Math.max(0, Math.min(100, Math.round(Number(value.progress) || 0))),
+    dueLabel: typeof value.dueLabel === 'string' && value.dueLabel.trim() ? value.dueLabel.trim().slice(0, 100) : fallback.dueLabel,
+  }
+}
+
 function normalizeState(value: unknown): PersistedState | null {
   if (!isRecord(value)) return null
   const source = value.app === 'personal-command-center' && isRecord(value.data)
@@ -601,7 +635,7 @@ function normalizeState(value: unknown): PersistedState | null {
     })),
     planItems: arrayOr(source.planItems, defaults.planItems).map((item) => ({ ...item, localDate: typeof item.localDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.localDate) ? item.localDate : cairoToday() })),
     goals: arrayOr(source.goals, defaults.goals),
-    projects: arrayOr(source.projects, defaults.projects),
+    projects: arrayOr(source.projects, defaults.projects).map((project, index) => normalizeProject(project, defaults.projects[index] ?? defaults.projects[0])),
     projectUpdates: arrayOr(source.projectUpdates, defaults.projectUpdates).filter((item) => isRecord(item) && typeof item.id === 'string' && typeof item.projectId === 'string' && typeof item.body === 'string').map((item) => ({ id: item.id, projectId: item.projectId, body: item.body, kind: item.kind === 'decision' || item.kind === 'blocker' || item.kind === 'info' ? item.kind : 'progress', createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() })),
     projectPricings: arrayOr(source.projectPricings, defaults.projectPricings).filter((item) => isRecord(item) && typeof item.id === 'string' && typeof item.projectId === 'string' && typeof item.title === 'string').map((item) => ({ id: item.id, projectId: item.projectId, clientId: typeof item.clientId === 'string' && item.clientId.trim() ? item.clientId : undefined, title: item.title, amount: Math.max(0, Math.round(Number(item.amount) || 0)), currency: typeof item.currency === 'string' && item.currency.trim() ? item.currency : 'جنيه', status: item.status === 'due' || item.status === 'received' || item.status === 'cancelled' ? item.status : 'expected', expectedDate: typeof item.expectedDate === 'string' ? item.expectedDate : undefined, receivedAt: typeof item.receivedAt === 'string' ? item.receivedAt : undefined, financeEntryId: typeof item.financeEntryId === 'string' ? item.financeEntryId : undefined, notes: typeof item.notes === 'string' ? item.notes : undefined, createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() })),
     financeEntries: arrayOr(source.financeEntries, defaults.financeEntries).map((entry) => ({ ...entry, recurrence: entry.recurrence === 'weekly' || entry.recurrence === 'monthly' ? entry.recurrence : 'none' })),
@@ -863,7 +897,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void archiveRemoteGoal(id)
     },
     addProject: (input) => {
-      const project: Project = { id: `project-${Date.now()}`, title: input.title, description: input.description ?? '', goalId: input.goalId, status: input.status ?? 'backlog', progress: input.progress ?? 0, dueLabel: input.dueLabel }
+      const project: Project = { id: `project-${Date.now()}`, title: input.title.trim(), description: input.description?.trim() ?? '', goalId: input.goalId, clientId: input.clientId, nextStep: input.nextStep?.trim() || undefined, milestones: input.milestones?.filter((milestone) => milestone.title.trim()).map((milestone, index) => ({ id: milestone.id || `milestone-${Date.now()}-${index}`, title: milestone.title.trim(), status: milestone.status === 'done' ? 'done' : 'pending' })) ?? [], status: input.status ?? 'backlog', progress: Math.max(0, Math.min(100, Math.round(input.progress ?? 0))), dueLabel: input.dueLabel.trim() || 'بدون موعد' }
       setProjects((items) => [project, ...items])
       void createRemoteProject(input)
     },

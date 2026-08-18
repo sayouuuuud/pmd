@@ -1,0 +1,128 @@
+build_started_at=2026-08-18T12:09:52+00:00
+▲ Next.js 16.3.0 (webpack)
+✓ Running next.config.mjs took 7ms
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+⚠ Compiled with warnings in 731ms
+
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+A Node.js API is used (process.cwd at line: 1044) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/request/connection.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/web/exports/index.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/api/server.js
+
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+A Node.js API is used (process.cwd at line: 1044) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/request/connection.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/server/web/exports/index.js
+./node_modules/.pnpm/next@16.3.0_@babel+core@7.29.7_supports-color@7.2.0__@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/esm/api/server.js
+
+✓ Compiled successfully in 14.1s
+  Running TypeScript ...
+  Finished TypeScript in 1782ms ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/28) ...
+  Generating static pages using 5 workers (7/28) 
+  Generating static pages using 5 workers (14/28) 
+  Generating static pages using 5 workers (21/28) 
+✓ Generating static pages using 5 workers (28/28) in 305ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /account
+├ ƒ /api/account
+├ ƒ /api/account/export
+├ ƒ /api/archive
+├ ƒ /api/archive/[kind]/[id]
+├ ƒ /api/auth/[...all]
+├ ƒ /api/calendar-events
+├ ƒ /api/calendar-events/[id]
+├ ƒ /api/clients
+├ ƒ /api/clients/[id]
+├ ƒ /api/clients/[id]/restore
+├ ƒ /api/daily-plan
+├ ƒ /api/daily-plan/[id]
+├ ƒ /api/entertainment
+├ ƒ /api/entertainment/[id]
+├ ƒ /api/finance
+├ ƒ /api/finance/[id]
+├ ƒ /api/finance/budget
+├ ƒ /api/goals
+├ ƒ /api/goals/[id]
+├ ƒ /api/habits
+├ ƒ /api/habits/[id]
+├ ƒ /api/journal
+├ ƒ /api/journal/[id]
+├ ƒ /api/notes
+├ ƒ /api/notes/[id]
+├ ƒ /api/profile
+├ ƒ /api/projects
+├ ƒ /api/projects/[id]
+├ ƒ /api/projects/[id]/pricing
+├ ƒ /api/projects/[id]/updates
+├ ƒ /api/projects/pricing
+├ ƒ /api/projects/pricing/[pricingId]
+├ ƒ /api/projects/pricing/[pricingId]/collect
+├ ƒ /api/projects/updates
+├ ƒ /api/religious
+├ ƒ /api/religious/quran
+├ ƒ /api/religious/reciters
+├ ƒ /api/religious/timings
+├ ƒ /api/reminders
+├ ƒ /api/reminders/[id]
+├ ƒ /api/review
+├ ƒ /api/tasks
+├ ƒ /api/tasks/[id]
+├ ƒ /api/tasks/[id]/subtasks
+├ ƒ /api/tasks/[id]/subtasks/[subtaskId]
+├ ƒ /api/workspaces
+├ ƒ /api/workspaces/invitations
+├ ƒ /api/workspaces/members/[memberId]
+├ ○ /archive
+├ ○ /board
+├ ○ /calendar
+├ ○ /daily-plan
+├ ○ /design-system
+├ ○ /entertainment
+├ ○ /goals
+├ ○ /habits
+├ ○ /journal
+├ ○ /login
+├ ○ /money
+├ ○ /notes
+├ ○ /offline
+├ ○ /onboarding
+├ ○ /projects
+├ ○ /religious
+├ ○ /reminders
+├ ○ /review
+├ ○ /tasks
+├ ○ /workspace
+├ ƒ /workspace/clients/[id]
+└ ○ /workspace/dashboard
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+build_exit=0
+build_finished_at=2026-08-18T12:10:19+00:00
