@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, BriefcaseBusiness, CircleAlert, Clock3, FolderKanban, WalletCards } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { LoadingState } from '@/components/ui/loading-state'
 import { StatCard } from '@/components/ui/stat-card'
 import { readWorkspaceFallback, type Client, type WorkspaceFallback } from '@/lib/workspace-types'
 import { useCommandCenter } from '@/lib/command-center-store'
@@ -93,7 +94,7 @@ export function WorkDashboard() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <ContentCard className="lg:col-span-7" title="العملاء النشطون" description="افتح ملف أي عميل لمراجعة العمل والدفعات والخطوة التالية.">
-          {loading ? <p role="status" aria-live="polite" className="text-sm text-muted-foreground">جاري تحميل بيانات العملاء...</p> : null}
+          {loading ? <LoadingState label="جاري تحميل بيانات العملاء..." count={2} /> : null}
           {!loading && clients.length === 0 ? <EmptyState icon={BriefcaseBusiness} title="لا يوجد عملاء بعد" description="أضف أول عميل من مساحة العمل، ثم اربط به تسعيرًا أو مشروعًا لتظهر مؤشرات العمل هنا." action={<Link href="/workspace" className="inline-flex rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground">فتح مساحة العمل</Link>} /> : null}
           <div className="grid gap-3 sm:grid-cols-2">
             {clients.slice(0, 8).map((client) => {
@@ -118,7 +119,7 @@ export function WorkDashboard() {
         </ContentCard>
 
         <ContentCard className="lg:col-span-5" title="آخر تحديثات العمل" description="آخر ما تم تسجيله في المشاريع المرتبطة.">
-          {recentUpdates.length === 0 ? <div className="rounded-2xl bg-muted/60 px-4 py-6 text-center text-sm text-muted-foreground"><Clock3 className="mx-auto mb-2 h-5 w-5" />لا توجد تحديثات عمل مسجلة بعد.</div> : <div className="space-y-3">{recentUpdates.map((update) => <div key={update.id} className="rounded-2xl bg-muted/60 p-3"><p className="text-xs leading-6">{update.body}</p><p className="mt-2 text-[11px] text-muted-foreground">{projects.find((project) => project.id === update.projectId)?.title ?? 'مشروع'}</p></div>)}</div>}
+          {recentUpdates.length === 0 ? <EmptyState icon={Clock3} title="لا توجد تحديثات عمل بعد" description="ستظهر هنا آخر التحديثات عند تسجيل نشاط في أحد المشاريع المرتبطة." /> : <div className="space-y-3">{recentUpdates.map((update) => <div key={update.id} className="rounded-2xl bg-muted/60 p-3"><p className="text-xs leading-6">{update.body}</p><p className="mt-2 text-[11px] text-muted-foreground">{projects.find((project) => project.id === update.projectId)?.title ?? 'مشروع'}</p></div>)}</div>}
         </ContentCard>
       </div>
     </div>

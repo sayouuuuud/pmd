@@ -5,7 +5,7 @@ import { ArrowRight, Compass } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <main className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center p-6">
+    <main id="main-content" className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center p-6">
       <section className="w-full rounded-3xl border border-border bg-card p-8 text-center shadow-sm" role="status" aria-labelledby="not-found-title">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
           <Compass className="h-7 w-7" aria-hidden="true" />

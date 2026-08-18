@@ -1591,3 +1591,23 @@
 نجحت بوابات المرحلة: `pnpm exec tsc --noEmit`، `pnpm lint`، و`NEXT_TELEMETRY_DISABLED=1 pnpm exec next build --webpack`. نجح `audit_route_ownership.py` بعدد 48 مسارًا و`ownership_audit=PASS`، ونجح `responsive-audit.py` بنتيجة 34/34 دون failures، و`accessibility-audit.py` بنتيجة 34/34 مع `failures=0`. فُحصت بصريًا مسارات `/workspace/dashboard` و`/workspace/clients/[id]` على `localhost:3004`، ونُفذ render لملف ERD بنجاح إلى `verification/assets/erd-phase-2.png`.
 
 **حالة المرحلة:** PASS — **100% ضمن نطاق المرحلة الثانية الأصلي**. التوثيق التفصيلي في `verification/phase-2-local-contracts-quality-20260818.md`. ما يزال ربط Neon والمigrations والاختبار متعدد المستخدمين والعمل remote synchronization مؤجلًا إلى المرحلة الخامسة من الخطة الأصلية، بينما تنفيذ Portal/share مؤجل إلى المرحلة الثامنة.
+
+
+---
+## اعتماد المرحلة الثالثة — Shell وتجربة الاستخدام — 2026-08-18T04:04:29Z
+
+أُغلقت المرحلة الثالثة من الخطة المدمجة بعد استكمال مراجعة Shell والتنقل والبحث وDashboard، حالات loading/empty/error/offline، RTL والموبايل ولوحة المفاتيح والنوافذ، المكونات المشتركة، مربعات الخطة، والروابط العميقة والـanchors. أضيف skip link إلى `main-content`، وربطت عناوين الصفحات بـ`aria-labelledby`، وأصبح التنقل المتداخل نشطًا في `TopNav`. وُحّدت حالة التحميل العامة ولوحة العمل مع `LoadingState`، ووُحّدت حالات الفراغ المتبقية في المهام ولوحة العمل مع `EmptyState`، كما استُبدل checkbox الخام في تحدي 2FA بـ`Checkbox` المشترك.
+
+| بوابة | النتيجة |
+|---|---|
+| TypeScript | PASS |
+| ESLint | PASS |
+| Webpack production build | PASS؛ 28 صفحة ثابتة و48 Route API، مع تحذيرات Next المعلوماتية المعتادة فقط |
+| Route ownership | PASS؛ 48 route، 44 session-aware، 44 visible ownership، دون routes ناقصة |
+| Responsive audit | PASS؛ 34/34، `failures: []` |
+| Accessibility audit | PASS؛ 34/34، `failures: 0` و`failureSummary: []` |
+| Browser visual smoke | PASS؛ `/` و`/tasks` و`/notes` و`/workspace` و`/workspace/dashboard` و`/design-system` |
+
+أثبت الفحص البصري ظهور رابط التخطي، RTL، نشاط روابط المسارات المتداخلة، حالات البيانات المحلية المؤقتة، والروابط العميقة `/projects#project-1` و`/goals#goal-1` ومسارات Workspace. الدليل البندي الكامل هو `verification/phase-3-quality-20260818.md`، وسجل الفحص البصري هو `verification/phase-3-browser-home-20260818.md`. لم تُضف أسرار، ولم يُشغّل `drizzle-kit generate`، وما تزال اختبارات Neon وBetter Auth الإنتاجية و2FA الإنتاجي خارج نطاق البيئة الحالية.
+
+**الحالة:** PASS — المرحلة الثالثة مغلقة بنسبة 100% من بنودها التنفيذية على النطاق المحلي، وجاهزة للـcommit والرفع ثم انتظار دقيقتين فعليتين قبل الانتقال إلى المرحلة الرابعة.

@@ -13,12 +13,12 @@ export function PageShell({
   children?: React.ReactNode
 }) {
   return (
-    <main className="mx-auto max-w-7xl p-4 md:p-6">
+    <main id="main-content" aria-labelledby="page-title" className="mx-auto max-w-7xl p-4 md:p-6">
       <TopNav />
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-4xl font-medium tracking-tight text-balance">{title}</h1>
+          <h1 id="page-title" className="text-4xl font-medium tracking-tight text-balance">{title}</h1>
           <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
         </div>
       </div>

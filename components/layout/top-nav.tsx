@@ -63,6 +63,10 @@ function formatGregorianDate() {
   }).format(new Date())
 }
 
+function isNavItemActive(pathname: string, href: string) {
+  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+}
+
 const quickAddTypes: { value: QuickAddKind; label: string }[] = [
   { value: 'task', label: 'مهمة' },
   { value: 'note', label: 'ملاحظة' },
@@ -181,6 +185,9 @@ export function TopNav() {
 
   return (
     <>
+      <a href="#main-content" className="sr-only z-50 rounded-full bg-foreground px-4 py-2 text-sm text-card focus:not-sr-only focus:fixed focus:top-3 focus:right-3">
+        الانتقال إلى المحتوى الرئيسي
+      </a>
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 rounded-full bg-card py-1.5 pr-2 pl-4">
@@ -227,7 +234,7 @@ export function TopNav() {
 
         <nav className="flex items-center gap-1 overflow-x-auto rounded-full bg-card p-1.5 [scrollbar-width:none]" aria-label="التنقل الرئيسي">
           {navItems.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = isNavItemActive(pathname, item.href)
             const Icon = item.icon
             return (
               <Link
@@ -259,7 +266,7 @@ export function TopNav() {
         <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="روابط التنقل السريع">
           {navItems.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href
+            const isActive = isNavItemActive(pathname, item.href)
             return (
               <Link
                 key={item.href}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Loader2, LockKeyhole, Mail, ShieldCheck, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { authClient } from '@/lib/auth-client'
 import { featureFlags } from '@/lib/feature-flags'
 
@@ -135,7 +136,7 @@ export function AuthForm() {
       </div>
       <form className="space-y-4" onSubmit={submitTwoFactor} noValidate>
         <label className="block" htmlFor="auth-two-factor-code"><span className="mb-2 block text-sm font-medium">{useBackupCode ? 'رمز الاسترداد' : 'رمز TOTP'}</span><Input id="auth-two-factor-code" required inputMode={useBackupCode ? 'text' : 'numeric'} value={twoFactorCode} onChange={(event) => { setTwoFactorCode(event.target.value); setTwoFactorError('') }} aria-invalid={Boolean(twoFactorError)} aria-describedby={twoFactorError ? 'auth-two-factor-error' : undefined} autoComplete="one-time-code" className="h-12 rounded-2xl px-4 text-center tracking-[0.35em]" placeholder={useBackupCode ? 'رمز الاسترداد' : '123456'} dir="ltr" /></label>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} className="h-4 w-4 accent-primary" /> الوثوق بهذا الجهاز لمدة ٣٠ يومًا</label>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground"><Checkbox checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} aria-label="الوثوق بهذا الجهاز لمدة ٣٠ يومًا" /> الوثوق بهذا الجهاز لمدة ٣٠ يومًا</label>
         {twoFactorError && <div id="auth-two-factor-error" role="alert" aria-live="assertive" aria-atomic="true" className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm leading-6 text-destructive">{twoFactorError}</div>}
         <Button type="submit" disabled={twoFactorLoading} className="h-12 w-full rounded-2xl px-4 text-sm font-semibold">{twoFactorLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}{twoFactorLoading ? 'جاري التحقق…' : 'إكمال الدخول'}</Button>
         <Button type="button" variant="ghost" onClick={() => { setUseBackupCode((current) => !current); setTwoFactorCode(''); setTwoFactorError('') }} className="h-auto w-full rounded-2xl py-2 text-center text-sm text-muted-foreground hover:text-foreground">{useBackupCode ? 'استخدام تطبيق المصادقة بدلًا من ذلك' : 'استخدام رمز استرداد بدلًا من ذلك'}</Button>

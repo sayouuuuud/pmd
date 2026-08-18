@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <main className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center p-6">
+    <main id="main-content" className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center p-6">
       <section className="w-full rounded-3xl border border-border bg-card p-8 text-center shadow-sm" role="alert" aria-labelledby="global-error-title">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-destructive"><AlertTriangle className="h-7 w-7" aria-hidden="true" /></div>
         <h1 id="global-error-title" className="mt-5 text-2xl font-semibold">حصل عطل مؤقت</h1>
