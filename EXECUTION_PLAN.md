@@ -1489,3 +1489,21 @@
 الأدلة: `verification/milestone-4-5-calendar-archive-20260817T2354Z.md`، وتحديثات `verification/full-plan-audit-matrix-2026-08-17.md` و`verification/interaction-smoke-tests.md`.
 
 **الحالة:** تنفيذ واختبار النطاق المحلي مكتملان؛ الدفعة جاهزة للاعتماد بعد إعادة فحوص TypeScript/ESLint/build وتنظيف artifacts، مع بقاء تغطية أرشفة كل الدومينات ومراجعة العقود الإنتاجية ضمن البنود المفتوحة.
+
+
+## اعتماد دفعة موثوقية استعادة الأرشيف — 2026-08-18T01:14Z
+
+أُغلقت دفعة محلية تالية بعد Milestone 4.5 لتحسين موثوقية استعادة العناصر المؤرشفة دون الاعتماد على قاعدة البيانات. أصبحت `restoreArchivedItem` عملية غير متزامنة تُرجع عقدًا صريحًا من الشكل `RestoreArchivedResult` يميّز بين `restored` و`remoteSynced`. تستمر الاستعادة المحلية المتفائلة عند غياب backend، بينما تُنتظر نتيجة `restoreRemoteArchive` بدل إطلاقها fire-and-forget ثم عرض نجاح غير قابل للتحقق. أما عناصر السبورة فتظل ذات fallback محلي معلن لأنها لا تملك مسار restore remote موحدًا في هذا النطاق.
+
+تُحدّث `ArchiveWorkspace` رسائل الحالة وفق النتيجة الفعلية: نجاح بعيد، أو استعادة محلية تنتظر المزامنة، أو عنصر غير موجود، مع تطبيق العقد نفسه على الاستعادة الجماعية وحساب العناصر التي تحتاج مزامنة لاحقة. لا توجد تغييرات على نموذج الملكية أو الأسرار أو قاعدة البيانات، ولم يتم تشغيل `drizzle-kit generate`.
+
+| البوابة | النتيجة | الدليل |
+|---|---|---|
+| TypeScript | PASS | `verification/archive-restore-sync-quality-20260818T011058Z.log` |
+| ESLint | PASS، تحذير hooks سابق غير حاجز | السجل نفسه |
+| Webpack production build | PASS | build على `2026-08-18` مع تحذيرات Next المعلوماتية السابقة فقط |
+| Browser restore UX | PASS | `verification/archive-restore-sync-browser-20260818T0112Z.md` |
+| Fixture cleanup | PASS؛ عاد الأرشيف إلى 7 عناصر | سجل المتصفح نفسه |
+| GitHub synchronization | PASS؛ `origin/main = 9bc822d` | تحقق `git ls-remote` في ختم الدفعة |
+
+تبقى اختبارات backend الإنتاجية الفعلية، وعقود الجلسة، وتغطية كل الدومينات المكتملة/المنتهية، و2FA الإنتاجي، وDrizzle journal المختلف خارج هذه الدفعة ولا تُعد مغلقة بهذا السجل.

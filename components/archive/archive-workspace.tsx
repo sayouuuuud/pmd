@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { EmptyState } from '@/components/ui/empty-state'
-import { useCommandCenter, type ArchiveKind, type ArchivedItem } from '@/lib/command-center-store'
+import { useCommandCenter, type ArchiveKind, type ArchivedItem, type RestoreArchivedResult } from '@/lib/command-center-store'
 import { persistWorkspaceFallback, readWorkspaceFallback, type ArchivedClient, type Client } from '@/lib/workspace-types'
 
 type ArchiveFilter = ArchiveKind | 'client' | 'all'
@@ -143,7 +143,7 @@ export function ArchiveWorkspace() {
     })
   }
 
-  async function restoreClient(item: ClientArchiveEntry) {
+  async function restoreClient(item: ClientArchiveEntry): Promise<RestoreArchivedResult> {
     if (item.payload.id.startsWith('local-')) {
       const local = readWorkspaceFallback()
       const workspaceId = item.payload.workspaceId
@@ -157,19 +157,23 @@ export function ArchiveWorkspace() {
       }
       persistWorkspaceFallback(next)
       setClientArchive((items) => items.filter((entry) => entry.id !== item.id))
-      return
+      return { restored: true, remoteSynced: true }
     }
     const response = await fetch(`/api/archive/client/${encodeURIComponent(item.payload.id)}`, { method: 'PATCH' })
     if (!response.ok) throw new Error('remote-client-restore-failed')
     await loadClientArchive()
+    return { restored: true, remoteSynced: true }
   }
 
   async function restore(item: ArchiveEntry) {
     try {
-      if (isClientArchiveEntry(item)) await restoreClient(item)
-      else restoreArchivedItem(item.id)
-      setSelectedKeys((keys) => keys.filter((key) => key !== itemKey(item)))
-      setMessage(`تمت استعادة «${item.title}» إلى ${kindLabels[item.kind]}.`)
+      const result = isClientArchiveEntry(item) ? await restoreClient(item) : await restoreArchivedItem(item.id)
+      if (!result.restored) {
+        setMessage('العنصر المؤرشف غير موجود أو تمت استعادته مسبقًا.')
+      } else {
+        setSelectedKeys((keys) => keys.filter((key) => key !== itemKey(item)))
+        setMessage(result.remoteSynced ? `تمت استعادة «${item.title}» إلى ${kindLabels[item.kind]}.` : `تمت استعادة «${item.title}» محليًا. ستتم المزامنة عند عودة الاتصال.`)
+      }
     } catch {
       setMessage('تعذرت الاستعادة الآن. تحقق من الاتصال ثم حاول مرة أخرى.')
     }
@@ -179,17 +183,21 @@ export function ArchiveWorkspace() {
   async function restoreSelected() {
     if (selectedItems.length === 0) return
     let restoredCount = 0
+    let pendingSyncCount = 0
     for (const item of selectedItems) {
       try {
-        if (isClientArchiveEntry(item)) await restoreClient(item)
-        else restoreArchivedItem(item.id)
-        restoredCount += 1
+        const result = isClientArchiveEntry(item) ? await restoreClient(item) : await restoreArchivedItem(item.id)
+        if (result.restored) {
+          restoredCount += 1
+          if (!result.remoteSynced) pendingSyncCount += 1
+        }
       } catch {
         // Keep failed remote client restores visible for a retry.
       }
     }
     setSelectedKeys([])
-    setMessage(restoredCount === selectedItems.length ? `تمت استعادة ${restoredCount} عناصر من الأرشيف.` : `تمت استعادة ${restoredCount} من ${selectedItems.length} عناصر. بقيت العناصر الأخرى للمحاولة مرة أخرى.`)
+    const syncNotice = pendingSyncCount > 0 ? ` ${pendingSyncCount} محليًا وتنتظر المزامنة.` : ''
+    setMessage(restoredCount === selectedItems.length ? `تمت استعادة ${restoredCount} عناصر من الأرشيف.${syncNotice}` : `تمت استعادة ${restoredCount} من ${selectedItems.length} عناصر.${syncNotice} بقيت العناصر الأخرى للمحاولة مرة أخرى.`)
     window.setTimeout(() => setMessage(''), 3600)
   }
 

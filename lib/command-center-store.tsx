@@ -284,6 +284,11 @@ export type ArchivedItem = {
   payload: ArchivedPayload
 }
 
+export type RestoreArchivedResult = {
+  restored: boolean
+  remoteSynced: boolean
+}
+
 type CommandCenterContextValue = {
   exportData: () => string
   importData: (raw: string) => { ok: boolean; message: string }
@@ -367,7 +372,7 @@ type CommandCenterContextValue = {
   archiveHabit: (id: string) => void
   archiveBoardNote: (payload: BoardArchivePayload) => void
   addHabit: (input: Pick<Habit, 'title' | 'target'> & Partial<Pick<Habit, 'icon' | 'frequency' | 'taskId' | 'projectId' | 'goalId'>>) => void
-  restoreArchivedItem: (id: string) => void
+  restoreArchivedItem: (id: string) => Promise<RestoreArchivedResult>
   saveWeeklyReview: (patch: Pick<WeeklyReview, 'wentWell' | 'blockers' | 'nextGoal'> & Partial<Pick<WeeklyReview, 'status'>>) => void
   addNote: (input: Pick<Note, 'title' | 'body' | 'tag'>) => void
   updateNote: (id: string, patch: Partial<Pick<Note, 'title' | 'body' | 'tag'>>) => void
@@ -1384,9 +1389,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setHabits((items) => [habit, ...items])
       void createRemoteHabit({ title: habit.title, icon: habit.icon, target: habit.target, frequency: habit.frequency, taskId: habit.taskId, projectId: habit.projectId, goalId: habit.goalId })
     },
-    restoreArchivedItem: (id) => {
+    restoreArchivedItem: async (id) => {
       const item = archive.find((entry) => entry.id === id)
-      if (!item) return
+      if (!item) return { restored: false, remoteSynced: false }
       setArchive((items) => items.filter((entry) => !(entry.id === id && entry.kind === item.kind)))
       switch (item.kind) {
         case 'task': setTasks((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Task, ...items]); break
@@ -1420,7 +1425,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
           break
         }
       }
-      if (item.kind !== 'board') void restoreRemoteArchive(item.kind, id)
+      if (item.kind === 'board') return { restored: true, remoteSynced: false }
+      const remoteResult = await restoreRemoteArchive(item.kind, id)
+      return { restored: true, remoteSynced: remoteResult !== null }
     },
     toggleHabit: (id) => {
       const localDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())

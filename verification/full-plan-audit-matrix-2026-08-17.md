@@ -761,3 +761,16 @@ components/money/money-workspace.tsx:223:          <Input name="title" aria-labe
 | Scope limits | لا `DATABASE_URL`/جلسة Better Auth لاختبار الإنتاج؛ لم تُشغّل `drizzle-kit generate` بسبب اختلاف journal؛ تبقى تغطية كل دومينات الأرشيف مفتوحة | موثق |
 
 **قرار المصفوفة:** نطاق Calendar archive والاقتراحات الشخصية الموسعة مغلق ومختبر محليًا، والدفعة جاهزة للاعتماد بعد إعادة TypeScript/ESLint/build وتنظيف artifacts. الأدلة في `verification/milestone-4-5-calendar-archive-20260817T2354Z.md`.
+
+
+## 2026-08-18 — Archive restore synchronization reliability — 01:14Z
+
+| المجال | النطاق المختبر | النتيجة | الدليل والحدود |
+|---|---|---|---|
+| Restore contract | تحويل `restoreArchivedItem` إلى Promise بعقد `RestoreArchivedResult` يميّز الاستعادة المحلية عن المزامنة البعيدة | PASS | `lib/command-center-store.tsx` و`components/archive/archive-workspace.tsx` |
+| Single restore UX | استعادة عنصر يوميات مع عرض حالة المزامنة الفعلية بدل نجاح متفائل غير قابل للتحقق | PASS محليًا | `verification/archive-restore-sync-browser-20260818T0112Z.md` |
+| Bulk restore UX | حساب العناصر المستعادة محليًا والعناصر التي تحتاج مزامنة لاحقة | PASS بالكود | ينتظر اختبار backend بجلسة وقاعدة بيانات حقيقية |
+| Local fallback | غياب backend لا يمنع الاستعادة المحلية ولا يؤدي إلى فقدان العنصر | PASS | عاد fixture إلى الأرشيف وارتفع العدد من 6 إلى 7 بعد التنظيف |
+| Quality gates | TypeScript، ESLint، Webpack، diff check | PASS | `verification/archive-restore-sync-quality-20260818T011058Z.log` |
+| Ownership / responsive / accessibility | لا تغيير في العقود أو المسارات السابقة | PASS سابق مستمر | آخر قياس معتمد `48/44/44` و`34/34` و`34/34` |
+| Production backend | تحقق session/ownership وremote restore على Neon | مؤجل | لا credentials؛ لا يُدّعى إغلاقه بهذه الدفعة |
