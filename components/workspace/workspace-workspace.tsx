@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { persistWorkspaceFallback, readWorkspaceFallback, workspaceFallback, type Client, type Workspace, type WorkspaceFallback, type WorkspaceInvitation, type WorkspaceMember } from '@/lib/workspace-types'
+import { ClientPortalManager } from '@/components/workspace/client-portal-manager'
 
 export function WorkspaceWorkspace() {
   const [data, setData] = useState<WorkspaceFallback>(workspaceFallback)
@@ -586,6 +587,8 @@ export function WorkspaceWorkspace() {
           <p className="text-xs text-muted-foreground">سيتم التحقق من أن البريد الحالي يطابق البريد الذي أُرسلت إليه الدعوة قبل تفعيل العضوية.</p>
         </div>
       </ContentCard>
+
+      {activeWorkspace ? <ClientPortalManager workspace={activeWorkspace} clients={clients} canManage={canManageClients} /> : null}
     </div>
   )
 }

@@ -1668,3 +1668,18 @@
 | Git diff check | PASS |
 
 الأدلة التفصيلية محفوظة في `verification/phase-7-projects-quality-20260818.md` و`verification/phase-7-browser-check-20260818.md`، مع سجلات التشغيل `verification/phase-7-gates-final-20260818.log` و`verification/phase-7-build-final-20260818.log`. لم تُضف أسرار أو migrations. **الحالة: PASS — المرحلة السابعة مكتملة وجاهزة للـcommit والـpush، ثم الانتظار دقيقتين فعليتين قبل بدء المرحلة الثامنة.**
+
+## سجل اعتماد المرحلة الثامنة — بوابة العميل والمشاركة والتعاون — 2026-08-18
+أُغلقت المرحلة الثامنة ضمن نطاقها التجريبي المحلي. أُنشئ `lib/client-portal-contracts.ts` كعقد Typed للمشاركات الخارجية والتفاعلات والموارد والـtokens وحالات active/revoked/expired، مع ربط قدرات الأدوار بعقود `local-first-contracts.ts`: العميل يستطيع القراءة والتعليق والمراجعة، القارئ للقراءة فقط، والمراجع للقراءة والمراجعة دون التعليق. أضيفت لوحة إدارة المشاركة داخل Workspace، وتدعم اختيار عميل ومشاريع مرتبطة به، التحكم في إظهار الموعد والدفعات، إضافة روابط عامة مسموح بها، مدة انتهاء الرابط، النسخ والفتح والإبطال، ومشاهدة تفاعلات العميل.
+أضيفت واجهة `/portal/[token]` لعرض المشاريع المحددة فقط، الوصف والتقدم والحالة والخطوة التالية والمراحل والتحديثات والروابط والدفعات الاختيارية. تدعم الواجهة تعليقات وطلبات تعديل وموافقات تجريبية على المراحل، مع حفظ التفاعلات محليًا وربطها بالمشاركة والمشروع. بقيت موافقة العميل تفاعلًا لا يغير الحالة الداخلية تلقائيًا. لم تُضف migration؛ المشاركة والتفاعلات محلية عمدًا لغياب `DATABASE_URL` وجدول مشاركة خادمي، ولا توجد مصادقة عميل إنتاجية أو إرسال بريد آلي أو تخزين كلمات مرور.
+| البوابة | النتيجة |
+|---|---|
+| TypeScript | PASS — `pnpm exec tsc --noEmit`، exit 0 |
+| ESLint | PASS — `pnpm lint`، exit 0 بدون تحذيرات |
+| Webpack production build | PASS — `next build --webpack`، exit 0؛ ظهر فقط تحذير Next.js المعروف عن middleware وEdge Runtime |
+| Route ownership | PASS — `route_count=48`، وقوائم المسارات الناقصة فارغة |
+| Responsive audit | PASS بعد إعادة تشغيل الخادم على آخر build — `total=34` و`failures=[]` |
+| Accessibility audit | PASS — `total=34` و`failures=0` |
+| Portal smoke test | PASS — `/portal/test-token` يعيد HTTP 200 ويعرض حالة رابط غير صالح دون كشف بيانات |
+| Browser visual/interactions | PASS — اختبار صفحة المشاريع السابق، واختبار تركيب لوحة Workspace وتدفق المراحل والتسعير، دون أخطاء JavaScript جديدة |
+الأدلة التفصيلية محفوظة في `verification/phase-8-scope-audit-20260818.md` و`verification/phase-8-client-portal-quality-20260818.md` و`verification/phase-7-browser-check-20260818.md`. **الحالة: PASS — المرحلة الثامنة مكتملة ضمن النطاق المحلي، مع ترقية المصادقة والمشاركة الخادمية الإنتاجية كفجوة لاحقة صريحة.**
