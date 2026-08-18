@@ -1611,3 +1611,24 @@
 أثبت الفحص البصري ظهور رابط التخطي، RTL، نشاط روابط المسارات المتداخلة، حالات البيانات المحلية المؤقتة، والروابط العميقة `/projects#project-1` و`/goals#goal-1` ومسارات Workspace. الدليل البندي الكامل هو `verification/phase-3-quality-20260818.md`، وسجل الفحص البصري هو `verification/phase-3-browser-home-20260818.md`. لم تُضف أسرار، ولم يُشغّل `drizzle-kit generate`، وما تزال اختبارات Neon وBetter Auth الإنتاجية و2FA الإنتاجي خارج نطاق البيئة الحالية.
 
 **الحالة:** PASS — المرحلة الثالثة مغلقة بنسبة 100% من بنودها التنفيذية على النطاق المحلي، وجاهزة للـcommit والرفع ثم انتظار دقيقتين فعليتين قبل الانتقال إلى المرحلة الرابعة.
+
+
+---
+## اعتماد المرحلة الرابعة — نظام الحياة وMVP اليومي — 2026-08-18T04:23:08Z
+أُغلقت المرحلة الرابعة بنسبة 100% ضمن نطاق الواجهة المحلية ومخرجات MVP اليومية. اكتملت مراجعة العادات واليوميات، المشاريع والأهداف، المالية، الترفيه، Weekly Review، Quick Add، البحث الشامل، الأرشيف، الاقتراحات الشخصية، والعلاقات والروابط العميقة. تعمل الحلقة اليومية من Dashboard وDaily Plan إلى Tasks وNotes وHabits وJournal ثم Weekly Review، مع localStorage fallback عند غياب قاعدة البيانات.
+
+تم اختبار Quick Add بعنصر عربي مؤقت مع preview ثم الحفظ، النقل بين تاريخي `2026-08-18` و`2026-08-19`، ثم تنظيف بيانات الاختبار فقط. أُعيد فحص `/` و`/daily-plan` و`/tasks` و`/notes` و`/habits` و`/review` و`/archive` و`/journal` بصريًا، مع فحوص سابقة لـ`/projects` و`/goals` و`/money` و`/entertainment`. اختُبر البحث الشامل بعبارة عربية وظهرت النتائج مجمعة حسب القسم مع السياق والانتقال المباشر.
+
+| بوابة | النتيجة |
+|---|---|
+| TypeScript | PASS |
+| ESLint | PASS |
+| Webpack production build | PASS؛ 28 صفحة ثابتة و48 Route API، مع تحذيرات Next المعلوماتية المعتادة فقط |
+| Route ownership | PASS؛ 48 route، 44 session-aware، 44 visible ownership، دون routes ناقصة |
+| Responsive audit | PASS؛ 34/34، `failures: []` |
+| Accessibility audit | PASS؛ 34/34، `failures: 0`، دون console errors أو حقول غير معنونة |
+| Browser visual smoke | PASS؛ المسارات اليومية ومسارات الحياة الرئيسية مع RTL وanchors والحالات المحلية |
+| Git diff check | PASS |
+
+التفصيل في `verification/phase-4-life-system-quality-20260818.md`، وسجل السيناريوهات البصرية في `verification/phase-4-daily-plan-browser-20260818.md`. لا أسرار في الريبو، ولم يُشغّل `drizzle-kit generate`. تظل مزامنة Neon/Drizzle الإنتاجية، التحقق بجلسة فعلية، واختبارات ownership متعددة المستخدمين، والتغطية الإنتاجية الكاملة للأرشيف والعلاقات ضمن المرحلة الخامسة/بوابات الإصدار بسبب غياب credentials في البيئة الحالية.
+**حالة المرحلة:** PASS — المرحلة الرابعة مغلقة ضمن نطاقها المحلي، وجاهزة لتنظيف artifacts ثم commit وpush والانتظار دقيقتين فعليتين قبل المرحلة التالية.
