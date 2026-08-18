@@ -96,6 +96,32 @@ export type ProjectPricing = {
   createdAt: string
 }
 
+export type ResourceType = 'link' | 'prompt' | 'template' | 'document' | 'video' | 'file'
+
+export type ResourceAttachment = {
+  id: string
+  name: string
+  size: number
+  mimeType: string
+  createdAt: string
+}
+
+export type Resource = {
+  id: string
+  title: string
+  type: ResourceType
+  url?: string
+  description?: string
+  tags: string[]
+  clientId?: string
+  projectId?: string
+  attachments?: ResourceAttachment[]
+  favorite: boolean
+  archivedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export type FinanceEntry = {
   id: string
   title: string
@@ -318,6 +344,7 @@ type CommandCenterContextValue = {
   journal: JournalEntry[]
   weeklyReview: WeeklyReview
   archive: ArchivedItem[]
+  resources: Resource[]
   updateProfile: (patch: Partial<Profile>) => void
   completeOnboarding: (profile: Omit<Profile, 'onboardingComplete'>) => void
   toggleTask: (id: string) => void
@@ -386,6 +413,11 @@ type CommandCenterContextValue = {
   updateNote: (id: string, patch: Partial<Pick<Note, 'title' | 'body' | 'tag'>>) => void
   toggleNotePin: (id: string) => void
   archiveNote: (id: string) => void
+  addResource: (input: Pick<Resource, 'title' | 'type'> & Partial<Pick<Resource, 'url' | 'description' | 'tags' | 'clientId' | 'projectId' | 'attachments'>>) => void
+  updateResource: (id: string, patch: Partial<Pick<Resource, 'title' | 'type' | 'url' | 'description' | 'tags' | 'clientId' | 'projectId' | 'attachments' | 'favorite'>>) => void
+  archiveResource: (id: string) => void
+  restoreResource: (id: string) => void
+  toggleResourceFavorite: (id: string) => void
   toggleHabit: (id: string) => void
   togglePlanItem: (id: string) => void
   updatePlanItem: (id: string, patch: Partial<Pick<PlanItem, 'title' | 'time'>>) => void
@@ -455,6 +487,11 @@ const initialReligious: ReligiousState = {
   dhikr: { morning: true, evening: false, morningCount: 8, eveningCount: 6, morningProgress: { 'morning-1': 2, 'morning-2': 2, 'morning-3': 2, 'morning-4': 2 }, eveningProgress: { 'evening-1': 2, 'evening-2': 2, 'evening-3': 1, 'evening-4': 1 }, tasbeehCount: 27, tasbeehTarget: 100, savedDuas: ['اللهم أعني على ذكرك وشكرك وحسن عبادتك'], sunnahChecks: { duha: false, witr: false, rawatib: false, sadaqah: false } },
 }
 
+const initialResources: Resource[] = [
+  { id: 'resource-1', title: 'دليل تصميم الواجهات العربية', type: 'link', url: 'https://www.nngroup.com/articles/arabic-ux/', description: 'مرجع لتحسين تجربة الاستخدام في الواجهات العربية.', tags: ['تصميم', 'RTL'], favorite: true, createdAt: '2026-08-18T09:00:00.000Z', updatedAt: '2026-08-18T09:00:00.000Z' },
+  { id: 'resource-2', title: 'قالب مراجعة المشروع', type: 'template', description: 'أسئلة مختصرة لمراجعة ما تم وما هو قادم.', tags: ['مشاريع', 'مراجعة'], projectId: 'project-1', favorite: false, createdAt: '2026-08-18T09:15:00.000Z', updatedAt: '2026-08-18T09:15:00.000Z' },
+]
+
 const initialNotes: Note[] = [
   { id: 'note-1', title: 'أفكار مشروع التطبيق الجديد', body: 'لازم أراجع فكرة الاشتراكات وأشوف التسعير المناسب قبل نهاية الأسبوع.', tag: 'شغل', pinned: true, createdAt: 'منذ ساعتين' },
   { id: 'note-2', title: 'قائمة مشتريات البيت', body: 'تمر، سمبوسة، عصائر، وحاجات تانية للسحور.', tag: 'شخصي', pinned: true, createdAt: 'أمس' },
@@ -498,10 +535,10 @@ const initialJournal: JournalEntry[] = [
 
 const STORAGE_KEY = 'personal-command-center-state-v2'
 const initialWeeklyReview: WeeklyReview = { id: 'weekly-review-current', weekStart: '2026-08-10', weekEnd: '2026-08-16', wentWell: '', blockers: '', nextGoal: '', status: 'draft', updatedAt: 'لم تُحفظ بعد' }
-type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; projectUpdates: ProjectUpdate[]; projectPricings: ProjectPricing[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview; archive: ArchivedItem[] }
+type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; projectUpdates: ProjectUpdate[]; projectPricings: ProjectPricing[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview; archive: ArchivedItem[]; resources: Resource[] }
 
 function getDefaultState(): PersistedState {
-  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, projectUpdates: [], projectPricings: [], financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview, archive: [] }
+  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, projectUpdates: [], projectPricings: [], financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview, archive: [], resources: initialResources }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -593,6 +630,40 @@ function normalizeProjectMilestones(value: unknown): ProjectMilestone[] {
   })).filter((item) => item.title)
 }
 
+function normalizeResourceAttachments(value: unknown): ResourceAttachment[] {
+  if (!Array.isArray(value)) return []
+  return value.filter(isRecord).slice(0, 10).map((item, index) => ({
+    id: typeof item.id === 'string' && item.id.trim() ? item.id.slice(0, 100) : `attachment-${index + 1}`,
+    name: typeof item.name === 'string' && item.name.trim() ? item.name.trim().slice(0, 180) : 'ملف مرفق',
+    size: Math.max(0, Math.min(50 * 1024 * 1024, Math.round(Number(item.size) || 0))),
+    mimeType: typeof item.mimeType === 'string' ? item.mimeType.slice(0, 120) : 'application/octet-stream',
+    createdAt: typeof item.createdAt === 'string' ? item.createdAt.slice(0, 40) : new Date().toISOString(),
+  }))
+}
+
+function normalizeResource(value: unknown, fallback: Resource): Resource {
+  if (!isRecord(value)) return fallback
+  const types: ResourceType[] = ['link', 'prompt', 'template', 'document', 'video', 'file']
+  const type = types.includes(value.type as ResourceType) ? value.type as ResourceType : 'link'
+  const tags = Array.isArray(value.tags) ? value.tags.filter((tag): tag is string => typeof tag === 'string' && Boolean(tag.trim())).map((tag) => tag.trim().slice(0, 40)).slice(0, 12) : []
+  const createdAt = typeof value.createdAt === 'string' ? value.createdAt.slice(0, 40) : fallback.createdAt
+  return {
+    id: typeof value.id === 'string' && value.id.trim() ? value.id.slice(0, 100) : fallback.id,
+    title: typeof value.title === 'string' && value.title.trim() ? value.title.trim().slice(0, 160) : fallback.title,
+    type,
+    url: typeof value.url === 'string' && value.url.trim() ? value.url.trim().slice(0, 2000) : undefined,
+    description: typeof value.description === 'string' ? value.description.trim().slice(0, 1000) : undefined,
+    tags,
+    clientId: typeof value.clientId === 'string' && value.clientId.trim() ? value.clientId : undefined,
+    projectId: typeof value.projectId === 'string' && value.projectId.trim() ? value.projectId : undefined,
+    attachments: normalizeResourceAttachments(value.attachments),
+    favorite: value.favorite === true,
+    archivedAt: typeof value.archivedAt === 'string' ? value.archivedAt.slice(0, 40) : undefined,
+    createdAt,
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt.slice(0, 40) : createdAt,
+  }
+}
+
 function normalizeProject(value: unknown, fallback: Project): Project {
   if (!isRecord(value)) return fallback
   const status = value.status === 'in-progress' || value.status === 'paused' || value.status === 'done' ? value.status : 'backlog'
@@ -660,6 +731,7 @@ function normalizeState(value: unknown): PersistedState | null {
     journal: arrayOr(source.journal, defaults.journal),
     weeklyReview: { ...defaults.weeklyReview, ...weeklyReview },
     archive: arrayOr(source.archive, defaults.archive),
+    resources: arrayOr(source.resources, defaults.resources).map((resource, index) => normalizeResource(resource, defaults.resources[index] ?? defaults.resources[0])).filter((resource) => resource.title),
   }
 }
 
@@ -696,6 +768,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [journal, setJournal] = useState<JournalEntry[]>(initial.journal)
   const [weeklyReview, setWeeklyReview] = useState<WeeklyReview>(initial.weeklyReview ?? initialWeeklyReview)
   const [archive, setArchive] = useState<ArchivedItem[]>(initial.archive ?? [])
+  const [resources, setResources] = useState<Resource[]>(initial.resources ?? [])
   const [hydrated, setHydrated] = useState(false)
   const remoteHydrated = useRef(false)
 
@@ -718,13 +791,14 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     setJournal(saved.journal)
     setWeeklyReview(saved.weeklyReview ?? initialWeeklyReview)
     setArchive(saved.archive ?? [])
+    setResources(saved.resources ?? [])
     setHydrated(true)
   }, [])
 
   useEffect(() => {
     if (!hydrated) return
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive }))
-  }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources }))
+  }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources])
 
   useEffect(() => {
     if (remoteHydrated.current) return
@@ -758,7 +832,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const value = useMemo<CommandCenterContextValue>(() => ({
     profile,
     tasks,
-    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 2, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive } }, null, 2),
+    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 2, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources } }, null, 2),
     importData: (raw) => {
       try {
         const next = normalizeState(JSON.parse(raw))
@@ -780,6 +854,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         setJournal(next.journal)
         setWeeklyReview(next.weeklyReview)
         setArchive(next.archive)
+        setResources(next.resources)
         return { ok: true, message: 'تمت استعادة النسخة الاحتياطية محليًا.' }
       } catch {
         return { ok: false, message: 'تعذر قراءة ملف النسخة الاحتياطية.' }
@@ -805,6 +880,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setJournal(defaults.journal)
       setWeeklyReview(defaults.weeklyReview)
       setArchive(defaults.archive)
+      setResources(defaults.resources)
     },
     notes,
     habits,
@@ -821,6 +897,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     journal,
     weeklyReview,
     archive,
+    resources,
     updateProfile: (patch) => {
       setProfile((current) => ({ ...current, ...patch }))
       void updateRemoteProfile(patch)
@@ -1380,6 +1457,49 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setNotes((items) => items.filter((note) => note.id !== id))
       void archiveRemoteNote(id)
     },
+    addResource: (input) => {
+      const title = input.title.trim().slice(0, 160)
+      if (!title) return
+      const now = new Date().toISOString()
+      const resource: Resource = {
+        id: newLocalId('resource'),
+        title,
+        type: input.type,
+        url: input.url?.trim().slice(0, 2000) || undefined,
+        description: input.description?.trim().slice(0, 1000) || undefined,
+        tags: (input.tags ?? []).map((tag) => tag.trim()).filter(Boolean).slice(0, 12),
+        clientId: input.clientId,
+        projectId: input.projectId,
+        attachments: input.attachments?.slice(0, 10),
+        favorite: false,
+        createdAt: now,
+        updatedAt: now,
+      }
+      setResources((items) => [resource, ...items])
+    },
+    updateResource: (id, patch) => {
+      setResources((items) => items.map((resource) => resource.id === id ? {
+        ...resource,
+        ...patch,
+        title: patch.title === undefined ? resource.title : patch.title.trim().slice(0, 160) || resource.title,
+        url: patch.url === undefined ? resource.url : patch.url.trim().slice(0, 2000) || undefined,
+        description: patch.description === undefined ? resource.description : patch.description.trim().slice(0, 1000) || undefined,
+        tags: patch.tags === undefined ? resource.tags : patch.tags.map((tag) => tag.trim()).filter(Boolean).slice(0, 12),
+        attachments: patch.attachments === undefined ? resource.attachments : patch.attachments.slice(0, 10),
+        updatedAt: new Date().toISOString(),
+      } : resource))
+    },
+    archiveResource: (id) => {
+      const item = resources.find((resource) => resource.id === id)
+      if (!item) return
+      setResources((items) => items.map((resource) => resource.id === id ? { ...resource, archivedAt: new Date().toISOString(), updatedAt: new Date().toISOString() } : resource))
+    },
+    restoreResource: (id) => {
+      setResources((items) => items.map((resource) => resource.id === id ? { ...resource, archivedAt: undefined, updatedAt: new Date().toISOString() } : resource))
+    },
+    toggleResourceFavorite: (id) => {
+      setResources((items) => items.map((resource) => resource.id === id ? { ...resource, favorite: !resource.favorite, updatedAt: new Date().toISOString() } : resource))
+    },
     archiveHabit: (id) => {
       const item = habits.find((habit) => habit.id === id)
       if (!item) return
@@ -1504,7 +1624,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'pending' } : item))
       void updateRemotePlanItem(id, { status: 'pending' })
     },
-  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive])
+  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }
