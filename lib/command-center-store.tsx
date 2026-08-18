@@ -5,6 +5,8 @@ import { archiveRemoteEntertainment,   archiveRemoteFinanceEntry,
   archiveRemoteCalendarEvent, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteProjectUpdate, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, collectRemoteProjectPricing, createRemoteEntertainment, mapRemoteFinanceEntry, mapRemoteProjectPricing, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, createRemoteProjectPricing, createRemoteProjectUpdate, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteProjectPricing, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
 import type { ArchivedClient } from './workspace-types'
+import { normalizeBillingLines, normalizeInvoice, normalizeQuote, type Invoice, type Quote } from './billing'
+export type { BillingLineItem, Invoice, InvoiceStatus, Quote, QuoteStatus } from './billing'
 
 function newLocalId(prefix: string) {
   return `${prefix}-${typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Date.now()}`
@@ -307,8 +309,8 @@ export type BoardArchivePayload = {
   boardTitle: string
 }
 
-export type ArchiveKind = 'task' | 'note' | 'habit' | 'goal' | 'project' | 'finance' | 'reminder' | 'entertainment' | 'journal' | 'calendar' | 'board' | 'client'
-export type ArchivedPayload = Task | Note | Habit | Goal | Project | FinanceEntry | Reminder | EntertainmentItem | JournalEntry | CalendarEvent | BoardArchivePayload | ArchivedClient
+export type ArchiveKind = 'task' | 'note' | 'habit' | 'goal' | 'project' | 'finance' | 'quote' | 'invoice' | 'reminder' | 'entertainment' | 'journal' | 'calendar' | 'board' | 'client'
+export type ArchivedPayload = Task | Note | Habit | Goal | Project | FinanceEntry | Quote | Invoice | Reminder | EntertainmentItem | JournalEntry | CalendarEvent | BoardArchivePayload | ArchivedClient
 export type ArchivedItem = {
   id: string
   kind: ArchiveKind
@@ -337,6 +339,8 @@ type CommandCenterContextValue = {
   projectUpdates: ProjectUpdate[]
   projectPricings: ProjectPricing[]
   financeEntries: FinanceEntry[]
+  quotes: Quote[]
+  invoices: Invoice[]
   budget: Budget
   religious: ReligiousState
   reminders: Reminder[]
@@ -366,6 +370,15 @@ type CommandCenterContextValue = {
   updateProjectPricing: (id: string, patch: Partial<Pick<ProjectPricing, 'title' | 'amount' | 'currency' | 'status' | 'expectedDate' | 'receivedAt' | 'financeEntryId' | 'notes'>> & { clientId?: string | null }) => void
   addFinanceEntryFromPricing: (pricingId: string) => void
   collectProjectPricing: (pricingId: string) => void
+  addQuote: (input: Pick<Quote, 'title' | 'currency' | 'lines'> & Partial<Pick<Quote, 'projectId' | 'clientId' | 'status' | 'issueDate' | 'validUntil' | 'notes'>>) => void
+  updateQuote: (id: string, patch: Partial<Omit<Quote, 'id' | 'createdAt'>>) => void
+  archiveQuote: (id: string) => void
+  restoreQuote: (id: string) => void
+  addInvoice: (input: Pick<Invoice, 'title' | 'currency' | 'lines'> & Partial<Pick<Invoice, 'projectId' | 'clientId' | 'quoteId' | 'status' | 'issueDate' | 'dueDate' | 'notes'>>) => void
+  updateInvoice: (id: string, patch: Partial<Omit<Invoice, 'id' | 'createdAt'>>) => void
+  markInvoicePaid: (id: string) => void
+  archiveInvoice: (id: string) => void
+  restoreInvoice: (id: string) => void
   addFinanceEntry: (input: Pick<FinanceEntry, 'title' | 'amount' | 'kind' | 'category' | 'localDate'> & Partial<Pick<FinanceEntry, 'note' | 'projectId' | 'goalId' | 'recurrence'>>) => void
   updateFinanceEntry: (id: string, patch: Partial<FinanceEntry>) => void
   archiveFinanceEntry: (id: string) => void
@@ -463,6 +476,14 @@ const initialFinanceEntries: FinanceEntry[] = [
   { id: 'finance-4', title: 'مواصلات', amount: 420, kind: 'expense', category: 'تنقل', localDate: '2026-08-03', recurrence: 'none' },
 ]
 
+const initialQuotes: Quote[] = [
+  { id: 'quote-1', number: 'عرض-2026-001', title: 'عرض تنفيذ النسخة التجريبية', projectId: 'project-1', currency: 'جنيه', lines: [{ id: 'quote-line-1', description: 'تنفيذ وتحسين منصة التحكم الشخصي', quantity: 1, unitPrice: 8500, discountPercent: 0, taxPercent: 0 }], status: 'sent', issueDate: '2026-08-15', validUntil: '2026-08-30', notes: 'عرض تجريبي قابل للتعديل قبل الإرسال الحقيقي.', createdAt: '2026-08-15T10:00:00.000Z', updatedAt: '2026-08-15T10:00:00.000Z' },
+]
+const initialInvoices: Invoice[] = [
+  { id: 'invoice-1', number: 'فاتورة-2026-001', title: 'دفعة إطلاق النسخة الأولى', projectId: 'project-1', currency: 'جنيه', lines: [{ id: 'invoice-line-1', description: 'دفعة تنفيذ المرحلة الأولى', quantity: 1, unitPrice: 5200, discountPercent: 0, taxPercent: 0 }], status: 'paid', issueDate: '2026-08-05', dueDate: '2026-08-12', paidAt: '2026-08-12T12:00:00.000Z', financeEntryId: 'finance-3', notes: 'مدفوعة ومربوطة بدخل المشروع.', createdAt: '2026-08-05T09:00:00.000Z', updatedAt: '2026-08-12T12:00:00.000Z' },
+  { id: 'invoice-2', number: 'فاتورة-2026-002', title: 'دفعة المتابعة الشهرية', projectId: 'project-1', currency: 'جنيه', lines: [{ id: 'invoice-line-2', description: 'متابعة وتحسينات شهرية', quantity: 1, unitPrice: 2800, discountPercent: 5, taxPercent: 0, }], status: 'due', issueDate: '2026-08-16', dueDate: '2026-08-25', notes: 'مستحقة للتحصيل.', createdAt: '2026-08-16T09:00:00.000Z', updatedAt: '2026-08-16T09:00:00.000Z' },
+]
+
 const initialBudget: Budget = { monthlyLimit: 12000, currency: 'جنيه' }
 
 const initialReligious: ReligiousState = {
@@ -535,10 +556,10 @@ const initialJournal: JournalEntry[] = [
 
 const STORAGE_KEY = 'personal-command-center-state-v2'
 const initialWeeklyReview: WeeklyReview = { id: 'weekly-review-current', weekStart: '2026-08-10', weekEnd: '2026-08-16', wentWell: '', blockers: '', nextGoal: '', status: 'draft', updatedAt: 'لم تُحفظ بعد' }
-type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; projectUpdates: ProjectUpdate[]; projectPricings: ProjectPricing[]; financeEntries: FinanceEntry[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview; archive: ArchivedItem[]; resources: Resource[] }
+type PersistedState = { profile: Profile; tasks: Task[]; notes: Note[]; habits: Habit[]; planItems: PlanItem[]; goals: Goal[]; projects: Project[]; projectUpdates: ProjectUpdate[]; projectPricings: ProjectPricing[]; financeEntries: FinanceEntry[]; quotes: Quote[]; invoices: Invoice[]; budget: Budget; religious: ReligiousState; reminders: Reminder[]; entertainment: EntertainmentItem[]; journal: JournalEntry[]; weeklyReview: WeeklyReview; archive: ArchivedItem[]; resources: Resource[] }
 
 function getDefaultState(): PersistedState {
-  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, projectUpdates: [], projectPricings: [], financeEntries: initialFinanceEntries, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview, archive: [], resources: initialResources }
+  return { profile: initialProfile, tasks: initialTasks, notes: initialNotes, habits: initialHabits, planItems: initialPlanItems, goals: initialGoals, projects: initialProjects, projectUpdates: [], projectPricings: [], financeEntries: initialFinanceEntries, quotes: initialQuotes, invoices: initialInvoices, budget: initialBudget, religious: initialReligious, reminders: initialReminders, entertainment: initialEntertainment, journal: initialJournal, weeklyReview: initialWeeklyReview, archive: [], resources: initialResources }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -710,6 +731,8 @@ function normalizeState(value: unknown): PersistedState | null {
     projectUpdates: arrayOr(source.projectUpdates, defaults.projectUpdates).filter((item) => isRecord(item) && typeof item.id === 'string' && typeof item.projectId === 'string' && typeof item.body === 'string').map((item) => ({ id: item.id, projectId: item.projectId, body: item.body, kind: item.kind === 'decision' || item.kind === 'blocker' || item.kind === 'info' ? item.kind : 'progress', createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() })),
     projectPricings: arrayOr(source.projectPricings, defaults.projectPricings).filter((item) => isRecord(item) && typeof item.id === 'string' && typeof item.projectId === 'string' && typeof item.title === 'string').map((item) => ({ id: item.id, projectId: item.projectId, clientId: typeof item.clientId === 'string' && item.clientId.trim() ? item.clientId : undefined, title: item.title, amount: Math.max(0, Math.round(Number(item.amount) || 0)), currency: typeof item.currency === 'string' && item.currency.trim() ? item.currency : 'جنيه', status: item.status === 'due' || item.status === 'received' || item.status === 'cancelled' ? item.status : 'expected', expectedDate: typeof item.expectedDate === 'string' ? item.expectedDate : undefined, receivedAt: typeof item.receivedAt === 'string' ? item.receivedAt : undefined, financeEntryId: typeof item.financeEntryId === 'string' ? item.financeEntryId : undefined, notes: typeof item.notes === 'string' ? item.notes : undefined, createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString() })),
     financeEntries: arrayOr(source.financeEntries, defaults.financeEntries).map((entry) => ({ ...entry, recurrence: entry.recurrence === 'weekly' || entry.recurrence === 'monthly' ? entry.recurrence : 'none' })),
+    quotes: arrayOr(source.quotes, defaults.quotes).map((quote, index) => normalizeQuote(quote, defaults.quotes[index] ?? defaults.quotes[0])).filter((quote) => quote.title),
+    invoices: arrayOr(source.invoices, defaults.invoices).map((invoice, index) => normalizeInvoice(invoice, defaults.invoices[index] ?? defaults.invoices[0])).filter((invoice) => invoice.title),
     budget: { ...defaults.budget, ...budget },
     religious: {
       ...defaults.religious,
@@ -761,6 +784,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [projectUpdates, setProjectUpdates] = useState<ProjectUpdate[]>(initial.projectUpdates)
   const [projectPricings, setProjectPricings] = useState<ProjectPricing[]>(initial.projectPricings)
   const [financeEntries, setFinanceEntries] = useState<FinanceEntry[]>(initial.financeEntries)
+  const [quotes, setQuotes] = useState<Quote[]>(initial.quotes)
+  const [invoices, setInvoices] = useState<Invoice[]>(initial.invoices)
   const [budget, setBudget] = useState<Budget>(initial.budget)
   const [religious, setReligious] = useState<ReligiousState>(initial.religious)
   const [reminders, setReminders] = useState<Reminder[]>(initial.reminders)
@@ -784,6 +809,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     setProjectUpdates(saved.projectUpdates)
     setProjectPricings(saved.projectPricings)
     setFinanceEntries(saved.financeEntries)
+    setQuotes(saved.quotes)
+    setInvoices(saved.invoices)
     setBudget(saved.budget)
     setReligious(saved.religious)
     setReminders(saved.reminders)
@@ -797,8 +824,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (!hydrated) return
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources }))
-  }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources])
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources }))
+  }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources])
 
   useEffect(() => {
     if (remoteHydrated.current) return
@@ -832,7 +859,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const value = useMemo<CommandCenterContextValue>(() => ({
     profile,
     tasks,
-    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 2, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources } }, null, 2),
+    exportData: () => JSON.stringify({ app: 'personal-command-center', version: 2, exportedAt: new Date().toISOString(), data: { profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources } }, null, 2),
     importData: (raw) => {
       try {
         const next = normalizeState(JSON.parse(raw))
@@ -847,6 +874,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         setProjectUpdates(next.projectUpdates)
         setProjectPricings(next.projectPricings)
         setFinanceEntries(next.financeEntries)
+        setQuotes(next.quotes)
+        setInvoices(next.invoices)
         setBudget(next.budget)
         setReligious(next.religious)
         setReminders(next.reminders)
@@ -873,6 +902,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setProjectUpdates(defaults.projectUpdates)
       setProjectPricings(defaults.projectPricings)
       setFinanceEntries(defaults.financeEntries)
+      setQuotes(defaults.quotes)
+      setInvoices(defaults.invoices)
       setBudget(defaults.budget)
       setReligious(defaults.religious)
       setReminders(defaults.reminders)
@@ -890,6 +921,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     projectUpdates,
     projectPricings,
     financeEntries,
+    quotes,
+    invoices,
     budget,
     religious,
     reminders,
@@ -1105,6 +1138,99 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       addArchivedItem('finance', item, `الفلوس · ${item.category}`)
       setFinanceEntries((items) => items.filter((entry) => entry.id !== id))
       void archiveRemoteFinanceEntry(id)
+    },
+    addQuote: (input) => {
+      const title = input.title.trim()
+      const lines = normalizeBillingLines(input.lines)
+      if (!title || !lines.length) return
+      const now = new Date().toISOString()
+      const quote: Quote = {
+        id: newLocalId('quote'),
+        number: `عرض-${new Date().getFullYear()}-${String(quotes.length + 1).padStart(3, '0')}`,
+        title,
+        projectId: input.projectId?.trim() || undefined,
+        clientId: input.clientId?.trim() || undefined,
+        currency: input.currency.trim() || 'جنيه',
+        lines,
+        status: input.status === 'sent' || input.status === 'accepted' || input.status === 'rejected' || input.status === 'expired' || input.status === 'cancelled' ? input.status : 'draft',
+        issueDate: input.issueDate?.trim() || new Date().toISOString().slice(0, 10),
+        validUntil: input.validUntil?.trim() || undefined,
+        notes: input.notes?.trim() || undefined,
+        createdAt: now,
+        updatedAt: now,
+      }
+      setQuotes((items) => [quote, ...items])
+    },
+    updateQuote: (id, patch) => {
+      setQuotes((items) => items.map((quote) => {
+        if (quote.id !== id) return quote
+        const nextLines = patch.lines ? normalizeBillingLines(patch.lines, quote.lines) : quote.lines
+        return { ...quote, ...patch, lines: nextLines, title: patch.title?.trim() || quote.title, currency: patch.currency?.trim() || quote.currency, updatedAt: new Date().toISOString() }
+      }))
+    },
+    archiveQuote: (id) => {
+      const item = quotes.find((quote) => quote.id === id)
+      if (!item) return
+      addArchivedItem('quote', item, `العروض · ${item.number}`)
+      setQuotes((items) => items.filter((quote) => quote.id !== id))
+    },
+    restoreQuote: (id) => {
+      const item = archive.find((entry) => entry.id === id && entry.kind === 'quote')
+      if (!item) return
+      setQuotes((items) => items.some((quote) => quote.id === id) ? items : [item.payload as Quote, ...items])
+      setArchive((items) => items.filter((entry) => !(entry.id === id && entry.kind === 'quote')))
+    },
+    addInvoice: (input) => {
+      const title = input.title.trim()
+      const lines = normalizeBillingLines(input.lines)
+      if (!title || !lines.length) return
+      const now = new Date().toISOString()
+      const invoice: Invoice = {
+        id: newLocalId('invoice'),
+        number: `فاتورة-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(3, '0')}`,
+        title,
+        projectId: input.projectId?.trim() || undefined,
+        clientId: input.clientId?.trim() || undefined,
+        quoteId: input.quoteId?.trim() || undefined,
+        currency: input.currency.trim() || 'جنيه',
+        lines,
+        status: input.status === 'sent' || input.status === 'due' || input.status === 'paid' || input.status === 'overdue' || input.status === 'cancelled' ? input.status : 'draft',
+        issueDate: input.issueDate?.trim() || new Date().toISOString().slice(0, 10),
+        dueDate: input.dueDate?.trim() || undefined,
+        notes: input.notes?.trim() || undefined,
+        createdAt: now,
+        updatedAt: now,
+      }
+      setInvoices((items) => [invoice, ...items])
+    },
+    updateInvoice: (id, patch) => {
+      setInvoices((items) => items.map((invoice) => {
+        if (invoice.id !== id) return invoice
+        const nextLines = patch.lines ? normalizeBillingLines(patch.lines, invoice.lines) : invoice.lines
+        return { ...invoice, ...patch, lines: nextLines, title: patch.title?.trim() || invoice.title, currency: patch.currency?.trim() || invoice.currency, updatedAt: new Date().toISOString() }
+      }))
+    },
+    markInvoicePaid: (id) => {
+      const current = invoices.find((invoice) => invoice.id === id)
+      if (!current || current.status === 'cancelled' || current.status === 'paid') return
+      const paidAt = new Date().toISOString()
+      const financeEntryId = current.financeEntryId ?? newLocalId('finance')
+      const total = current.lines.reduce((sum, line) => sum + Math.round(Math.max(0, line.quantity) * Math.max(0, line.unitPrice) * (1 - Math.min(100, Math.max(0, line.discountPercent)) / 100) * (1 + Math.min(100, Math.max(0, line.taxPercent)) / 100)), 0)
+      const entry: FinanceEntry = { id: financeEntryId, title: current.title, amount: total, kind: 'income', category: 'دخل', localDate: paidAt.slice(0, 10), recurrence: 'none', note: `تحصيل فاتورة: ${current.number}`, projectId: current.projectId }
+      setInvoices((items) => items.map((invoice) => invoice.id === id ? { ...invoice, status: 'paid', paidAt, financeEntryId, updatedAt: paidAt } : invoice))
+      setFinanceEntries((items) => items.some((item) => item.id === financeEntryId) ? items : [entry, ...items])
+    },
+    archiveInvoice: (id) => {
+      const item = invoices.find((invoice) => invoice.id === id)
+      if (!item) return
+      addArchivedItem('invoice', item, `الفواتير · ${item.number}`)
+      setInvoices((items) => items.filter((invoice) => invoice.id !== id))
+    },
+    restoreInvoice: (id) => {
+      const item = archive.find((entry) => entry.id === id && entry.kind === 'invoice')
+      if (!item) return
+      setInvoices((items) => items.some((invoice) => invoice.id === id) ? items : [item.payload as Invoice, ...items])
+      setArchive((items) => items.filter((entry) => !(entry.id === id && entry.kind === 'invoice')))
     },
     updateBudget: (monthlyLimit) => {
       const safeLimit = Math.max(0, Math.round(monthlyLimit))
@@ -1554,6 +1680,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         case 'goal': setGoals((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Goal, ...items]); break
         case 'project': setProjects((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Project, ...items]); break
         case 'finance': setFinanceEntries((items) => items.some((entry) => entry.id === id) ? items : [item.payload as FinanceEntry, ...items]); break
+        case 'quote': setQuotes((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Quote, ...items]); break
+        case 'invoice': setInvoices((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Invoice, ...items]); break
         case 'reminder': setReminders((items) => items.some((entry) => entry.id === id) ? items : [item.payload as Reminder, ...items]); break
         case 'entertainment': setEntertainment((items) => items.some((entry) => entry.id === id) ? items : [item.payload as EntertainmentItem, ...items]); break
         case 'journal': setJournal((items) => items.some((entry) => entry.id === id) ? items : [item.payload as JournalEntry, ...items]); break
@@ -1579,7 +1707,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
           break
         }
       }
-      if (item.kind === 'board') return { restored: true, remoteSynced: false }
+      if (item.kind === 'board' || item.kind === 'quote' || item.kind === 'invoice') return { restored: true, remoteSynced: false }
       const remoteResult = await restoreRemoteArchive(item.kind, id)
       return { restored: true, remoteSynced: remoteResult !== null }
     },
@@ -1624,7 +1752,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'pending' } : item))
       void updateRemotePlanItem(id, { status: 'pending' })
     },
-  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources])
+  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

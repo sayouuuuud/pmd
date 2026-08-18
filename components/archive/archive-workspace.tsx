@@ -34,6 +34,8 @@ const kindLabels: Record<ArchiveFilter, string> = {
   goal: 'الأهداف',
   project: 'المشاريع',
   finance: 'الفلوس',
+  quote: 'عروض الأسعار',
+  invoice: 'الفواتير',
   reminder: 'التذكيرات',
   entertainment: 'الترفيه',
   journal: 'اليوميات',
@@ -42,7 +44,7 @@ const kindLabels: Record<ArchiveFilter, string> = {
   client: 'العملاء',
 }
 
-const kindOptions: ArchiveFilter[] = ['all', 'task', 'note', 'habit', 'goal', 'project', 'finance', 'reminder', 'entertainment', 'journal', 'calendar', 'board', 'client']
+const kindOptions: ArchiveFilter[] = ['all', 'task', 'note', 'habit', 'goal', 'project', 'finance', 'quote', 'invoice', 'reminder', 'entertainment', 'journal', 'calendar', 'board', 'client']
 
 function formatDate(value: string) {
   const date = new Date(value)

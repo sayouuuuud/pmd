@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { useCommandCenter, type FinanceKind, type FinanceRecurrence } from '@/lib/command-center-store'
 import { contextHref } from '@/lib/context-links'
+import { BillingWorkspace } from './billing-workspace'
 
 const categoryOptions = ['بيت', 'أكل', 'تنقل', 'شغل', 'صحة', 'ترفيه', 'دخل', 'عام']
 
@@ -267,10 +268,11 @@ export function MoneyWorkspace() {
           {monthEntries.length === 0 && <EmptyState icon={Wallet} title="لا توجد عمليات هذا الشهر" description="سجّل أول دخل أو مصروف علشان تتابع حركة الشهر." />}
         </div>
       </ContentCard>
-    </div>
+        </div>
+
+    <BillingWorkspace />
   </div>
 }
-
 function SummaryCard({ label, value, icon: Icon, tone }: { label: string; value: string | number; icon: typeof Wallet; tone: 'warning' | 'success' | 'primary' | 'danger' | 'accent' }) {
   const toneClass = { warning: 'bg-warning/15 text-warning-foreground', success: 'bg-success/15 text-success', primary: 'bg-primary/15 text-primary', danger: 'bg-destructive/15 text-destructive', accent: 'bg-accent text-accent-foreground' }[tone]
   return <div className="rounded-3xl border border-border bg-card p-4 shadow-sm"><div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">{label}</p><p className="mt-2 text-lg font-semibold">{value}</p></div><div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${toneClass}`}><Icon className="h-5 w-5" /></div></div></div>
