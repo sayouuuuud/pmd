@@ -90,8 +90,8 @@ export function WeeklyReviewWorkspace() {
         <ReviewMetric icon={ClipboardCheck} label="الصلوات المكتملة" value={metrics.prayerCount} tone="blue" />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <ContentCard className="lg:col-span-7" title="ماذا سار جيدًا؟" description="أشياء تستحق أن تلاحظها بدل ما تمر عليها">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <ContentCard className="xl:col-span-7" title="ماذا سار جيدًا؟" description="أشياء تستحق أن تلاحظها بدل ما تمر عليها">
           <div className="space-y-3">
             <ReviewLine text={`أكملت ${metrics.doneTasks} من مهامك الحالية.`} done />
             <ReviewLine text={`سجلت ${metrics.habitWeekCompletions} إنجازات عادات خلال ${metrics.habitWeekDays} أيام هذا الأسبوع.`} done={metrics.habitWeekCompletions > 0} />
@@ -102,7 +102,7 @@ export function WeeklyReviewWorkspace() {
           </div>
         </ContentCard>
 
-        <ContentCard className="lg:col-span-5" title="ما الذي يحتاج قرارًا؟" description="لا تنقل كل شيء تلقائيًا للأسبوع القادم">
+        <ContentCard className="xl:col-span-5" title="ما الذي يحتاج قرارًا؟" description="لا تنقل كل شيء تلقائيًا للأسبو�� القادم">
           <div className="space-y-3">
             <ReviewLine text={`${metrics.openTasks} مهام مفتوحة تحتاج ترتيبًا.`} />
             <ReviewLine text={`${metrics.activeProjects.length} مشاريع ما زالت قيد الحركة.`} />
@@ -113,7 +113,7 @@ export function WeeklyReviewWorkspace() {
           </div>
         </ContentCard>
 
-        <ContentCard className="lg:col-span-12" title="لقطة الأسبوع" description="مؤشرات من الأقسام الجديدة تساعدك على رؤية الصورة كاملة.">
+        <ContentCard className="xl:col-span-12" title="لقطة الأسبوع" description="مؤشرات من الأقسام الجديدة تساعدك على رؤية الصورة كاملة.">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-9">
             <DomainMetric icon={WalletCards} label="دخل الأسبوع" value={currency(metrics.income)} />
             <DomainMetric icon={Landmark} label="مصروفات الأسبوع" value={currency(metrics.expenses)} />
@@ -127,7 +127,7 @@ export function WeeklyReviewWorkspace() {
           </div>
         </ContentCard>
 
-        <ContentCard className="lg:col-span-12" title="ارجع إلى السياق" description="المراجعة لا تعيش منفصلة عن يومك؛ افتح العنصر الذي يحتاج قرارًا وعدّل ما يلزم.">
+        <ContentCard className="xl:col-span-12" title="ارجع إلى السياق" description="المراجعة لا تعيش منفصلة عن يومك؛ افتح العنصر الذي يحتاج قرارًا وعدّل ما يلزم.">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {context.openTask && <ContextShortcut href={contextHref('task', context.openTask.id)} label="المهمة المفتوحة" value={context.openTask.title} />}
             {context.focusHabit && <ContextShortcut href={contextHref('habit', context.focusHabit.id)} label="العادة التالية" value={context.focusHabit.title} />}
@@ -139,7 +139,7 @@ export function WeeklyReviewWorkspace() {
           {!context.openTask && !context.focusHabit && !context.activeProject && !context.activeGoal && <p className="rounded-2xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">لا توجد عناصر مرتبطة تحتاج قرارًا الآن. يمكنك البدء من خطة اليوم أو مراجعة المساحتين الدينية والمالية.</p>}
         </ContentCard>
 
-        <ContentCard className="lg:col-span-12" title="مراجعتك المكتوبة" description={`الأسبوع من ${weeklyReview.weekStart} إلى ${weeklyReview.weekEnd}. اكتب بصدق وباختصار؛ المراجعة لك أنت.`}>
+        <ContentCard className="xl:col-span-12" title="مراجعتك المكتوبة" description={`الأسبوع من ${weeklyReview.weekStart} إلى ${weeklyReview.weekEnd}. اكتب بصدق وباختصار؛ المراجعة لك أنت.`}>
           <div className="grid gap-4 lg:grid-cols-3">
             <ReflectionField label="ما الذي سار جيدًا؟" value={wentWell} onChange={setWentWell} placeholder="إنجاز أو عادة أو لحظة تستحق التقدير..." />
             <ReflectionField label="ما الذي عطّلك؟" value={blockers} onChange={setBlockers} placeholder="عائق، قرار مؤجل، أو شيء يحتاج تبسيطًا..." />
@@ -154,7 +154,7 @@ export function WeeklyReviewWorkspace() {
           </div>
         </ContentCard>
 
-        <ContentCard className="lg:col-span-12 bg-surface-dark text-surface-dark-foreground" title="قرار الأسبوع القادم" description="اقتراح واضح وقابل للتعديل">
+        <ContentCard className="xl:col-span-12 bg-surface-dark text-surface-dark-foreground" title="قرار الأسبوع القادم" description="اقتراح واضح وقابل للتعديل">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div><p className="text-xl font-semibold">{nextGoal.trim() || 'حافظ على البساطة: مهمة عميقة واحدة كل صباح.'}</p><p className="mt-2 max-w-2xl text-sm leading-7 text-surface-dark-foreground/60">حوّل القرار إلى خطوة واضحة في قائمة مهام الأسبوع، أو افتح خطة اليوم لتعديل السياق يدويًا.</p></div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">

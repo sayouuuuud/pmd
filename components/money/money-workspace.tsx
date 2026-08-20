@@ -158,8 +158,8 @@ export function MoneyWorkspace() {
       <SummaryCard label="عدد العمليات" value={monthEntries.length} icon={Banknote} tone="accent" />
     </div>
 
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-      <ContentCard className="lg:col-span-8" title="ميزانية الشهر" description="شوف إنفاقك الحقيقي مقارنة بالحد الذي حددته لنفسك.">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+      <ContentCard className="xl:col-span-7" title="ميزانية الشهر" description="شوف إنفاقك الحقيقي مقارنة بالحد الذي حددته لنفسك.">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <label className="space-y-1 text-sm"><span className="block text-xs text-muted-foreground">الشهر المحلل</span><Select aria-label="الشهر المحلل" value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)} className="h-auto rounded-2xl px-3 py-2">{monthOptions.map((monthOption) => <option key={monthOption.key} value={monthOption.key}>{monthOption.label}</option>)}</Select></label>
           <div>
@@ -183,7 +183,7 @@ export function MoneyWorkspace() {
         </div>
       </ContentCard>
 
-      <ContentCard title="مصروف حسب التصنيف" description="اقرأ الاتجاه العام قبل ما تدخل في التفاصيل.">
+      <ContentCard className="xl:col-span-5" title="مصروف حسب التصنيف" description="اقرأ الاتجاه العام قبل ما تدخل في التفاصيل.">
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
           <div className="relative flex h-36 w-36 shrink-0 items-center justify-center rounded-full" style={{ background: donutBackground }} aria-label="مخطط توزيع المصروفات حسب التصنيف" role="img">
             <div className="flex h-20 w-20 flex-col items-center justify-center rounded-full bg-card text-center shadow-sm"><span className="text-xl font-semibold">{categoryTotals.length}</span><span className="text-[11px] text-muted-foreground">تصنيفات</span></div>
