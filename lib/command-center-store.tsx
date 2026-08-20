@@ -7,6 +7,7 @@ import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-util
 import type { ArchivedClient } from './workspace-types'
 import { normalizeBillingLines, normalizeInvoice, normalizeQuote, type Invoice, type Quote } from './billing'
 import { createDemoActivitySessions, normalizeActivitySession, normalizeActivitySettings, pruneActivitySessions, type ActivitySession, type ActivitySessionInput, type ActivitySettings } from './activity'
+import { enqueueSync, flushSyncQueue, readSyncQueue, retryFailed, writeSyncQueue, type SyncQueueItem } from './sync-queue'
 export type { BillingLineItem, Invoice, InvoiceStatus, Quote, QuoteStatus } from './billing'
 export type { ActivityCategory, ActivitySession, ActivitySessionInput, ActivitySettings, ActivitySource, ActivitySyncState } from './activity'
 
@@ -327,16 +328,7 @@ export type RestoreArchivedResult = {
   remoteSynced: boolean
 }
 
-export type SyncOperation = {
-  id: string
-  entity: string
-  action: string
-  entityId?: string
-  status: 'pending' | 'failed'
-  error?: string
-  attempts: number
-  lastAttemptAt: string
-}
+export type SyncOperation = SyncQueueItem
 
 type CommandCenterContextValue = {
   exportData: () => string
@@ -825,35 +817,42 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [activitySettings, setActivitySettings] = useState<ActivitySettings>(initial.activitySettings)
   const [syncOperations, setSyncOperations] = useState<SyncOperation[]>([])
   const retryHandlers = useRef(new Map<string, () => Promise<unknown>>())
+  const flushingSync = useRef(false)
   const [hydrated, setHydrated] = useState(false)
   const remoteHydrated = useRef(false)
 
-  const runTrackedSync = useCallback((input: Pick<SyncOperation, 'id' | 'entity' | 'action' | 'entityId'>, operation: () => Promise<unknown>) => {
-    retryHandlers.current.set(input.id, operation)
-    const attemptAt = new Date().toISOString()
-    setSyncOperations((items) => {
-      const previous = items.find((item) => item.id === input.id)
-      const pending: SyncOperation = { ...input, status: 'pending', attempts: (previous?.attempts ?? 0) + 1, lastAttemptAt: attemptAt }
-      return [pending, ...items.filter((item) => item.id !== input.id)]
-    })
-    void operation().then((result) => {
-      if (result === null) throw new Error('تعذر الاتصال بالخادم')
-      retryHandlers.current.delete(input.id)
-      setSyncOperations((items) => items.filter((item) => item.id !== input.id))
-    }).catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : 'تعذر إكمال المزامنة'
-      setSyncOperations((items) => items.map((item) => item.id === input.id ? { ...item, status: 'failed', error: message } : item))
-    })
+  const flushTrackedSyncs = useCallback(async (items: SyncOperation[]) => {
+    if (flushingSync.current) return
+    flushingSync.current = true
+    try {
+      const next = await flushSyncQueue(items, async (item) => {
+        const operation = retryHandlers.current.get(item.idempotencyKey)
+        if (!operation) throw new Error('العملية محفوظة وستُستعاد عند توفر موصل المزامنة.')
+        return operation()
+      })
+      for (const key of retryHandlers.current.keys()) {
+        if (!next.some((item) => item.idempotencyKey === key)) retryHandlers.current.delete(key)
+      }
+      setSyncOperations(next)
+    } finally {
+      flushingSync.current = false
+    }
   }, [])
 
+  const runTrackedSync = useCallback((input: Pick<SyncOperation, 'id' | 'entity' | 'action' | 'entityId'>, operation: () => Promise<unknown>) => {
+    retryHandlers.current.set(input.id, operation)
+    setSyncOperations((items) => {
+      const next = enqueueSync(items, input)
+      void flushTrackedSyncs(next)
+      return next
+    })
+  }, [flushTrackedSyncs])
+
   const retryFailedSyncs = useCallback(async () => {
-    const failed = syncOperations.filter((item) => item.status === 'failed')
-    await Promise.all(failed.map(async (item) => {
-      const operation = retryHandlers.current.get(item.id)
-      if (!operation) return
-      runTrackedSync({ id: item.id, entity: item.entity, action: item.action, entityId: item.entityId }, operation)
-    }))
-  }, [runTrackedSync, syncOperations])
+    const next = retryFailed(syncOperations)
+    setSyncOperations(next)
+    await flushTrackedSyncs(next)
+  }, [flushTrackedSyncs, syncOperations])
 
   useEffect(() => {
     const saved = loadInitialState()
@@ -879,6 +878,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     setResources(saved.resources ?? [])
     setActivitySessions(saved.activitySessions ?? [])
     setActivitySettings(saved.activitySettings ?? normalizeActivitySettings(undefined))
+    setSyncOperations(readSyncQueue(window.localStorage))
     setHydrated(true)
   }, [])
 
@@ -886,6 +886,11 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     if (!hydrated) return
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings }))
   }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings])
+
+  useEffect(() => {
+    if (!hydrated) return
+    writeSyncQueue(window.localStorage, syncOperations)
+  }, [hydrated, syncOperations])
 
   useEffect(() => {
     if (remoteHydrated.current) return
@@ -954,6 +959,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     resetLocalData: () => {
       const defaults = getDefaultState()
       window.localStorage.removeItem(STORAGE_KEY)
+      writeSyncQueue(window.localStorage, [])
+      setSyncOperations([])
+      retryHandlers.current.clear()
       setProfile(defaults.profile)
       setTasks(defaults.tasks)
       setNotes(defaults.notes)
