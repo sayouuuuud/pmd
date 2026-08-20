@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { archiveRemoteEntertainment,   archiveRemoteFinanceEntry,
   archiveRemoteCalendarEvent, archiveRemoteGoal, archiveRemoteHabit, archiveRemoteJournal, archiveRemoteNote, archiveRemoteProject, archiveRemoteProjectUpdate, archiveRemoteSubtask, archiveRemoteTask, archiveRemoteReminder, collectRemoteProjectPricing, createRemoteEntertainment, mapRemoteFinanceEntry, mapRemoteProjectPricing, createRemoteFinanceEntry, createRemoteHabit, createRemoteJournal, createRemoteReminder, createRemoteGoal, createRemoteNote, createRemoteProject, createRemoteSubtask, createRemoteTask, createRemoteProjectPricing, createRemoteProjectUpdate, hydrateRemoteData, toggleRemoteHabit, updateRemoteBudget, updateRemoteEntertainment, updateRemoteFinanceEntry, updateRemoteGoal, updateRemoteJournal, updateRemoteNote, updateRemotePlanItem, updateRemoteProfile, updateRemoteProject, updateRemoteProjectPricing, updateRemoteReligious, updateRemoteReminder, updateRemoteSubtask, updateRemoteTask, updateRemoteWeeklyReview, restoreRemoteArchive } from './backend-sync'
 import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-utils'
@@ -327,6 +327,17 @@ export type RestoreArchivedResult = {
   remoteSynced: boolean
 }
 
+export type SyncOperation = {
+  id: string
+  entity: string
+  action: string
+  entityId?: string
+  status: 'pending' | 'failed'
+  error?: string
+  attempts: number
+  lastAttemptAt: string
+}
+
 type CommandCenterContextValue = {
   exportData: () => string
   importData: (raw: string) => { ok: boolean; message: string }
@@ -353,6 +364,8 @@ type CommandCenterContextValue = {
   resources: Resource[]
   activitySessions: ActivitySession[]
   activitySettings: ActivitySettings
+  syncOperations: SyncOperation[]
+  retryFailedSyncs: () => Promise<void>
   updateProfile: (patch: Partial<Profile>) => void
   completeOnboarding: (profile: Omit<Profile, 'onboardingComplete'>) => void
   toggleTask: (id: string) => void
@@ -527,7 +540,7 @@ const initialResources: Resource[] = [
 
 const initialNotes: Note[] = [
   { id: 'note-1', title: 'أفكار مشروع التطبيق الجديد', body: 'لازم أراجع فكرة الاشتراكات وأشوف التسعير المناسب قبل نهاية الأسبوع.', tag: 'شغل', pinned: true, createdAt: 'منذ ساعتين' },
-  { id: 'note-2', title: 'قائمة مشتريات البيت', body: 'تمر، سمبوسة، عصائر، وحاجات تانية للسحور.', tag: 'شخصي', pinned: true, createdAt: 'أمس' },
+  { id: 'note-2', title: '��ائمة مشتريات البيت', body: 'تمر، سمبوسة، عصائر، وحاجات تانية للسحور.', tag: 'شخصي', pinned: true, createdAt: 'أمس' },
   { id: 'note-3', title: 'فكرة للمراجعة الأسبوعية', body: 'أقفل الإشعارات في أول ساعتين من يوم العمل.', tag: 'تطوير', pinned: false, createdAt: 'منذ 3 أيام' },
 ]
 
@@ -810,8 +823,37 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [resources, setResources] = useState<Resource[]>(initial.resources ?? [])
   const [activitySessions, setActivitySessions] = useState<ActivitySession[]>(initial.activitySessions ?? [])
   const [activitySettings, setActivitySettings] = useState<ActivitySettings>(initial.activitySettings)
+  const [syncOperations, setSyncOperations] = useState<SyncOperation[]>([])
+  const retryHandlers = useRef(new Map<string, () => Promise<unknown>>())
   const [hydrated, setHydrated] = useState(false)
   const remoteHydrated = useRef(false)
+
+  const runTrackedSync = useCallback((input: Pick<SyncOperation, 'id' | 'entity' | 'action' | 'entityId'>, operation: () => Promise<unknown>) => {
+    retryHandlers.current.set(input.id, operation)
+    const attemptAt = new Date().toISOString()
+    setSyncOperations((items) => {
+      const previous = items.find((item) => item.id === input.id)
+      const pending: SyncOperation = { ...input, status: 'pending', attempts: (previous?.attempts ?? 0) + 1, lastAttemptAt: attemptAt }
+      return [pending, ...items.filter((item) => item.id !== input.id)]
+    })
+    void operation().then((result) => {
+      if (result === null) throw new Error('تعذر الاتصال بالخادم')
+      retryHandlers.current.delete(input.id)
+      setSyncOperations((items) => items.filter((item) => item.id !== input.id))
+    }).catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : 'تعذر إكمال المزامنة'
+      setSyncOperations((items) => items.map((item) => item.id === input.id ? { ...item, status: 'failed', error: message } : item))
+    })
+  }, [])
+
+  const retryFailedSyncs = useCallback(async () => {
+    const failed = syncOperations.filter((item) => item.status === 'failed')
+    await Promise.all(failed.map(async (item) => {
+      const operation = retryHandlers.current.get(item.id)
+      if (!operation) return
+      runTrackedSync({ id: item.id, entity: item.entity, action: item.action, entityId: item.entityId }, operation)
+    }))
+  }, [runTrackedSync, syncOperations])
 
   useEffect(() => {
     const saved = loadInitialState()
@@ -906,7 +948,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         setActivitySettings(next.activitySettings)
         return { ok: true, message: 'تمت استعادة النسخة الاحتياطية محليًا.' }
       } catch {
-        return { ok: false, message: 'تعذر قراءة ملف النسخة الاحتياطية.' }
+        return { ok: false, message: 'تعذر ق��اءة ملف النسخة الاحتياطية.' }
       }
     },
     resetLocalData: () => {
@@ -955,6 +997,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     resources,
     activitySessions,
     activitySettings,
+    syncOperations,
+    retryFailedSyncs,
     updateProfile: (patch) => {
       setProfile((current) => ({ ...current, ...patch }))
       void updateRemoteProfile(patch)
@@ -968,7 +1012,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setTasks((items) => items.map((task) => {
         if (task.id !== id) return task
         const status = task.status === 'done' ? 'todo' : 'done'
-        void updateRemoteTask(id, { status })
+        runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, { status }))
         return { ...task, status }
       }))
       setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: item.status === 'done' ? 'pending' : 'done' } : item))
@@ -976,7 +1020,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     addTask: (input) => {
       const id = `task-${Date.now()}`
       setTasks((items) => [{ id, status: 'todo', ...input }, ...items])
-      void createRemoteTask(input)
+      runTrackedSync({ id: `task:create:${id}`, entity: 'المهام', action: 'إنشاء', entityId: id }, () => createRemoteTask(input))
       if (input.dueLabel === 'النهاردة') {
         const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date())
         setPlanItems((items) => [{ id: `plan-${Date.now()}`, time, title: input.title, kind: 'task', sourceId: id, status: 'pending' }, ...items])
@@ -1004,14 +1048,14 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     },
     updateTask: (id, patch) => {
       setTasks((items) => items.map((task) => task.id === id ? { ...task, ...patch } : task))
-      void updateRemoteTask(id, patch)
+      runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, patch))
     },
     archiveTask: (id) => {
       const item = tasks.find((task) => task.id === id)
       if (!item) return
       addArchivedItem('task', item, `المهام · ${item.category}`)
       setTasks((items) => items.filter((task) => task.id !== id))
-      void archiveRemoteTask(id)
+      runTrackedSync({ id: `task:archive:${id}`, entity: 'المهام', action: 'أرشفة', entityId: id }, () => archiveRemoteTask(id))
     },
     addGoal: (input) => {
       const goal: Goal = { id: `goal-${Date.now()}`, title: input.title, description: input.description ?? '', horizon: input.horizon, status: input.status ?? 'active', progress: input.progress ?? 0, targetLabel: input.targetLabel }
@@ -1585,18 +1629,19 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       })
     },
     addNote: (input) => {
-      setNotes((items) => [{ id: `note-${Date.now()}`, pinned: false, createdAt: 'الآن', ...input }, ...items])
-      void createRemoteNote(input)
+      const id = `note-${Date.now()}`
+      setNotes((items) => [{ id, pinned: false, createdAt: 'الآن', ...input }, ...items])
+      runTrackedSync({ id: `note:create:${id}`, entity: 'الملاحظات', action: 'إنشاء', entityId: id }, () => createRemoteNote(input))
     },
     updateNote: (id, patch) => {
       setNotes((items) => items.map((note) => note.id === id ? { ...note, ...patch } : note))
-      void updateRemoteNote(id, patch)
+      runTrackedSync({ id: `note:update:${id}`, entity: 'الملاحظات', action: 'تحديث', entityId: id }, () => updateRemoteNote(id, patch))
     },
     toggleNotePin: (id) => {
       setNotes((items) => items.map((note) => {
         if (note.id !== id) return note
         const pinned = !note.pinned
-        void updateRemoteNote(id, { pinned })
+        runTrackedSync({ id: `note:update:${id}`, entity: 'الملاحظات', action: 'تثبيت', entityId: id }, () => updateRemoteNote(id, { pinned }))
         return { ...note, pinned }
       }))
     },
@@ -1605,7 +1650,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       if (!item) return
       addArchivedItem('note', item, `الملاحظات · ${item.tag}`)
       setNotes((items) => items.filter((note) => note.id !== id))
-      void archiveRemoteNote(id)
+      runTrackedSync({ id: `note:archive:${id}`, entity: 'الملاحظات', action: 'أرشفة', entityId: id }, () => archiveRemoteNote(id))
     },
     addResource: (input) => {
       const title = input.title.trim().slice(0, 160)
@@ -1832,7 +1877,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'pending' } : item))
       void updateRemotePlanItem(id, { status: 'pending' })
     },
-  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings])
+  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings, syncOperations, retryFailedSyncs, runTrackedSync])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

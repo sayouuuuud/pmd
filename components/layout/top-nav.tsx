@@ -33,6 +33,7 @@ import { useTheme } from '@/components/theme/theme-provider'
 import { authClient } from '@/lib/auth-client'
 import { parseQuickAdd, type ParsedQuickAdd, type QuickAddKind } from '@/lib/quick-add-parser'
 import { GlobalSearchDialog } from '@/components/search/global-search-dialog'
+import { SyncStatus } from '@/components/layout/sync-status'
 import { Dialog } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -194,6 +195,7 @@ export function TopNav() {
       </a>
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
+          <SyncStatus />
           <div className="flex items-center gap-2.5 rounded-full bg-card py-1.5 pr-2 pl-4">
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
             <div className="text-right leading-tight">

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Archive, BadgeDollarSign, CheckCircle2, FileCheck2, FileText, Plus, Printer, ReceiptText, Trash2 } from 'lucide-react'
 import { ContentCard } from '@/components/ui/content-card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
@@ -102,7 +103,7 @@ export function BillingWorkspace() {
 
   return <section className="space-y-4" aria-labelledby="billing-heading">
     <div className="flex flex-col gap-3 rounded-3xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary"><BadgeDollarSign className="h-5 w-5" /></div><div><h2 id="billing-heading" className="text-base font-semibold">الفوترة والمحاسبة التجريبية</h2><p className="mt-1 text-xs leading-6 text-muted-foreground">أنشئ عرضًا أو فاتورة وتابع التحصيل محليًا. لا يتم إرسال أو تحصيل أي مدفوعات فعلية.</p></div></div><span className="rounded-full bg-card px-3 py-1.5 text-xs font-medium text-primary">{featureFlags.experimental.billing ? 'التجربة مفعّلة' : 'وضع محلي تجريبي'}</span>
+      <div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary"><BadgeDollarSign className="h-5 w-5" /></div><div><h2 id="billing-heading" className="text-base font-semibold">الفوترة والمحاسبة التجريبية</h2><p className="mt-1 text-xs leading-6 text-muted-foreground">أنشئ عرضًا أو فاتورة وتابع التحصيل محليًا. لا يتم إرسال أو تحصيل أي مدفوعات فعلية.</p></div></div><Badge variant="warning">{featureFlags.experimental.billing ? 'نموذج محلي تجريبي — غير جاهز للإنتاج' : 'وضع محلي تجريبي — غير جاهز للإنتاج'}</Badge>
     </div>
 
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">

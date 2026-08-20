@@ -6,6 +6,7 @@ import { useCommandCenter, type Resource, type ResourceType } from '@/lib/comman
 import { readWorkspaceFallback } from '@/lib/workspace-types'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -161,7 +162,12 @@ export function LibraryWorkspace() {
   }
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4" role="note">
+        <div><p className="text-sm font-semibold">المكتبة نموذج محلي تجريبي</p><p className="mt-1 text-xs leading-5 text-muted-foreground">البيانات والمرفقات الوصفية محفوظة على هذا الجهاز فقط، ولا يوجد رفع ملفات إنتاجي.</p></div>
+        <Badge variant="warning">غير جاهزة للإنتاج</Badge>
+      </div>
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
       <ContentCard title="مكتبتك" description="روابطك وقوالبك ومواردك في مكان واحد، مع ربطها بسياق العمل.">
         <div className="flex flex-col gap-3 sm:flex-row">
           <label className="relative block min-w-0 flex-1">
@@ -221,6 +227,7 @@ export function LibraryWorkspace() {
           <Button type="submit" className="mt-2 w-full rounded-2xl"><Plus className="h-4 w-4" />حفظ في المكتبة</Button>
         </form>
       </ContentCard>
+      </div>
     </div>
   )
 }
