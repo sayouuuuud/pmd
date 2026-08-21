@@ -384,8 +384,10 @@ type CommandCenterContextValue = {
   addTask: (input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'dueAt' | 'timezone' | 'recurrence' | 'reminderMinutes' | 'recurring' | 'projectId' | 'sourceNoteId' | 'dependencyIds'>>) => void
   updateTask: (id: string, patch: Partial<Task>) => void
   archiveTask: (id: string) => void
+  deleteTask: (id: string) => void
   bulkUpdateTasks: (ids: string[], patch: Pick<Partial<Task>, 'status'>) => void
   bulkArchiveTasks: (ids: string[]) => void
+  bulkDeleteTasks: (ids: string[]) => void
   undoTaskAction: () => void
   canUndoTaskAction: boolean
   addGoal: (input: Pick<Goal, 'title' | 'horizon' | 'targetLabel'> & Partial<Pick<Goal, 'description' | 'status' | 'progress'>>) => void
@@ -1118,6 +1120,12 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setTasks((items) => items.filter((task) => task.id !== id).map((task) => ({ ...task, dependencyIds: task.dependencyIds?.filter((dependencyId) => dependencyId !== id) })))
       setPlanItems((items) => items.filter((planItem) => planItem.sourceId !== id))
       runTrackedSync({ id: `task:archive:${id}`, entity: 'المهام', action: 'أرشفة', entityId: id }, () => archiveRemoteTask(id))
+    },
+    deleteTask: (id) => {
+      if (!tasks.some((task) => task.id === id)) return
+      setTasks((items) => items.filter((task) => task.id !== id).map((task) => ({ ...task, dependencyIds: task.dependencyIds?.filter((dependencyId) => dependencyId !== id) })))
+      setPlanItems((items) => items.filter((planItem) => planItem.sourceId !== id))
+      runTrackedSync({ id: `task:delete:${id}`, entity: 'المهام', action: 'حذف نهائي', entityId: id }, () => archiveRemoteTask(id))
     },
     bulkUpdateTasks: (ids, patch) => {
       const selected = new Set(ids)
