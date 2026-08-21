@@ -23,6 +23,13 @@ type RemoteTask = {
   priority: string
   status: string
   dueLabel: string | null
+  dueAt?: string | null
+  timezone?: string | null
+  recurrence?: string | null
+  reminderMinutes?: number | null
+  reminderId?: string | null
+  createdAt?: string | Date | null
+  updatedAt?: string | Date | null
   category: string
   recurring: boolean
   sourceNoteId: string | null
@@ -210,6 +217,13 @@ export function mapRemoteTask(item: RemoteTask): Task {
     priority: asPriority(item.priority),
     status: asStatus(item.status),
     dueLabel: item.dueLabel ?? 'بدون موعد',
+    dueAt: item.dueAt ?? undefined,
+    timezone: item.timezone ?? undefined,
+    recurrence: item.recurrence === 'daily' || item.recurrence === 'weekly' || item.recurrence === 'monthly' ? item.recurrence : item.recurring ? 'daily' : 'none',
+    reminderMinutes: item.reminderMinutes ?? undefined,
+    reminderId: item.reminderId ?? undefined,
+    createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : undefined,
+    updatedAt: item.updatedAt ? new Date(item.updatedAt).toISOString() : undefined,
     category: item.category,
     recurring: item.recurring,
     sourceNoteId: item.sourceNoteId ?? undefined,
@@ -580,7 +594,7 @@ export function updateRemoteProfile(profile: Partial<Profile>) {
   })
 }
 
-export function createRemoteTask(input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'recurring' | 'projectId' | 'sourceNoteId'>>) {
+export function createRemoteTask(input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'dueAt' | 'timezone' | 'recurrence' | 'reminderMinutes' | 'recurring' | 'projectId' | 'sourceNoteId'>>) {
   return request<{ item: RemoteTask }>('/api/tasks', { method: 'POST', body: JSON.stringify(input) })
 }
 

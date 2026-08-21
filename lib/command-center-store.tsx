@@ -8,6 +8,7 @@ import type { ArchivedClient } from './workspace-types'
 import { normalizeBillingLines, normalizeInvoice, normalizeQuote, type Invoice, type Quote } from './billing'
 import { createDemoActivitySessions, normalizeActivitySession, normalizeActivitySettings, pruneActivitySessions, type ActivitySession, type ActivitySessionInput, type ActivitySettings } from './activity'
 import { enqueueSync, flushSyncQueue, readSyncQueue, retryFailed, writeSyncQueue, type SyncQueueItem } from './sync-queue'
+import { formatTaskDue, isTaskDueToday, nextRecurringDueAt, type TaskRecurrence } from './task-dates'
 export type { BillingLineItem, Invoice, InvoiceStatus, Quote, QuoteStatus } from './billing'
 export type { ActivityCategory, ActivitySession, ActivitySessionInput, ActivitySettings, ActivitySource, ActivitySyncState } from './activity'
 
@@ -43,6 +44,13 @@ export type Task = {
   priority: Priority
   status: TaskStatus
   dueLabel: string
+  dueAt?: string
+  timezone?: string
+  recurrence?: TaskRecurrence
+  reminderMinutes?: number
+  reminderId?: string
+  createdAt?: string
+  updatedAt?: string
   category: string
   recurring?: boolean
   subtasks?: { id: string; title: string; done: boolean }[]
@@ -364,7 +372,7 @@ type CommandCenterContextValue = {
   addSubtask: (taskId: string, title: string) => void
   toggleSubtask: (taskId: string, subtaskId: string) => void
   removeSubtask: (taskId: string, subtaskId: string) => void
-  addTask: (input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'recurring' | 'projectId' | 'sourceNoteId'>>) => void
+  addTask: (input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'dueAt' | 'timezone' | 'recurrence' | 'reminderMinutes' | 'recurring' | 'projectId' | 'sourceNoteId'>>) => void
   updateTask: (id: string, patch: Partial<Task>) => void
   archiveTask: (id: string) => void
   addGoal: (input: Pick<Goal, 'title' | 'horizon' | 'targetLabel'> & Partial<Pick<Goal, 'description' | 'status' | 'progress'>>) => void
@@ -1020,18 +1028,32 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setTasks((items) => items.map((task) => {
         if (task.id !== id) return task
         const status = task.status === 'done' ? 'todo' : 'done'
-        runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, { status }))
-        return { ...task, status }
+        const recurrence = task.recurrence ?? (task.recurring ? 'daily' : 'none')
+        const nextDueAt = status === 'done' && task.dueAt ? nextRecurringDueAt(task.dueAt, recurrence) : undefined
+        const patch: Partial<Task> = nextDueAt
+          ? { status: 'todo', dueAt: nextDueAt, dueLabel: formatTaskDue({ dueAt: nextDueAt }), updatedAt: new Date().toISOString() }
+          : { status, updatedAt: new Date().toISOString() }
+        runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, patch))
+        return { ...task, ...patch }
       }))
       setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: item.status === 'done' ? 'pending' : 'done' } : item))
     },
     addTask: (input) => {
-      const id = `task-${Date.now()}`
-      setTasks((items) => [{ id, status: 'todo', ...input }, ...items])
+      const id = newLocalId('task')
+      const now = new Date().toISOString()
+      const recurrence = input.recurrence ?? (input.recurring ? 'daily' : 'none')
+      const task: Task = { id, status: 'todo', createdAt: now, updatedAt: now, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, recurrence, recurring: recurrence !== 'none', ...input }
+      setTasks((items) => [task, ...items])
       runTrackedSync({ id: `task:create:${id}`, entity: 'المهام', action: 'إنشاء', entityId: id }, () => createRemoteTask(input))
-      if (input.dueLabel === 'النهاردة') {
-        const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date())
-        setPlanItems((items) => [{ id: `plan-${Date.now()}`, time, title: input.title, kind: 'task', sourceId: id, status: 'pending' }, ...items])
+      if (isTaskDueToday(task)) {
+        const time = task.dueAt ? new Date(task.dueAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '09:00'
+        setPlanItems((items) => [{ id: newLocalId('plan'), time, title: input.title, kind: 'task', sourceId: id, status: 'pending' }, ...items.filter((item) => item.sourceId !== id)])
+      }
+      if (task.dueAt && task.reminderMinutes && task.reminderMinutes > 0) {
+        const reminderId = newLocalId('reminder')
+        const dueAt = new Date(new Date(task.dueAt).getTime() - task.reminderMinutes * 60_000).toISOString()
+        setTasks((items) => items.map((item) => item.id === id ? { ...item, reminderId } : item))
+        setReminders((items) => [{ id: reminderId, title: input.title, kind: 'task', dueAt, status: 'pending', sourceId: id, repeatLabel: recurrence === 'daily' ? 'يوميًا' : recurrence === 'weekly' ? 'أسبوعيًا' : recurrence === 'monthly' ? 'شهريًا' : undefined }, ...items.filter((item) => item.sourceId !== id)])
       }
     },
     addSubtask: (taskId, title) => {
@@ -1055,8 +1077,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void archiveRemoteSubtask(taskId, subtaskId)
     },
     updateTask: (id, patch) => {
-      setTasks((items) => items.map((task) => task.id === id ? { ...task, ...patch } : task))
-      runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, patch))
+      const nextPatch = { ...patch, updatedAt: new Date().toISOString() }
+      setTasks((items) => items.map((task) => task.id === id ? { ...task, ...nextPatch } : task))
+      runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, nextPatch))
     },
     archiveTask: (id) => {
       const item = tasks.find((task) => task.id === id)

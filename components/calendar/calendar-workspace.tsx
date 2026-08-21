@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useCommandCenter, type CalendarEvent, type ProjectPricing } from '@/lib/command-center-store'
 import { contextHref } from '@/lib/context-links'
+import { taskDueAt } from '@/lib/task-dates'
 
 const LOCAL_KEY = 'personal-command-center-calendar-events-v1'
 const eventKinds = [
@@ -134,9 +135,9 @@ export function CalendarWorkspace() {
   const items = useMemo<CalendarItem[]>(() => {
     const custom: CalendarItem[] = customEvents.map((event) => ({ ...event, source: 'custom', accent: 'border-primary/40 bg-primary/5' }))
     const taskItems: CalendarItem[] = tasks.flatMap((task) => {
-      const date = /^\d{4}-\d{2}-\d{2}$/.test(task.dueLabel) ? task.dueLabel : null
-      if (!date) return []
-      return [{ id: `task-${task.id}`, title: task.title, description: task.description, kind: 'task', startsAt: `${date}T09:00:00`, endsAt: null, timezone: 'Africa/Cairo', sourceType: 'task', sourceId: task.id, status: task.status === 'done' ? 'done' : 'planned', source: 'task', accent: task.priority === 'high' ? 'border-destructive/40 bg-destructive/5' : 'border-chart-4/40 bg-chart-4/5', href: contextHref('task', task.id) }]
+      const startsAt = taskDueAt(task)
+      if (!startsAt) return []
+      return [{ id: `task-${task.id}`, title: task.title, description: task.description, kind: 'task', startsAt, endsAt: null, timezone: task.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone, sourceType: 'task', sourceId: task.id, status: task.status === 'done' ? 'done' : 'planned', source: 'task', accent: task.priority === 'high' ? 'border-destructive/40 bg-destructive/5' : 'border-chart-4/40 bg-chart-4/5', href: contextHref('task', task.id) }]
     })
     const reminderItems: CalendarItem[] = reminders.flatMap((reminder) => {
       const parsed = reminderDate(reminder.dueAt)
