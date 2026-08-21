@@ -15,7 +15,7 @@ export function ContentCard({
   action?: ReactNode
 }) {
   return (
-    <section className={cn('rounded-3xl bg-card p-5 shadow-[0_8px_30px_rgba(23,23,26,0.03)]', className)}>
+    <section className={cn('min-w-0 overflow-hidden rounded-3xl bg-card p-4 shadow-[0_8px_30px_rgba(23,23,26,0.03)] sm:p-5', className)}>
       {(title || description || action) && (
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>

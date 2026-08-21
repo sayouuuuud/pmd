@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "audit:ownership": "python3 scripts/audit_route_ownership.py",
     "audit:responsive": "python3 scripts/responsive-audit.py",
     "audit:accessibility": "python3 scripts/accessibility-audit.py"
@@ -40,6 +41,7 @@
     "eslint-config-next": "^16.3.1",
     "postcss": "^8.5",
     "tailwindcss": "^4.3.3",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "vitest": "^4.1.11"
   }
 }

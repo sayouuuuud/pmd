@@ -10,6 +10,7 @@ import { StatCard } from '@/components/ui/stat-card'
 import { TopNav } from '@/components/layout/top-nav'
 import { isPrayerCompletedStatus, type PrayerStatus, useCommandCenter } from '@/lib/command-center-store'
 import { formatPrayerCountdown, getNextPrayerCountdown } from '@/lib/prayer-countdown'
+import { isTaskDueToday, isTaskOverdue } from '@/lib/task-dates'
 
 function formatDate(localDate: string) {
   if (!localDate) return ''
@@ -53,7 +54,7 @@ export function DashboardHome() {
   const upcomingPlan = planItems.filter((item) => item.status !== 'done').slice(0, 4)
   const priorityOrder = { high: 0, medium: 1, low: 2 }
   const todayTasks = tasks
-    .filter((task) => task.dueLabel === 'النهاردة')
+    .filter((task) => isTaskDueToday(task))
     .sort((left, right) => Number(left.status === 'done') - Number(right.status === 'done') || priorityOrder[left.priority] - priorityOrder[right.priority])
   const dashboardNotes = [...notes.filter((note) => note.pinned), ...notes.filter((note) => !note.pinned)].slice(0, 3)
   const maxStreak = habits.length > 0 ? Math.max(...habits.map((habit) => habit.streak)) : 0
@@ -63,7 +64,7 @@ export function DashboardHome() {
   const nextPrayer = getNextPrayerCountdown(religious.prayerLogs, clockMs)
   const prayerStatusLabels: Record<PrayerStatus, string> = { pending: 'لم تُسجّل', done: 'في وقتها', 'on-time': 'في وقتها', congregation: 'جماعة', qada: 'قضاء', missed: 'فائتة' }
   const wirdPercent = Math.min(100, Math.round((religious.quran.completedMinutes / Math.max(religious.quran.targetMinutes, 1)) * 100))
-  const overdueTasks = tasks.filter((task) => task.status !== 'done' && /متأخر|أمس|أول أمس/.test(task.dueLabel))
+  const overdueTasks = tasks.filter((task) => isTaskOverdue(task))
   const currentMonth = hydratedDate.slice(0, 7)
   const previousMonth = previousMonthKey(hydratedDate)
   const monthlyExpenses = financeEntries.filter((entry) => entry.kind === 'expense' && entry.localDate.startsWith(currentMonth)).reduce((sum, entry) => sum + entry.amount, 0)

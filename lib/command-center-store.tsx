@@ -7,6 +7,8 @@ import { nextReminderDueAt, normalizeReminderRepeatLabel } from './reminder-util
 import type { ArchivedClient } from './workspace-types'
 import { normalizeBillingLines, normalizeInvoice, normalizeQuote, type Invoice, type Quote } from './billing'
 import { createDemoActivitySessions, normalizeActivitySession, normalizeActivitySettings, pruneActivitySessions, type ActivitySession, type ActivitySessionInput, type ActivitySettings } from './activity'
+import { enqueueSync, flushSyncQueue, readSyncQueue, retryFailed, writeSyncQueue, type SyncQueueItem } from './sync-queue'
+import { formatTaskDue, isTaskDueToday, nextRecurringDueAt, type TaskRecurrence } from './task-dates'
 export type { BillingLineItem, Invoice, InvoiceStatus, Quote, QuoteStatus } from './billing'
 export type { ActivityCategory, ActivitySession, ActivitySessionInput, ActivitySettings, ActivitySource, ActivitySyncState } from './activity'
 
@@ -42,6 +44,13 @@ export type Task = {
   priority: Priority
   status: TaskStatus
   dueLabel: string
+  dueAt?: string
+  timezone?: string
+  recurrence?: TaskRecurrence
+  reminderMinutes?: number
+  reminderId?: string
+  createdAt?: string
+  updatedAt?: string
   category: string
   recurring?: boolean
   subtasks?: { id: string; title: string; done: boolean }[]
@@ -327,16 +336,7 @@ export type RestoreArchivedResult = {
   remoteSynced: boolean
 }
 
-export type SyncOperation = {
-  id: string
-  entity: string
-  action: string
-  entityId?: string
-  status: 'pending' | 'failed'
-  error?: string
-  attempts: number
-  lastAttemptAt: string
-}
+export type SyncOperation = SyncQueueItem
 
 type CommandCenterContextValue = {
   exportData: () => string
@@ -372,7 +372,7 @@ type CommandCenterContextValue = {
   addSubtask: (taskId: string, title: string) => void
   toggleSubtask: (taskId: string, subtaskId: string) => void
   removeSubtask: (taskId: string, subtaskId: string) => void
-  addTask: (input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'recurring' | 'projectId' | 'sourceNoteId'>>) => void
+  addTask: (input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'dueAt' | 'timezone' | 'recurrence' | 'reminderMinutes' | 'recurring' | 'projectId' | 'sourceNoteId'>>) => void
   updateTask: (id: string, patch: Partial<Task>) => void
   archiveTask: (id: string) => void
   addGoal: (input: Pick<Goal, 'title' | 'horizon' | 'targetLabel'> & Partial<Pick<Goal, 'description' | 'status' | 'progress'>>) => void
@@ -825,35 +825,42 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [activitySettings, setActivitySettings] = useState<ActivitySettings>(initial.activitySettings)
   const [syncOperations, setSyncOperations] = useState<SyncOperation[]>([])
   const retryHandlers = useRef(new Map<string, () => Promise<unknown>>())
+  const flushingSync = useRef(false)
   const [hydrated, setHydrated] = useState(false)
   const remoteHydrated = useRef(false)
 
-  const runTrackedSync = useCallback((input: Pick<SyncOperation, 'id' | 'entity' | 'action' | 'entityId'>, operation: () => Promise<unknown>) => {
-    retryHandlers.current.set(input.id, operation)
-    const attemptAt = new Date().toISOString()
-    setSyncOperations((items) => {
-      const previous = items.find((item) => item.id === input.id)
-      const pending: SyncOperation = { ...input, status: 'pending', attempts: (previous?.attempts ?? 0) + 1, lastAttemptAt: attemptAt }
-      return [pending, ...items.filter((item) => item.id !== input.id)]
-    })
-    void operation().then((result) => {
-      if (result === null) throw new Error('تعذر الاتصال بالخادم')
-      retryHandlers.current.delete(input.id)
-      setSyncOperations((items) => items.filter((item) => item.id !== input.id))
-    }).catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : 'تعذر إكمال المزامنة'
-      setSyncOperations((items) => items.map((item) => item.id === input.id ? { ...item, status: 'failed', error: message } : item))
-    })
+  const flushTrackedSyncs = useCallback(async (items: SyncOperation[]) => {
+    if (flushingSync.current) return
+    flushingSync.current = true
+    try {
+      const next = await flushSyncQueue(items, async (item) => {
+        const operation = retryHandlers.current.get(item.idempotencyKey)
+        if (!operation) throw new Error('العملية محفوظة وستُستعاد عند توفر موصل المزامنة.')
+        return operation()
+      })
+      for (const key of retryHandlers.current.keys()) {
+        if (!next.some((item) => item.idempotencyKey === key)) retryHandlers.current.delete(key)
+      }
+      setSyncOperations(next)
+    } finally {
+      flushingSync.current = false
+    }
   }, [])
 
+  const runTrackedSync = useCallback((input: Pick<SyncOperation, 'id' | 'entity' | 'action' | 'entityId'>, operation: () => Promise<unknown>) => {
+    retryHandlers.current.set(input.id, operation)
+    setSyncOperations((items) => {
+      const next = enqueueSync(items, input)
+      void flushTrackedSyncs(next)
+      return next
+    })
+  }, [flushTrackedSyncs])
+
   const retryFailedSyncs = useCallback(async () => {
-    const failed = syncOperations.filter((item) => item.status === 'failed')
-    await Promise.all(failed.map(async (item) => {
-      const operation = retryHandlers.current.get(item.id)
-      if (!operation) return
-      runTrackedSync({ id: item.id, entity: item.entity, action: item.action, entityId: item.entityId }, operation)
-    }))
-  }, [runTrackedSync, syncOperations])
+    const next = retryFailed(syncOperations)
+    setSyncOperations(next)
+    await flushTrackedSyncs(next)
+  }, [flushTrackedSyncs, syncOperations])
 
   useEffect(() => {
     const saved = loadInitialState()
@@ -879,6 +886,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     setResources(saved.resources ?? [])
     setActivitySessions(saved.activitySessions ?? [])
     setActivitySettings(saved.activitySettings ?? normalizeActivitySettings(undefined))
+    setSyncOperations(readSyncQueue(window.localStorage))
     setHydrated(true)
   }, [])
 
@@ -886,6 +894,11 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     if (!hydrated) return
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings }))
   }, [hydrated, profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings])
+
+  useEffect(() => {
+    if (!hydrated) return
+    writeSyncQueue(window.localStorage, syncOperations)
+  }, [hydrated, syncOperations])
 
   useEffect(() => {
     if (remoteHydrated.current) return
@@ -954,6 +967,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     resetLocalData: () => {
       const defaults = getDefaultState()
       window.localStorage.removeItem(STORAGE_KEY)
+      writeSyncQueue(window.localStorage, [])
+      setSyncOperations([])
+      retryHandlers.current.clear()
       setProfile(defaults.profile)
       setTasks(defaults.tasks)
       setNotes(defaults.notes)
@@ -1012,18 +1028,32 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setTasks((items) => items.map((task) => {
         if (task.id !== id) return task
         const status = task.status === 'done' ? 'todo' : 'done'
-        runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, { status }))
-        return { ...task, status }
+        const recurrence = task.recurrence ?? (task.recurring ? 'daily' : 'none')
+        const nextDueAt = status === 'done' && task.dueAt ? nextRecurringDueAt(task.dueAt, recurrence) : undefined
+        const patch: Partial<Task> = nextDueAt
+          ? { status: 'todo', dueAt: nextDueAt, dueLabel: formatTaskDue({ dueAt: nextDueAt }), updatedAt: new Date().toISOString() }
+          : { status, updatedAt: new Date().toISOString() }
+        runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, patch))
+        return { ...task, ...patch }
       }))
       setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: item.status === 'done' ? 'pending' : 'done' } : item))
     },
     addTask: (input) => {
-      const id = `task-${Date.now()}`
-      setTasks((items) => [{ id, status: 'todo', ...input }, ...items])
+      const id = newLocalId('task')
+      const now = new Date().toISOString()
+      const recurrence = input.recurrence ?? (input.recurring ? 'daily' : 'none')
+      const task: Task = { id, status: 'todo', createdAt: now, updatedAt: now, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, recurrence, recurring: recurrence !== 'none', ...input }
+      setTasks((items) => [task, ...items])
       runTrackedSync({ id: `task:create:${id}`, entity: 'المهام', action: 'إنشاء', entityId: id }, () => createRemoteTask(input))
-      if (input.dueLabel === 'النهاردة') {
-        const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date())
-        setPlanItems((items) => [{ id: `plan-${Date.now()}`, time, title: input.title, kind: 'task', sourceId: id, status: 'pending' }, ...items])
+      if (isTaskDueToday(task)) {
+        const time = task.dueAt ? new Date(task.dueAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '09:00'
+        setPlanItems((items) => [{ id: newLocalId('plan'), time, title: input.title, kind: 'task', sourceId: id, status: 'pending' }, ...items.filter((item) => item.sourceId !== id)])
+      }
+      if (task.dueAt && task.reminderMinutes && task.reminderMinutes > 0) {
+        const reminderId = newLocalId('reminder')
+        const dueAt = new Date(new Date(task.dueAt).getTime() - task.reminderMinutes * 60_000).toISOString()
+        setTasks((items) => items.map((item) => item.id === id ? { ...item, reminderId } : item))
+        setReminders((items) => [{ id: reminderId, title: input.title, kind: 'task', dueAt, status: 'pending', sourceId: id, repeatLabel: recurrence === 'daily' ? 'يوميًا' : recurrence === 'weekly' ? 'أسبوعيًا' : recurrence === 'monthly' ? 'شهريًا' : undefined }, ...items.filter((item) => item.sourceId !== id)])
       }
     },
     addSubtask: (taskId, title) => {
@@ -1047,8 +1077,9 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void archiveRemoteSubtask(taskId, subtaskId)
     },
     updateTask: (id, patch) => {
-      setTasks((items) => items.map((task) => task.id === id ? { ...task, ...patch } : task))
-      runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, patch))
+      const nextPatch = { ...patch, updatedAt: new Date().toISOString() }
+      setTasks((items) => items.map((task) => task.id === id ? { ...task, ...nextPatch } : task))
+      runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, nextPatch))
     },
     archiveTask: (id) => {
       const item = tasks.find((task) => task.id === id)

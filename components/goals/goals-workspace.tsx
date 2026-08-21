@@ -49,8 +49,8 @@ export function GoalsWorkspace() {
   }), [goals, projects, tasks])
 
   return <div className="space-y-4">
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-      <ContentCard className="lg:col-span-8" title="أهدافي الحالية" description="خلّي الصورة الكبيرة واضحة، وسيب المشاريع تحمل التنفيذ اليومي.">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+      <ContentCard className="xl:col-span-8" title="أهدافي الحالية" description="خلّي الصورة الكبيرة واضحة، وسيب المشاريع تحمل التنفيذ اليومي.">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {activeGoals.map((goal) => {
             const goalProjects = projects.filter((project) => project.goalId === goal.id)
@@ -61,7 +61,7 @@ export function GoalsWorkspace() {
         </div>
       </ContentCard>
 
-      <ContentCard title="هدف جديد" description="اختار نتيجة قابلة للفهم، مش مجرد قائمة أمنيات.">
+      <ContentCard className="xl:col-span-4" title="هدف جديد" description="اختار نتيجة قابلة للفهم، مش مجرد قائمة أمنيات.">
         <form onSubmit={createGoal} noValidate className="space-y-3">
           <Input name="title" required aria-label="عنوان الهدف" aria-invalid={Boolean(goalError)} aria-describedby={goalError ? 'goal-title-error' : undefined} onChange={() => goalError && setGoalError('')} className="w-full rounded-2xl px-4 py-3" placeholder="مثال: إطلاق النسخة الأولى" />
           {goalError && <p id="goal-title-error" role="alert" aria-live="assertive" aria-atomic="true" className="text-xs font-medium text-destructive">{goalError}</p>}

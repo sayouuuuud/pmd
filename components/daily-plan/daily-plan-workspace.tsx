@@ -68,8 +68,8 @@ export function DailyPlanWorkspace() {
     setMoveDate('')
   }
 
-  return <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-    <ContentCard className="lg:col-span-8" title="Timeline اليوم" description="خطة مرنة، وليست جدولًا يعاقبك إذا تغيّر يومك. كل مهمة تقودك إلى سياقها عندما يكون متاحًا.">
+  return <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+    <ContentCard className="xl:col-span-8" title="Timeline اليوم" description="خطة مرنة، وليست جدولًا يعاقبك إذا تغيّر يومك. كل مهمة تقودك إلى سياقها عندما يكون متاحًا.">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-muted/50 p-3">
         <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground" htmlFor="daily-plan-date"><CalendarDays className="h-4 w-4 text-primary" />عرض يوم</label>
         <Input id="daily-plan-date" type="date" value={viewDate} onChange={(event) => setViewDate(event.target.value)} className="h-8 w-auto rounded-xl text-xs" />
@@ -94,7 +94,7 @@ export function DailyPlanWorkspace() {
         </div>)}
       </div>
     </ContentCard>
-    <div className="space-y-4 lg:col-span-4">
+    <div className="space-y-4 xl:col-span-4">
       <ContentCard title="تقدم اليوم" description="المهم هو الرجوع للخطة">
         <div className="flex items-end gap-3"><span className="text-5xl font-semibold">{Math.round((completed / Math.max(activePlanItems.length, 1)) * 100)}%</span><span className="mb-2 text-xs text-muted-foreground">من الخطة</span></div>
         <div className="mt-4 h-3 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completed / Math.max(activePlanItems.length, 1)) * 100}%` }} /></div>
