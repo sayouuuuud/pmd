@@ -9,6 +9,7 @@ import { LoadingState } from '@/components/ui/loading-state'
 import { StatCard } from '@/components/ui/stat-card'
 import { readWorkspaceFallback, type Client, type WorkspaceFallback } from '@/lib/workspace-types'
 import { useCommandCenter } from '@/lib/command-center-store'
+import { withDerivedProjectProgress } from '@/lib/project-progress'
 
 type WorkspacesPayload = { workspaces?: { id: string; name?: string; role?: string }[]; activeWorkspaceId?: string }
 type ClientsPayload = { clients?: Client[] }
@@ -58,11 +59,12 @@ export function WorkDashboard() {
     return () => { active = false }
   }, [])
 
+  const displayedProjects = useMemo(() => withDerivedProjectProgress(projects, tasks), [projects, tasks])
   const clients = useMemo(() => fallback.clientsByWorkspace[workspaceId] ?? [], [fallback.clientsByWorkspace, workspaceId])
   const clientIds = useMemo(() => new Set(clients.map((client) => client.id)), [clients])
   const clientPricing = useMemo(() => projectPricings.filter((pricing) => pricing.clientId && clientIds.has(pricing.clientId)), [clientIds, projectPricings])
   const clientProjectIds = useMemo(() => new Set(clientPricing.map((pricing) => pricing.projectId)), [clientPricing])
-  const clientProjects = useMemo(() => projects.filter((project) => clientProjectIds.has(project.id)), [clientProjectIds, projects])
+  const clientProjects = useMemo(() => displayedProjects.filter((project) => clientProjectIds.has(project.id)), [clientProjectIds, displayedProjects])
   const activeTasks = useMemo(() => tasks.filter((task) => task.projectId && clientProjectIds.has(task.projectId) && task.status !== 'done'), [clientProjectIds, tasks])
   const overdueTasks = activeTasks.filter((task) => /متأخر|أمس|أول أمس/.test(task.dueLabel))
   const outstanding = clientPricing.filter((pricing) => pricing.status === 'expected' || pricing.status === 'due').reduce((sum, pricing) => sum + pricing.amount, 0)

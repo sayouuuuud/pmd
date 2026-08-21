@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useCommandCenter, type Project, type ProjectMilestone, type ProjectPricing, type ProjectStatus, type ProjectUpdate } from '@/lib/command-center-store'
+import { calculateProjectProgress, withDerivedProjectProgress } from '@/lib/project-progress'
 
 type ProjectClient = { id: string; name: string; company: string | null }
 type WorkspaceClientsFallback = { workspaces?: { id: string }[]; clientsByWorkspace?: Record<string, ProjectClient[]> }
@@ -28,8 +29,9 @@ export function ProjectsWorkspace() {
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [projectError, setProjectError] = useState('')
   const [projectTaskError, setProjectTaskError] = useState('')
+  const displayedProjects = useMemo(() => withDerivedProjectProgress(projects, tasks), [projects, tasks])
 
-  const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null
+  const selectedProject = displayedProjects.find((project) => project.id === selectedProjectId) ?? null
 
   useEffect(() => {
     let active = true
@@ -117,7 +119,7 @@ export function ProjectsWorkspace() {
       <ContentCard className="xl:col-span-8" title="لوحة المشاريع" description="انقل المشروع بين المراحل، وافتح تفاصيله عشان تفضل الخطوات مرتبطة بالهدف.">
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
           {columns.map((column) => {
-            const columnProjects = projects.filter((project) => project.status === column.id)
+            const columnProjects = displayedProjects.filter((project) => project.status === column.id)
             return <section
               key={column.id}
               onDragOver={(event) => event.preventDefault()}
@@ -212,9 +214,8 @@ function ProjectDetails({ project, goalTitle, linkedTasks, linkedNotes, projectU
   const [editingPricingId, setEditingPricingId] = useState<string | null>(null)
   const [newMilestoneTitle, setNewMilestoneTitle] = useState('')
   const completed = linkedTasks.filter((task) => task.status === 'done').length
-  const derivedProgress = linkedTasks.length ? Math.round((completed / linkedTasks.length) * 100) : project.progress
   const statusLabel = project.status === 'done' ? 'مكتمل' : project.status === 'in-progress' ? 'جاري' : 'قادم'
-  const progress = Math.max(0, Math.min(100, derivedProgress))
+  const progress = calculateProjectProgress(project, linkedTasks)
   const taskIds = useMemo(() => new Set(linkedTasks.map((task) => task.id)), [linkedTasks])
   const projectNotes = linkedNotes.filter((note) => note.sourceTaskId && taskIds.has(note.sourceTaskId))
   const milestones = project.milestones ?? []
