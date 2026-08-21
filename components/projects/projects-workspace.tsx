@@ -68,7 +68,7 @@ export function ProjectsWorkspace() {
   const linkedTasks = (projectId: string) => tasks.filter((task) => task.projectId === projectId)
   const linkedNotes = (projectId: string) => {
     const taskIds = new Set(linkedTasks(projectId).map((task) => task.id))
-    return notes.filter((note) => note.sourceTaskId && taskIds.has(note.sourceTaskId))
+    return notes.filter((note) => note.projectId === projectId || (note.sourceTaskId && taskIds.has(note.sourceTaskId)))
   }
 
   function createProject(event: React.FormEvent<HTMLFormElement>) {
@@ -86,7 +86,8 @@ export function ProjectsWorkspace() {
       goalId: String(form.get('goalId') ?? '') || undefined,
       clientId: String(form.get('clientId') ?? '') || undefined,
       nextStep: String(form.get('nextStep') ?? '').trim() || undefined,
-      dueLabel: String(form.get('dueLabel') ?? '').trim() || 'بدون موعد',
+      dueLabel: String(form.get('dueAt') ?? '').trim() || 'بدون موعد',
+      dueAt: String(form.get('dueAt') ?? '').trim() ? new Date(`${String(form.get('dueAt'))}T12:00:00`).toISOString() : undefined,
     })
     event.currentTarget.reset()
   }
@@ -155,7 +156,7 @@ export function ProjectsWorkspace() {
           <Select name="goalId" aria-label="الهدف المرتبط" defaultValue="" className="w-full rounded-2xl px-3 py-3"><option value="">بدون هدف مرتبط</option>{goals.filter((goal) => goal.status !== 'completed').map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}</Select>
           <Select name="clientId" aria-label="العميل المرتبط" defaultValue="" className="w-full rounded-2xl px-3 py-3"><option value="">بدون عميل مرتبط</option>{clients.map((client) => <option key={client.id} value={client.id}>{client.name}{client.company ? ` · ${client.company}` : ''}</option>)}</Select>
           <Input name="nextStep" aria-label="الخطوة التالية للمشروع" className="w-full rounded-2xl px-4 py-3" placeholder="الخطوة التالية: تجهيز النسخة الأولى" />
-          <Input name="dueLabel" aria-label="موعد المشروع" className="w-full rounded-2xl px-4 py-3" placeholder="الموعد: هذا الشهر" />
+          <Input name="dueAt" type="date" aria-label="موعد تسليم المشروع" className="w-full rounded-2xl px-4 py-3" />
           <Button type="submit" className="flex w-full rounded-2xl px-4 py-3"><Plus className="h-4 w-4" /> إضافة المشروع</Button>
         </form>
       </ContentCard>

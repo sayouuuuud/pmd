@@ -84,6 +84,9 @@ export type Project = {
   status: ProjectStatus
   progress: number
   dueLabel: string
+  dueAt?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type ProjectUpdate = {
@@ -252,6 +255,7 @@ export type ReligiousState = {
   dhikr: { morning: boolean; evening: boolean; morningCount?: number; eveningCount?: number; morningProgress?: Record<string, number>; eveningProgress?: Record<string, number>; lastSession?: string; tasbeehCount?: number; tasbeehTarget?: number; savedDuas?: string[]; sunnahChecks?: Record<SunnahKey, boolean> }
 }
 
+export type NoteVersion = { id: string; title: string; body: string; savedAt: string }
 export type Note = {
   id: string
   title: string
@@ -259,7 +263,10 @@ export type Note = {
   tag: string
   pinned: boolean
   createdAt: string
+  updatedAt?: string
+  projectId?: string
   sourceTaskId?: string
+  versions?: NoteVersion[]
 }
 
 export type Habit = {
@@ -378,7 +385,7 @@ type CommandCenterContextValue = {
   addGoal: (input: Pick<Goal, 'title' | 'horizon' | 'targetLabel'> & Partial<Pick<Goal, 'description' | 'status' | 'progress'>>) => void
   updateGoal: (id: string, patch: Partial<Goal>) => void
   archiveGoal: (id: string) => void
-  addProject: (input: Pick<Project, 'title' | 'dueLabel'> & Partial<Pick<Project, 'description' | 'goalId' | 'clientId' | 'nextStep' | 'milestones' | 'status' | 'progress'>>) => void
+  addProject: (input: Pick<Project, 'title' | 'dueLabel'> & Partial<Pick<Project, 'description' | 'dueAt' | 'goalId' | 'clientId' | 'nextStep' | 'milestones' | 'status' | 'progress'>>) => void
   updateProject: (id: string, patch: Partial<Project>) => void
   archiveProject: (id: string) => void
   addProjectUpdate: (input: Pick<ProjectUpdate, 'projectId' | 'body' | 'kind'>) => void
@@ -439,8 +446,9 @@ type CommandCenterContextValue = {
   addHabit: (input: Pick<Habit, 'title' | 'target'> & Partial<Pick<Habit, 'icon' | 'frequency' | 'taskId' | 'projectId' | 'goalId'>>) => void
   restoreArchivedItem: (id: string) => Promise<RestoreArchivedResult>
   saveWeeklyReview: (patch: Pick<WeeklyReview, 'wentWell' | 'blockers' | 'nextGoal'> & Partial<Pick<WeeklyReview, 'status'>>) => void
-  addNote: (input: Pick<Note, 'title' | 'body' | 'tag'>) => void
-  updateNote: (id: string, patch: Partial<Pick<Note, 'title' | 'body' | 'tag'>>) => void
+  addNote: (input: Pick<Note, 'title' | 'body' | 'tag'> & Partial<Pick<Note, 'projectId'>>) => void
+  updateNote: (id: string, patch: Partial<Pick<Note, 'title' | 'body' | 'tag' | 'projectId'>>) => void
+  restoreNoteVersion: (id: string, versionId: string) => void
   toggleNotePin: (id: string) => void
   archiveNote: (id: string) => void
   addResource: (input: Pick<Resource, 'title' | 'type'> & Partial<Pick<Resource, 'url' | 'description' | 'tags' | 'clientId' | 'projectId' | 'attachments'>>) => void
@@ -1106,12 +1114,13 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void archiveRemoteGoal(id)
     },
     addProject: (input) => {
-      const project: Project = { id: `project-${Date.now()}`, title: input.title.trim(), description: input.description?.trim() ?? '', goalId: input.goalId, clientId: input.clientId, nextStep: input.nextStep?.trim() || undefined, milestones: input.milestones?.filter((milestone) => milestone.title.trim()).map((milestone, index) => ({ id: milestone.id || `milestone-${Date.now()}-${index}`, title: milestone.title.trim(), status: milestone.status === 'done' ? 'done' : 'pending' })) ?? [], status: input.status ?? 'backlog', progress: Math.max(0, Math.min(100, Math.round(input.progress ?? 0))), dueLabel: input.dueLabel.trim() || 'بدون موعد' }
+      const now = new Date().toISOString()
+      const project: Project = { id: newLocalId('project'), title: input.title.trim(), description: input.description?.trim() ?? '', goalId: input.goalId, clientId: input.clientId, nextStep: input.nextStep?.trim() || undefined, milestones: input.milestones?.filter((milestone) => milestone.title.trim()).map((milestone, index) => ({ id: milestone.id || `milestone-${Date.now()}-${index}`, title: milestone.title.trim(), status: milestone.status === 'done' ? 'done' : 'pending' })) ?? [], status: input.status ?? 'backlog', progress: Math.max(0, Math.min(100, Math.round(input.progress ?? 0))), dueLabel: input.dueLabel.trim() || 'بدون موعد', dueAt: input.dueAt, createdAt: now, updatedAt: now }
       setProjects((items) => [project, ...items])
       void createRemoteProject(input)
     },
     updateProject: (id, patch) => {
-      setProjects((items) => items.map((project) => project.id === id ? { ...project, ...patch } : project))
+      setProjects((items) => items.map((project) => project.id === id ? { ...project, ...patch, updatedAt: new Date().toISOString() } : project))
       void updateRemoteProject(id, patch)
     },
     archiveProject: (id) => {
@@ -1660,13 +1669,34 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       })
     },
     addNote: (input) => {
-      const id = `note-${Date.now()}`
-      setNotes((items) => [{ id, pinned: false, createdAt: 'الآن', ...input }, ...items])
+      const id = newLocalId('note')
+      const now = new Date().toISOString()
+      const note: Note = { id, pinned: false, createdAt: now, updatedAt: now, versions: [], ...input }
+      setNotes((items) => [note, ...items])
       runTrackedSync({ id: `note:create:${id}`, entity: 'الملاحظات', action: 'إنشاء', entityId: id }, () => createRemoteNote(input))
     },
     updateNote: (id, patch) => {
-      setNotes((items) => items.map((note) => note.id === id ? { ...note, ...patch } : note))
+      const now = new Date().toISOString()
+      setNotes((items) => items.map((note) => {
+        if (note.id !== id) return note
+        const contentChanged = (patch.title !== undefined && patch.title !== note.title) || (patch.body !== undefined && patch.body !== note.body)
+        const versions = contentChanged
+          ? [{ id: newLocalId('note-version'), title: note.title, body: note.body, savedAt: note.updatedAt ?? note.createdAt }, ...(note.versions ?? [])].slice(0, 10)
+          : note.versions
+        return { ...note, ...patch, updatedAt: now, versions }
+      }))
       runTrackedSync({ id: `note:update:${id}`, entity: 'الملاحظات', action: 'تحديث', entityId: id }, () => updateRemoteNote(id, patch))
+    },
+    restoreNoteVersion: (id, versionId) => {
+      setNotes((items) => items.map((note) => {
+        if (note.id !== id) return note
+        const version = note.versions?.find((entry) => entry.id === versionId)
+        if (!version) return note
+        const current = { id: newLocalId('note-version'), title: note.title, body: note.body, savedAt: note.updatedAt ?? note.createdAt }
+        const restored = { ...note, title: version.title, body: version.body, updatedAt: new Date().toISOString(), versions: [current, ...(note.versions ?? []).filter((entry) => entry.id !== versionId)].slice(0, 10) }
+        runTrackedSync({ id: `note:update:${id}`, entity: 'الملاحظات', action: 'استعادة نسخة', entityId: id }, () => updateRemoteNote(id, { title: restored.title, body: restored.body }))
+        return restored
+      }))
     },
     toggleNotePin: (id) => {
       setNotes((items) => items.map((note) => {
