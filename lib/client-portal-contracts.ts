@@ -2,6 +2,7 @@ import { LOCAL_EXTERNAL_ROLE_CAPABILITIES, LOCAL_SHARE_ROLE_CAPABILITIES, type L
 
 export type ClientPortalShareStatus = 'active' | 'revoked' | 'expired'
 export type ClientPortalInteractionKind = 'comment' | 'change-request' | 'milestone-approval'
+export type ClientPortalAuditAction = 'created' | 'renewed' | 'rotated' | 'revoked' | 'commented' | 'change-requested' | 'milestone-approved'
 
 export type ClientPortalResource = {
   id: string
@@ -36,14 +37,24 @@ export type ClientPortalInteraction = {
   createdAt: string
 }
 
+export type ClientPortalAuditEvent = {
+  id: string
+  shareId: string
+  action: ClientPortalAuditAction
+  projectId?: string
+  detail: string
+  createdAt: string
+}
+
 export type ClientPortalFallback = {
   shares: ClientPortalShare[]
   interactions: ClientPortalInteraction[]
+  auditEvents: ClientPortalAuditEvent[]
 }
 
 export const CLIENT_PORTAL_STORAGE_KEY = 'personal-command-center-client-portal-v1'
 
-export const clientPortalFallback: ClientPortalFallback = { shares: [], interactions: [] }
+export const clientPortalFallback: ClientPortalFallback = { shares: [], interactions: [], auditEvents: [] }
 
 export function canClientPortalRole(role: ClientPortalShare['role'], capability: LocalRoleCapability) {
   const capabilities = role === 'client' || role === 'reader' || role === 'reviewer' ? LOCAL_EXTERNAL_ROLE_CAPABILITIES[role] : LOCAL_SHARE_ROLE_CAPABILITIES[role]
@@ -106,6 +117,13 @@ function normalizeInteraction(value: unknown): ClientPortalInteraction | null {
   return { id: value.id, shareId: value.shareId, projectId: value.projectId, milestoneId: typeof value.milestoneId === 'string' ? value.milestoneId : undefined, kind, body: value.body, createdAt: stringValue(value.createdAt, new Date().toISOString()) }
 }
 
+function normalizeAuditEvent(value: unknown): ClientPortalAuditEvent | null {
+  if (!isObject(value) || typeof value.id !== 'string' || typeof value.shareId !== 'string' || typeof value.detail !== 'string') return null
+  const actions: ClientPortalAuditAction[] = ['created', 'renewed', 'rotated', 'revoked', 'commented', 'change-requested', 'milestone-approved']
+  if (!actions.includes(value.action as ClientPortalAuditAction)) return null
+  return { id: value.id, shareId: value.shareId, action: value.action as ClientPortalAuditAction, projectId: typeof value.projectId === 'string' ? value.projectId : undefined, detail: value.detail, createdAt: stringValue(value.createdAt, new Date().toISOString()) }
+}
+
 export function readClientPortalFallback(): ClientPortalFallback {
   if (typeof window === 'undefined') return clientPortalFallback
   try {
@@ -113,6 +131,7 @@ export function readClientPortalFallback(): ClientPortalFallback {
     return {
       shares: Array.isArray(parsed.shares) ? parsed.shares.map(normalizeShare).filter((item): item is ClientPortalShare => Boolean(item)) : [],
       interactions: Array.isArray(parsed.interactions) ? parsed.interactions.map(normalizeInteraction).filter((item): item is ClientPortalInteraction => Boolean(item)) : [],
+      auditEvents: Array.isArray(parsed.auditEvents) ? parsed.auditEvents.map(normalizeAuditEvent).filter((item): item is ClientPortalAuditEvent => Boolean(item)) : [],
     }
   } catch {
     return clientPortalFallback
@@ -139,4 +158,22 @@ export function createClientPortalToken() {
 
 export function createClientPortalId(prefix: string) {
   return `${prefix}-${createClientPortalToken().slice(6)}`
+}
+
+export function renewClientPortalShare(share: ClientPortalShare, days: number, now = new Date()): ClientPortalShare {
+  const safeDays = Math.min(90, Math.max(1, Math.round(days) || 14))
+  return { ...share, status: 'active', expiresAt: new Date(now.getTime() + safeDays * 86_400_000).toISOString(), updatedAt: now.toISOString() }
+}
+
+export function rotateClientPortalShare(share: ClientPortalShare, now = new Date()): ClientPortalShare {
+  return { ...share, token: createClientPortalToken(), status: 'active', updatedAt: now.toISOString() }
+}
+
+export function hasMilestoneApproval(interactions: ClientPortalInteraction[], shareId: string, projectId: string, milestoneId: string) {
+  return interactions.some((item) => item.shareId === shareId && item.projectId === projectId && item.milestoneId === milestoneId && item.kind === 'milestone-approval')
+}
+
+export function scopeClientPortalProjectIds(projectIds: string[], clientId: string, projects: Array<{ id: string; clientId?: string }>) {
+  const allowed = new Set(projects.filter((project) => project.clientId === clientId).map((project) => project.id))
+  return [...new Set(projectIds)].filter((id) => allowed.has(id))
 }

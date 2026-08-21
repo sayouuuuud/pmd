@@ -1,7 +1,7 @@
 'use client'
 
-import { AlertCircle, CheckCircle2, CloudUpload, RefreshCw } from 'lucide-react'
-import { useState } from 'react'
+import { AlertCircle, CheckCircle2, CloudOff, CloudUpload, RefreshCw } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useCommandCenter } from '@/lib/command-center-store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,8 +9,20 @@ import { Button } from '@/components/ui/button'
 export function SyncStatus() {
   const { syncOperations, retryFailedSyncs } = useCommandCenter()
   const [retrying, setRetrying] = useState(false)
+  const [online, setOnline] = useState(true)
   const failed = syncOperations.filter((item) => item.status === 'failed')
   const pending = syncOperations.filter((item) => item.status === 'pending')
+
+  useEffect(() => {
+    const update = () => setOnline(navigator.onLine)
+    update()
+    window.addEventListener('online', update)
+    window.addEventListener('offline', update)
+    return () => {
+      window.removeEventListener('online', update)
+      window.removeEventListener('offline', update)
+    }
+  }, [])
 
   async function retry() {
     setRetrying(true)
@@ -19,6 +31,15 @@ export function SyncStatus() {
     } finally {
       setRetrying(false)
     }
+  }
+
+  if (!online) {
+    return (
+      <Badge variant="warning" role="status" aria-live="polite">
+        <CloudOff data-icon="inline-start" />
+        دون اتصال · التغييرات محفوظة محليًا
+      </Badge>
+    )
   }
 
   if (!syncOperations.length) {

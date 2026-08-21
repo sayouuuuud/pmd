@@ -9,6 +9,7 @@ import { normalizeBillingLines, normalizeInvoice, normalizeQuote, type Invoice, 
 import { createDemoActivitySessions, normalizeActivitySession, normalizeActivitySettings, pruneActivitySessions, type ActivitySession, type ActivitySessionInput, type ActivitySettings } from './activity'
 import { enqueueSync, flushSyncQueue, readSyncQueue, retryFailed, writeSyncQueue, type SyncQueueItem } from './sync-queue'
 import { formatTaskDue, isTaskDueToday, nextRecurringDueAt, type TaskRecurrence } from './task-dates'
+import { hasDependencyCycle, sanitizeDependencyIds } from './task-operations'
 export type { BillingLineItem, Invoice, InvoiceStatus, Quote, QuoteStatus } from './billing'
 export type { ActivityCategory, ActivitySession, ActivitySessionInput, ActivitySettings, ActivitySource, ActivitySyncState } from './activity'
 
@@ -56,6 +57,7 @@ export type Task = {
   subtasks?: { id: string; title: string; done: boolean }[]
   sourceNoteId?: string
   projectId?: string
+  dependencyIds?: string[]
 }
 
 export type Goal = {
@@ -379,9 +381,15 @@ type CommandCenterContextValue = {
   addSubtask: (taskId: string, title: string) => void
   toggleSubtask: (taskId: string, subtaskId: string) => void
   removeSubtask: (taskId: string, subtaskId: string) => void
-  addTask: (input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'dueAt' | 'timezone' | 'recurrence' | 'reminderMinutes' | 'recurring' | 'projectId' | 'sourceNoteId'>>) => void
+  addTask: (input: Pick<Task, 'title' | 'priority' | 'dueLabel' | 'category'> & Partial<Pick<Task, 'description' | 'dueAt' | 'timezone' | 'recurrence' | 'reminderMinutes' | 'recurring' | 'projectId' | 'sourceNoteId' | 'dependencyIds'>>) => void
   updateTask: (id: string, patch: Partial<Task>) => void
   archiveTask: (id: string) => void
+  deleteTask: (id: string) => void
+  bulkUpdateTasks: (ids: string[], patch: Pick<Partial<Task>, 'status'>) => void
+  bulkArchiveTasks: (ids: string[]) => void
+  bulkDeleteTasks: (ids: string[]) => void
+  undoTaskAction: () => void
+  canUndoTaskAction: boolean
   addGoal: (input: Pick<Goal, 'title' | 'horizon' | 'targetLabel'> & Partial<Pick<Goal, 'description' | 'status' | 'progress'>>) => void
   updateGoal: (id: string, patch: Partial<Goal>) => void
   archiveGoal: (id: string) => void
@@ -832,6 +840,8 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
   const [activitySessions, setActivitySessions] = useState<ActivitySession[]>(initial.activitySessions ?? [])
   const [activitySettings, setActivitySettings] = useState<ActivitySettings>(initial.activitySettings)
   const [syncOperations, setSyncOperations] = useState<SyncOperation[]>([])
+  const [taskUndoSnapshot, setTaskUndoSnapshot] = useState<{ tasks: Task[]; planItems: PlanItem[]; archive: ArchivedItem[] } | null>(null)
+  const taskUndoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const retryHandlers = useRef(new Map<string, () => Promise<unknown>>())
   const flushingSync = useRef(false)
   const [hydrated, setHydrated] = useState(false)
@@ -936,6 +946,12 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
     const title = 'title' in payload ? payload.title : payload.name
     setArchive((items) => [{ id: payload.id, kind, title, subtitle, archivedAt: new Date().toISOString(), payload }, ...items.filter((item) => item.id !== payload.id || item.kind !== kind)])
   }
+
+  const captureTaskUndo = useCallback(() => {
+    if (taskUndoTimer.current) clearTimeout(taskUndoTimer.current)
+    setTaskUndoSnapshot({ tasks, planItems, archive })
+    taskUndoTimer.current = setTimeout(() => setTaskUndoSnapshot(null), 10_000)
+  }, [archive, planItems, tasks])
 
   const value = useMemo<CommandCenterContextValue>(() => ({
     profile,
@@ -1042,6 +1058,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
           ? { status: 'todo', dueAt: nextDueAt, dueLabel: formatTaskDue({ dueAt: nextDueAt }), updatedAt: new Date().toISOString() }
           : { status, updatedAt: new Date().toISOString() }
         runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, patch))
+        if (task.projectId) setProjectUpdates((updates) => [{ id: newLocalId('project-update'), projectId: task.projectId!, body: status === 'done' ? `اكتملت المهمة: ${task.title}` : `أعيد فتح المهمة: ${task.title}`, kind: 'progress', createdAt: new Date().toISOString() }, ...updates])
         return { ...task, ...patch }
       }))
       setPlanItems((items) => items.map((item) => item.sourceId === id ? { ...item, status: item.status === 'done' ? 'pending' : 'done' } : item))
@@ -1050,7 +1067,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       const id = newLocalId('task')
       const now = new Date().toISOString()
       const recurrence = input.recurrence ?? (input.recurring ? 'daily' : 'none')
-      const task: Task = { id, status: 'todo', createdAt: now, updatedAt: now, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, recurrence, recurring: recurrence !== 'none', ...input }
+      const task: Task = { id, status: 'todo', createdAt: now, updatedAt: now, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, recurrence, recurring: recurrence !== 'none', ...input, dependencyIds: sanitizeDependencyIds(id, input.dependencyIds ?? [], tasks) }
       setTasks((items) => [task, ...items])
       runTrackedSync({ id: `task:create:${id}`, entity: 'المهام', action: 'إنشاء', entityId: id }, () => createRemoteTask(input))
       if (isTaskDueToday(task)) {
@@ -1085,17 +1102,60 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void archiveRemoteSubtask(taskId, subtaskId)
     },
     updateTask: (id, patch) => {
-      const nextPatch = { ...patch, updatedAt: new Date().toISOString() }
+      const dependencyIds = patch.dependencyIds === undefined ? undefined : sanitizeDependencyIds(id, patch.dependencyIds, tasks)
+      if (dependencyIds && hasDependencyCycle(id, dependencyIds, tasks)) return
+      const nextPatch = { ...patch, ...(dependencyIds ? { dependencyIds } : {}), updatedAt: new Date().toISOString() }
+      const currentTask = tasks.find((task) => task.id === id)
       setTasks((items) => items.map((task) => task.id === id ? { ...task, ...nextPatch } : task))
+      if (currentTask?.projectId && patch.status && patch.status !== currentTask.status) {
+        setProjectUpdates((items) => [{ id: newLocalId('project-update'), projectId: currentTask.projectId!, body: patch.status === 'done' ? `اكتملت المهمة: ${currentTask.title}` : `تغيرت حالة المهمة «${currentTask.title}»`, kind: 'progress', createdAt: new Date().toISOString() }, ...items])
+      }
       runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث', entityId: id }, () => updateRemoteTask(id, nextPatch))
     },
     archiveTask: (id) => {
       const item = tasks.find((task) => task.id === id)
       if (!item) return
+      captureTaskUndo()
       addArchivedItem('task', item, `المهام · ${item.category}`)
-      setTasks((items) => items.filter((task) => task.id !== id))
+      setTasks((items) => items.filter((task) => task.id !== id).map((task) => ({ ...task, dependencyIds: task.dependencyIds?.filter((dependencyId) => dependencyId !== id) })))
+      setPlanItems((items) => items.filter((planItem) => planItem.sourceId !== id))
       runTrackedSync({ id: `task:archive:${id}`, entity: 'المهام', action: 'أرشفة', entityId: id }, () => archiveRemoteTask(id))
     },
+    deleteTask: (id) => {
+      if (!tasks.some((task) => task.id === id)) return
+      setTasks((items) => items.filter((task) => task.id !== id).map((task) => ({ ...task, dependencyIds: task.dependencyIds?.filter((dependencyId) => dependencyId !== id) })))
+      setPlanItems((items) => items.filter((planItem) => planItem.sourceId !== id))
+      runTrackedSync({ id: `task:delete:${id}`, entity: 'المهام', action: 'حذف نهائي', entityId: id }, () => archiveRemoteTask(id))
+    },
+    bulkUpdateTasks: (ids, patch) => {
+      const selected = new Set(ids)
+      if (selected.size === 0) return
+      captureTaskUndo()
+      const updatedAt = new Date().toISOString()
+      setTasks((items) => items.map((task) => selected.has(task.id) ? { ...task, ...patch, updatedAt } : task))
+      setPlanItems((items) => items.map((item) => item.sourceId && selected.has(item.sourceId) && patch.status ? { ...item, status: patch.status === 'done' ? 'done' : 'pending' } : item))
+      ids.forEach((id) => runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث جماعي', entityId: id }, () => updateRemoteTask(id, { ...patch, updatedAt })))
+    },
+    bulkArchiveTasks: (ids) => {
+      const selected = new Set(ids)
+      const selectedTasks = tasks.filter((task) => selected.has(task.id))
+      if (selectedTasks.length === 0) return
+      captureTaskUndo()
+      const archivedAt = new Date().toISOString()
+      setArchive((items) => [...selectedTasks.map((task) => ({ id: task.id, kind: 'task' as const, title: task.title, subtitle: `المهام · ${task.category}`, archivedAt, payload: task })), ...items.filter((item) => !selected.has(item.id))])
+      setTasks((items) => items.filter((task) => !selected.has(task.id)).map((task) => ({ ...task, dependencyIds: task.dependencyIds?.filter((id) => !selected.has(id)) })))
+      setPlanItems((items) => items.filter((item) => !item.sourceId || !selected.has(item.sourceId)))
+      ids.forEach((id) => runTrackedSync({ id: `task:archive:${id}`, entity: 'المهام', action: 'أرشفة جماعية', entityId: id }, () => archiveRemoteTask(id)))
+    },
+    undoTaskAction: () => {
+      if (!taskUndoSnapshot) return
+      setTasks(taskUndoSnapshot.tasks)
+      setPlanItems(taskUndoSnapshot.planItems)
+      setArchive(taskUndoSnapshot.archive)
+      setTaskUndoSnapshot(null)
+      if (taskUndoTimer.current) clearTimeout(taskUndoTimer.current)
+    },
+    canUndoTaskAction: Boolean(taskUndoSnapshot),
     addGoal: (input) => {
       const goal: Goal = { id: `goal-${Date.now()}`, title: input.title, description: input.description ?? '', horizon: input.horizon, status: input.status ?? 'active', progress: input.progress ?? 0, targetLabel: input.targetLabel }
       setGoals((items) => [goal, ...items])
@@ -1120,7 +1180,12 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       void createRemoteProject(input)
     },
     updateProject: (id, patch) => {
+      const current = projects.find((project) => project.id === id)
       setProjects((items) => items.map((project) => project.id === id ? { ...project, ...patch, updatedAt: new Date().toISOString() } : project))
+      if (current && (patch.status !== undefined || patch.progress !== undefined || patch.milestones !== undefined)) {
+        const body = patch.milestones !== undefined ? 'تم تحديث مراحل المشروع.' : patch.status !== undefined && patch.status !== current.status ? 'تم تغيير حالة المشروع.' : `تم تحديث تقدم المشروع إلى ${patch.progress ?? current.progress}%.`
+        setProjectUpdates((items) => [{ id: newLocalId('project-update'), projectId: id, body, kind: 'progress', createdAt: new Date().toISOString() }, ...items])
+      }
       void updateRemoteProject(id, patch)
     },
     archiveProject: (id) => {
@@ -1938,7 +2003,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setPlanItems((items) => items.map((item) => item.id === id ? { ...item, status: 'pending' } : item))
       void updateRemotePlanItem(id, { status: 'pending' })
     },
-  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings, syncOperations, retryFailedSyncs, runTrackedSync])
+  }), [profile, tasks, notes, habits, planItems, goals, projects, projectUpdates, projectPricings, financeEntries, quotes, invoices, budget, religious, reminders, entertainment, journal, weeklyReview, archive, resources, activitySessions, activitySettings, syncOperations, retryFailedSyncs, runTrackedSync, taskUndoSnapshot, captureTaskUndo])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

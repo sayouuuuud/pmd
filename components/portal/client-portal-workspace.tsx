@@ -1,13 +1,13 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, Clock3, ExternalLink, FileText, MessageSquare, Send, ShieldCheck, WalletCards } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { useCommandCenter } from '@/lib/command-center-store'
-import { canClientPortalRole, createClientPortalId, getActiveClientPortalShare, persistClientPortalFallback, readClientPortalFallback, type ClientPortalFallback, type ClientPortalInteraction } from '@/lib/client-portal-contracts'
+import { canClientPortalRole, createClientPortalId, getActiveClientPortalShare, hasMilestoneApproval, persistClientPortalFallback, readClientPortalFallback, scopeClientPortalProjectIds, type ClientPortalAuditAction, type ClientPortalFallback, type ClientPortalInteraction } from '@/lib/client-portal-contracts'
 import { readWorkspaceFallback, type Client } from '@/lib/workspace-types'
 
 function money(amount: number, currency = 'جنيه') {
@@ -27,20 +27,30 @@ function interactionLabel(kind: ClientPortalInteraction['kind']) {
 
 export function ClientPortalWorkspace({ token }: { token: string }) {
   const { projects, projectUpdates, projectPricings } = useCommandCenter()
-  const [portal, setPortal] = useState<ClientPortalFallback>(readClientPortalFallback)
+  const [portal, setPortal] = useState<ClientPortalFallback>({ shares: [], interactions: [], auditEvents: [] })
+  const [client, setClient] = useState<Client | null>(null)
+  const [hydrated, setHydrated] = useState(false)
   const share = useMemo(() => getActiveClientPortalShare(portal.shares, token), [portal.shares, token])
-  const [client] = useState<Client | null>(() => {
-    if (!share) return null
+
+  useEffect(() => {
+    const localPortal = readClientPortalFallback()
+    const localShare = getActiveClientPortalShare(localPortal.shares, token)
     const fallback = readWorkspaceFallback()
-    return Object.values(fallback.clientsByWorkspace).flat().find((item) => item.id === share.clientId) ?? null
-  })
+    setPortal(localPortal)
+    setClient(localShare ? Object.values(fallback.clientsByWorkspace).flat().find((item) => item.id === localShare.clientId) ?? null : null)
+    setHydrated(true)
+  }, [token])
   const [activeProjectId, setActiveProjectId] = useState('')
   const [message, setMessage] = useState('')
   const [messageKind, setMessageKind] = useState<'comment' | 'change-request'>('comment')
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
 
-  const sharedProjects = useMemo(() => share ? projects.filter((project) => share.projectIds.includes(project.id)) : [], [projects, share])
+  const sharedProjects = useMemo(() => {
+    if (!share) return []
+    const scopedIds = new Set(scopeClientPortalProjectIds(share.projectIds, share.clientId, projects))
+    return projects.filter((project) => scopedIds.has(project.id))
+  }, [projects, share])
   const selectedProject = sharedProjects.find((project) => project.id === activeProjectId) ?? sharedProjects[0]
   const sharedUpdates = useMemo(() => selectedProject ? projectUpdates.filter((update) => update.projectId === selectedProject.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [], [projectUpdates, selectedProject])
   const sharedPricing = useMemo(() => share?.includePricing && selectedProject ? projectPricings.filter((pricing) => pricing.projectId === selectedProject.id && pricing.status !== 'cancelled') : [], [projectPricings, selectedProject, share])
@@ -55,8 +65,15 @@ export function ClientPortalWorkspace({ token }: { token: string }) {
       setError('اكتب رسالة قصيرة قبل الإرسال.')
       return
     }
-    const interaction: ClientPortalInteraction = { id: createClientPortalId('portal-interaction'), shareId: share.id, projectId: selectedProject.id, milestoneId, kind, body: trimmed, createdAt: new Date().toISOString() }
-    const next = { ...portal, interactions: [interaction, ...portal.interactions] }
+    if (kind === 'milestone-approval' && milestoneId && hasMilestoneApproval(portal.interactions, share.id, selectedProject.id, milestoneId)) {
+      setNotice('تم تسجيل موافقتك على هذه المرحلة من قبل.')
+      setError('')
+      return
+    }
+    const createdAt = new Date().toISOString()
+    const interaction: ClientPortalInteraction = { id: createClientPortalId('portal-interaction'), shareId: share.id, projectId: selectedProject.id, milestoneId, kind, body: trimmed, createdAt }
+    const auditAction: ClientPortalAuditAction = kind === 'milestone-approval' ? 'milestone-approved' : kind === 'change-request' ? 'change-requested' : 'commented'
+    const next = { ...portal, interactions: [interaction, ...portal.interactions], auditEvents: [{ id: createClientPortalId('portal-audit'), shareId: share.id, projectId: selectedProject.id, action: auditAction, detail: interactionLabel(kind), createdAt }, ...portal.auditEvents] }
     setPortal(next)
     persistClientPortalFallback(next)
     setMessage('')
@@ -64,7 +81,8 @@ export function ClientPortalWorkspace({ token }: { token: string }) {
     setError('')
   }
 
-  if (!share) return <PortalState title="الرابط غير صالح" description="لم يتم العثور على مشاركة بهذا الرمز أو انتهت صلاحيتها." tone="warning" />
+  if (!hydrated) return <main id="main-content" className="mx-auto flex min-h-screen max-w-2xl items-center px-4 py-12"><ContentCard className="w-full text-center" title="جاري فتح البوابة" description="نتحقق من صلاحية الرابط ونطاق المشاريع المسموح به."><p role="status" aria-live="polite" aria-busy="true" className="text-sm text-muted-foreground">لحظات قليلة...</p></ContentCard></main>
+  if (!share) return <PortalState title="الرابط غير صالح" description="لم يتم العثور على مشاركة بهذا الرمز." tone="warning" />
   if (share.status !== 'active') return <PortalState title={share.status === 'expired' ? 'انتهت صلاحية الرابط' : 'تم إبطال الرابط'} description="اطلب من مالك المشروع إنشاء رابط مشاركة جديد إذا كان الوصول ما يزال مطلوبًا." tone="warning" />
   if (!client) return <PortalState title="بيانات العميل غير متاحة" description="تعذر تحميل بيانات العميل من التخزين المحلي لهذه المشاركة." tone="warning" />
 
@@ -74,6 +92,7 @@ export function ClientPortalWorkspace({ token }: { token: string }) {
 
       {notice ? <div role="status" aria-live="polite" className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">{notice}</div> : null}
       {error ? <div role="alert" aria-live="assertive" className="mb-4 rounded-2xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div> : null}
+      {!canComment && !canReview ? <div role="status" className="mb-4 rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">صلاحية هذا الرابط للقراءة فقط؛ التعليقات وطلبات التعديل والموافقات غير متاحة.</div> : null}
 
       {sharedProjects.length === 0 ? <ContentCard title="لا توجد مشاريع مشتركة" description="لم يحدد المالك مشروعًا متاحًا لهذا الرابط بعد."><p className="text-sm text-muted-foreground">اطلب من مالك مساحة العمل تحديث المشاركة بمشروع واحد على الأقل.</p></ContentCard> : <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
         <ContentCard title="المشاريع المشتركة" description="اختر مشروعًا لعرض تفاصيله"><div className="space-y-2">{sharedProjects.map((project) => <button type="button" key={project.id} onClick={() => setActiveProjectId(project.id)} className={`w-full rounded-2xl border px-4 py-3 text-right transition-colors ${selectedProject?.id === project.id ? 'border-primary/40 bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/50'}`}><span className="block font-medium">{project.title}</span><span className="mt-1 block text-xs text-muted-foreground">{project.progress}% مكتمل{share.includeSchedule ? ` · ${project.dueLabel}` : ''}</span><span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-muted"><span className="block h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, project.progress))}%` }} /></span></button>)}</div></ContentCard>
@@ -81,7 +100,7 @@ export function ClientPortalWorkspace({ token }: { token: string }) {
         {selectedProject ? <div className="space-y-5">
           <ContentCard title={selectedProject.title} description={selectedProject.description || 'بدون وصف إضافي'}><div className="grid gap-3 sm:grid-cols-3"><div className="rounded-2xl bg-muted/60 p-3"><p className="text-xs text-muted-foreground">التقدم</p><p className="mt-2 text-xl font-semibold">{selectedProject.progress}%</p></div><div className="rounded-2xl bg-muted/60 p-3"><p className="text-xs text-muted-foreground">الحالة</p><p className="mt-2 text-sm font-semibold">{selectedProject.status === 'done' ? 'مكتمل' : selectedProject.status === 'in-progress' ? 'قيد التنفيذ' : 'مخطط'}</p></div>{share.includeSchedule ? <div className="rounded-2xl bg-muted/60 p-3"><p className="text-xs text-muted-foreground">الموعد</p><p className="mt-2 text-sm font-semibold">{selectedProject.dueLabel}</p></div> : null}</div>{selectedProject.nextStep ? <div className="mt-4 flex items-start gap-3 rounded-2xl bg-accent p-4"><Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-accent-foreground" /><div><p className="text-xs text-accent-foreground/70">الخطوة التالية</p><p className="mt-1 font-semibold text-accent-foreground">{selectedProject.nextStep}</p></div></div> : null}</ContentCard>
 
-          <ContentCard title="المراحل والموافقة" description="راجع المراحل وأرسل موافقة أو طلب تعديل. لا يغير ذلك حالة المشروع الداخلية تلقائيًا."><div className="space-y-3">{(selectedProject.milestones ?? []).length === 0 ? <p className="text-sm text-muted-foreground">لا توجد مراحل مشاركة لهذا المشروع.</p> : (selectedProject.milestones ?? []).map((milestone) => <div key={milestone.id} className="rounded-2xl border border-border bg-muted/20 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2 text-sm font-medium">{milestone.status === 'done' ? <CheckCircle2 className="h-4 w-4 text-positive" /> : <Clock3 className="h-4 w-4 text-muted-foreground" />}{milestone.title}</div>{canReview ? <Button type="button" size="sm" variant="outline" onClick={() => addInteraction('milestone-approval', `أوافق على المرحلة: ${milestone.title}`, milestone.id)}><CheckCircle2 className="h-4 w-4" />موافقة تجريبية</Button> : null}</div></div>)}</div></ContentCard>
+          <ContentCard title="المراحل والموافقة" description="راجع المراحل وأرسل موافقة أو طلب تعديل. لا يغير ذلك حالة المشروع الداخلية تلقائيًا."><div className="space-y-3">{(selectedProject.milestones ?? []).length === 0 ? <p className="text-sm text-muted-foreground">لا توجد مراحل مشاركة لهذا المشروع.</p> : (selectedProject.milestones ?? []).map((milestone) => <div key={milestone.id} className="rounded-2xl border border-border bg-muted/20 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2 text-sm font-medium">{milestone.status === 'done' ? <CheckCircle2 className="h-4 w-4 text-positive" /> : <Clock3 className="h-4 w-4 text-muted-foreground" />}{milestone.title}</div>{canReview ? <Button type="button" size="sm" variant="outline" disabled={hasMilestoneApproval(portal.interactions, share.id, selectedProject.id, milestone.id)} onClick={() => addInteraction('milestone-approval', `أوافق على المرحلة: ${milestone.title}`, milestone.id)}><CheckCircle2 className="h-4 w-4" />{hasMilestoneApproval(portal.interactions, share.id, selectedProject.id, milestone.id) ? 'تمت الموافقة' : 'موافقة تجريبية'}</Button> : null}</div></div>)}</div></ContentCard>
 
           {sharedUpdates.length || share.resources.length ? <ContentCard title="التحديثات والروابط" description="المعلومات التي اختار المالك مشاركتها"><div className="space-y-3">{sharedUpdates.map((update) => <div key={update.id} className="rounded-2xl bg-muted/60 p-3"><div className="flex items-start gap-2"><MessageSquare className="mt-0.5 h-4 w-4 text-primary" /><div><p className="text-sm leading-6">{update.body}</p><p className="mt-1 text-[11px] text-muted-foreground">{formatDate(update.createdAt)}</p></div></div></div>)}{share.resources.map((resource) => <a key={resource.id} href={resource.url} target="_blank" rel="noreferrer" className="flex items-start gap-3 rounded-2xl bg-muted/60 p-3 hover:bg-muted"><FileText className="mt-0.5 h-4 w-4 text-primary" /><span className="min-w-0 flex-1"><span className="block font-medium">{resource.title}</span><span className="mt-1 block truncate text-xs text-muted-foreground">{resource.description || resource.url}</span></span><ExternalLink className="h-4 w-4 shrink-0" /></a>)}</div></ContentCard> : null}
 

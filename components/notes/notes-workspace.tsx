@@ -32,6 +32,7 @@ export function NotesWorkspace() {
   const { notes, tasks, projects, goals, addNote, updateNote, restoreNoteVersion, toggleNotePin, archiveNote } = useCommandCenter()
   const [query, setQuery] = useState('')
   const [tagFilter, setTagFilter] = useState('all')
+  const [sortBy, setSortBy] = useState<'updated' | 'created' | 'title'>('updated')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -43,6 +44,22 @@ export function NotesWorkspace() {
     if (saved === 'list' || saved === 'grid') setView(saved)
   }, [])
   useEffect(() => { window.sessionStorage.setItem('notes-view', view) }, [view])
+  useEffect(() => {
+    const saved = window.sessionStorage.getItem('note-draft')
+    if (!saved) return
+    try {
+      const draft = JSON.parse(saved) as { title?: string; body?: string; projectId?: string; selectedTags?: string[] }
+      setTitle(draft.title ?? '')
+      setBody(draft.body ?? '')
+      setProjectId(draft.projectId ?? '')
+      if (Array.isArray(draft.selectedTags) && draft.selectedTags.length) setSelectedTags(draft.selectedTags)
+    } catch {
+      window.sessionStorage.removeItem('note-draft')
+    }
+  }, [])
+  useEffect(() => {
+    if (title || body || projectId || selectedTags.join(',')) window.sessionStorage.setItem('note-draft', JSON.stringify({ title, body, projectId, selectedTags }))
+  }, [title, body, projectId, selectedTags])
   const availableTags = useMemo(() => Array.from(new Set([...noteTags, ...notes.flatMap((note) => splitNoteTags(note.tag))])).sort((a, b) => a.localeCompare(b, 'ar')), [notes])
   const visibleNotes = useMemo(() => notes
     .filter((note) => {
@@ -51,7 +68,13 @@ export function NotesWorkspace() {
       const matchesTag = tagFilter === 'all' || splitNoteTags(note.tag).includes(tagFilter)
       return matchesQuery && matchesTag
     })
-    .sort((left, right) => Number(right.pinned) - Number(left.pinned)), [notes, query, tagFilter])
+    .sort((left, right) => {
+      const pinnedOrder = Number(right.pinned) - Number(left.pinned)
+      if (pinnedOrder) return pinnedOrder
+      if (sortBy === 'title') return left.title.localeCompare(right.title, 'ar')
+      if (sortBy === 'created') return String(right.createdAt).localeCompare(String(left.createdAt))
+      return String(right.updatedAt ?? right.createdAt).localeCompare(String(left.updatedAt ?? left.createdAt))
+    }), [notes, query, tagFilter, sortBy])
 
   function createNote(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -65,12 +88,13 @@ export function NotesWorkspace() {
     setBody('')
     setProjectId('')
     setSelectedTags(['شخصي'])
+    window.sessionStorage.removeItem('note-draft')
   }
 
   return <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
     <ContentCard className="xl:col-span-8" title="ملاحظاتك" description={`${notes.length} ملاحظات محفوظة`} action={<div className="flex items-center gap-1 rounded-xl bg-muted p-1"><Button type="button" variant="ghost" size="icon-sm" onClick={() => setView('grid')} aria-label="شبكة" className={`rounded-lg p-2 ${view === 'grid' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><Grid2X2 className="h-4 w-4" /></Button><Button type="button" variant="ghost" size="icon-sm" onClick={() => setView('list')} aria-label="قائمة" className={`rounded-lg p-2 ${view === 'list' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><List className="h-4 w-4" /></Button></div>}>
       <div className="relative"><Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="البحث في الملاحظات" className="h-11 rounded-2xl pr-10 pl-4" placeholder="ابحث في العناوين والمحتوى والوسوم..." /></div>
-      <div className="mt-3 flex flex-wrap items-center gap-2"><Filter className="h-4 w-4 text-muted-foreground" /><label htmlFor="note-tag-filter" className="text-xs text-muted-foreground">فلترة بالوسم</label><Select id="note-tag-filter" value={tagFilter} onChange={(event) => setTagFilter(event.target.value)} aria-label="فلترة ملاحظات حسب الوسم" className="h-9 w-auto rounded-xl px-3 text-xs"><option value="all">كل الوسوم</option>{availableTags.map((tag) => <option key={tag} value={tag}>{tag}</option>)}</Select>{tagFilter !== 'all' && <Button type="button" variant="outline" size="sm" onClick={() => setTagFilter('all')} className="h-9 rounded-xl border-border px-3 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground">مسح الفلتر</Button>}</div>
+      <div className="mt-3 flex flex-wrap items-center gap-2"><Filter className="h-4 w-4 text-muted-foreground" /><label htmlFor="note-tag-filter" className="text-xs text-muted-foreground">فلترة بالوسم</label><Select id="note-tag-filter" value={tagFilter} onChange={(event) => setTagFilter(event.target.value)} aria-label="فلترة ملاحظات حسب الوسم" className="h-9 w-auto rounded-xl px-3 text-xs"><option value="all">كل الوسوم</option>{availableTags.map((tag) => <option key={tag} value={tag}>{tag}</option>)}</Select>{tagFilter !== 'all' && <Button type="button" variant="outline" size="sm" onClick={() => setTagFilter('all')} className="h-9 rounded-xl border-border px-3 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground">مسح الفلتر</Button>}<label htmlFor="note-sort" className="sr-only">ترتيب الملاحظات</label><Select id="note-sort" value={sortBy} onChange={(event) => setSortBy(event.target.value as typeof sortBy)} aria-label="ترتيب الملاحظات" className="h-9 w-auto rounded-xl px-3 text-xs"><option value="updated">آخر تعديل</option><option value="created">الأحدث إنشاءً</option><option value="title">العنوان</option></Select></div>
       <div className={view === 'grid' ? 'mt-5 grid gap-3 sm:grid-cols-2' : 'mt-5 space-y-2'}>{visibleNotes.map((note) => { const task = note.sourceTaskId ? tasks.find((item) => item.id === note.sourceTaskId) : undefined; const project = projects.find((item) => item.id === (note.projectId ?? task?.projectId)); const goal = project?.goalId ? goals.find((item) => item.id === project.goalId) : undefined; return <NoteCard key={note.id} note={note} taskId={task?.id} taskTitle={task?.title} projectId={project?.id} projectTitle={project?.title} goalId={goal?.id} goalTitle={goal?.title} onUpdate={(patch) => updateNote(note.id, patch)} onRestore={(versionId) => restoreNoteVersion(note.id, versionId)} onPin={() => toggleNotePin(note.id)} onArchive={() => archiveNote(note.id)} /> })}{visibleNotes.length === 0 && <div className="col-span-full"><EmptyState icon={FileText} title="لا توجد ملاحظات مطابقة" description="جرّب تغيير البحث أو وسم الفلترة، أو اكتب ملاحظة سريعة لتبدأ مساحة الالتقاط." /></div>}</div>
     </ContentCard>
           <ContentCard className="xl:col-span-4" title="التقاط سريع" description="اكتب الفكرة كما هي، ورتّبها لاحقًا."><form onSubmit={createNote} noValidate><Input value={title} onChange={(event) => { setTitle(event.target.value); if (noteError) setNoteError('') }} onKeyDown={(event) => { if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit() } }} aria-keyshortcuts="Enter" aria-label="عنوان الملاحظة" aria-invalid={Boolean(noteError)} aria-describedby={noteError ? 'new-note-error' : undefined} className="rounded-2xl px-4 py-3" placeholder="عنوان الملاحظة — اضغط Enter للحفظ السريع" />{noteError && <p id="new-note-error" role="alert" aria-live="assertive" aria-atomic="true" className="mt-2 text-xs text-destructive">{noteError}</p>}<Textarea value={body} onChange={(event) => setBody(event.target.value)} aria-label="تفاصيل الملاحظة" className="mt-3 min-h-32 rounded-2xl px-4 py-3 leading-6" placeholder="اكتب التفاصيل..." /><Select value={projectId} onChange={(event) => setProjectId(event.target.value)} aria-label="ربط الملاحظة بمشروع" className="mt-3 h-11 rounded-2xl px-3"><option value="">بدون مشروع مرتبط</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}</Select><div className="mt-3 grid grid-cols-3 gap-2">{noteTags.map((tag) => <Button type="button" key={tag} variant="ghost" size="sm" onClick={() => setSelectedTags((items) => toggleTag(items, tag))} aria-pressed={selectedTags.includes(tag)} className={`h-auto rounded-xl px-2 py-2 text-xs ${selectedTags.includes(tag) ? 'bg-accent font-semibold text-accent-foreground' : 'bg-muted text-muted-foreground'}`}>{tag}</Button>)}</div><p className="mt-2 text-[11px] text-muted-foreground">يمكن اختيار أكثر من وسم للملاحظة. اضغط Enter داخل العنوان للحفظ السريع.</p><Button type="submit" className="mt-3 h-auto w-full rounded-2xl px-4 py-3 text-sm font-semibold"><Plus className="h-4 w-4" /> حفظ الملاحظة</Button></form></ContentCard>

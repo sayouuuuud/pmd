@@ -8,6 +8,7 @@ import { ContentCard } from '@/components/ui/content-card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { SystemState } from '@/components/ui/system-state'
 import { persistWorkspaceFallback, readWorkspaceFallback, workspaceFallback, type Client, type Workspace, type WorkspaceFallback, type WorkspaceInvitation, type WorkspaceMember } from '@/lib/workspace-types'
 import { ClientPortalManager } from '@/components/workspace/client-portal-manager'
 
@@ -501,6 +502,7 @@ export function WorkspaceWorkspace() {
             ))}
             {!loading && visibleClients.length === 0 ? <p className="text-sm text-muted-foreground sm:col-span-2">{clients.length ? 'لا توجد نتائج مطابقة للبحث.' : 'لا يوجد عملاء في هذه المساحة بعد.'}</p> : null}
           </div>
+          {!canManageClients ? <SystemState kind="permission" title="صلاحية قراءة فقط" description="يمكنك استعراض العملاء في هذه المساحة، بينما الإضافة والتعديل والأرشفة متاحة لمالك المساحة ومديريها." /> : null}
           {canManageClients ? <div className="mt-5 space-y-3 border-t border-border pt-4">
             <Input value={clientName} onChange={(event) => { setClientName(event.target.value); if (clientError) setClientError('') }} placeholder="اسم العميل" aria-label="اسم العميل" aria-invalid={Boolean(clientError)} aria-describedby={clientError ? 'client-form-error' : undefined} />
             <div className="grid gap-3 sm:grid-cols-2">
@@ -516,7 +518,7 @@ export function WorkspaceWorkspace() {
               </Button>
               {editingClientId ? <Button type="button" variant="outline" onClick={resetClientEditor} disabled={saving}><X className="h-4 w-4" />إلغاء</Button> : null}
             </div>
-          </div> : <p className="mt-5 border-t border-border pt-4 text-sm text-muted-foreground">يمكنك استعراض العملاء، بينما تقتصر الإضافة والتعديل والأرشفة على مالك مساحة العمل ومديريها.</p>}
+          </div> : null}
         </ContentCard>
       </div>
 

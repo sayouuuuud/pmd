@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Clipboard, ExternalLink, Link2, MessageSquare, Plus, ShieldCheck, Trash2, UserRound, X } from 'lucide-react'
+import { Check, Clipboard, ExternalLink, History, Link2, MessageSquare, Plus, RefreshCw, RotateCw, ShieldCheck, Trash2, UserRound, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/ui/content-card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { useCommandCenter } from '@/lib/command-center-store'
-import { createClientPortalId, createClientPortalToken, persistClientPortalFallback, readClientPortalFallback, type ClientPortalFallback, type ClientPortalInteraction, type ClientPortalResource, type ClientPortalShare } from '@/lib/client-portal-contracts'
+import { createClientPortalId, createClientPortalToken, persistClientPortalFallback, readClientPortalFallback, renewClientPortalShare, rotateClientPortalShare, scopeClientPortalProjectIds, type ClientPortalAuditAction, type ClientPortalFallback, type ClientPortalInteraction, type ClientPortalResource, type ClientPortalShare } from '@/lib/client-portal-contracts'
 import type { Client, Workspace } from '@/lib/workspace-types'
 
 function formatDate(value: string) {
@@ -53,6 +53,10 @@ export function ClientPortalManager({ workspace, clients, canManage }: { workspa
     persistClientPortalFallback(next)
   }
 
+  function auditEvent(shareId: string, action: ClientPortalAuditAction, detail: string) {
+    return { id: createClientPortalId('portal-audit'), shareId, action, detail, createdAt: new Date().toISOString() }
+  }
+
   function toggleProject(id: string) {
     setProjectIds((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])
   }
@@ -84,8 +88,9 @@ export function ClientPortalManager({ workspace, clients, canManage }: { workspa
       setError('اختر عميلًا أولًا.')
       return
     }
-    if (projectIds.length === 0) {
-      setError('اختر مشروعًا واحدًا على الأقل لمشاركته.')
+    const scopedProjectIds = scopeClientPortalProjectIds(projectIds, activeClient.id, projects)
+    if (scopedProjectIds.length === 0) {
+      setError('اختر مشروعًا واحدًا على الأقل مرتبطًا بهذا العميل.')
       return
     }
     const days = Math.min(90, Math.max(1, Number(expiresInDays) || 14))
@@ -95,7 +100,7 @@ export function ClientPortalManager({ workspace, clients, canManage }: { workspa
       token: createClientPortalToken(),
       workspaceId: workspace.id,
       clientId: activeClient.id,
-      projectIds,
+      projectIds: scopedProjectIds,
       role,
       includePricing,
       includeSchedule,
@@ -105,7 +110,7 @@ export function ClientPortalManager({ workspace, clients, canManage }: { workspa
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     }
-    persist({ ...portal, shares: [share, ...portal.shares] })
+    persist({ ...portal, shares: [share, ...portal.shares], auditEvents: [auditEvent(share.id, 'created', `تم إنشاء الرابط بصلاحية ${days} يومًا.`), ...portal.auditEvents] })
     setGenerated(share)
     setProjectIds([])
     setResources([])
@@ -115,9 +120,22 @@ export function ClientPortalManager({ workspace, clients, canManage }: { workspa
 
   function revokeShare(share: ClientPortalShare) {
     const now = new Date().toISOString()
-    persist({ ...portal, shares: portal.shares.map((item) => item.id === share.id ? { ...item, status: 'revoked', updatedAt: now } : item) })
+    persist({ ...portal, shares: portal.shares.map((item) => item.id === share.id ? { ...item, status: 'revoked', updatedAt: now } : item), auditEvents: [auditEvent(share.id, 'revoked', 'تم إبطال الرابط ومنع الوصول به.'), ...portal.auditEvents] })
     if (generated?.id === share.id) setGenerated(null)
     setNotice('تم إبطال رابط البوابة.')
+  }
+
+  function renewShare(share: ClientPortalShare) {
+    const renewed = renewClientPortalShare(share, Number(expiresInDays) || 14)
+    persist({ ...portal, shares: portal.shares.map((item) => item.id === share.id ? renewed : item), auditEvents: [auditEvent(share.id, 'renewed', `تم تجديد الرابط حتى ${formatDate(renewed.expiresAt!)}`), ...portal.auditEvents] })
+    setNotice('تم تجديد الرابط وتفعيله دون تغيير عنوانه.')
+  }
+
+  function rotateShare(share: ClientPortalShare) {
+    const rotated = rotateClientPortalShare(share)
+    persist({ ...portal, shares: portal.shares.map((item) => item.id === share.id ? rotated : item), auditEvents: [auditEvent(share.id, 'rotated', 'تم تدوير الرمز وإبطال عنوان الرابط السابق.'), ...portal.auditEvents] })
+    setGenerated(rotated)
+    setNotice('تم إنشاء عنوان جديد؛ الرابط السابق لم يعد صالحًا.')
   }
 
   async function copyLink(token: string) {
@@ -170,7 +188,7 @@ export function ClientPortalManager({ workspace, clients, canManage }: { workspa
 
         {generated ? <div className="rounded-2xl border border-primary/25 bg-primary/5 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-medium text-primary">الرابط جاهز للمشاركة اليدوية</p><p className="mt-1 text-xs text-muted-foreground">ينتهي في {generated.expiresAt ? formatDate(generated.expiresAt) : 'بدون انتهاء'}</p></div><Button type="button" variant="outline" size="sm" onClick={() => void copyLink(generated.token)}>{copied ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}{copied ? 'تم النسخ' : 'نسخ الرابط'}</Button></div><div className="mt-3 flex items-center gap-2"><Input dir="ltr" readOnly value={shareUrl(generated.token)} aria-label="رابط البوابة التجريبي" className="min-w-0" /><a href={shareUrl(generated.token)} target="_blank" rel="noreferrer" className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-card px-3 text-xs font-semibold text-primary"><ExternalLink className="h-4 w-4" />فتح</a></div></div> : null}
 
-        <div className="space-y-3 border-t border-border pt-4"><div className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" /><p className="font-medium">المشاركات الحالية والتفاعل</p></div>{workspaceShares.length === 0 ? <p className="text-sm text-muted-foreground">لم تُنشأ مشاركة لهذا الـWorkspace بعد.</p> : workspaceShares.map((share) => { const client = clients.find((item) => item.id === share.clientId); const interactions = interactionsFor(share.id); return <div key={share.id} className="rounded-2xl border border-border bg-muted/20 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-medium">{client?.name ?? 'عميل غير متاح'}</p><p className="mt-1 text-xs text-muted-foreground">{share.projectIds.length} مشروع · {share.role} · {share.status === 'active' ? 'نشط' : share.status === 'expired' ? 'منتهي' : 'مُبطل'}</p></div>{share.status === 'active' ? <Button type="button" variant="destructive" size="sm" onClick={() => revokeShare(share)}><Trash2 className="h-4 w-4" />إبطال الرابط</Button> : null}</div><div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground"><span>أنشئ في {formatDate(share.createdAt)}</span><a href={shareUrl(share.token)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary"><ExternalLink className="h-3.5 w-3.5" />فتح البوابة</a></div>{interactions.length ? <div className="mt-3 space-y-2">{interactions.map((interaction: ClientPortalInteraction) => <div key={interaction.id} className="rounded-xl bg-background px-3 py-2 text-xs"><span className="font-semibold">{interaction.kind === 'milestone-approval' ? 'موافقة على مرحلة' : interaction.kind === 'change-request' ? 'طلب تعديل' : 'تعليق'}</span><span className="mx-1 text-muted-foreground">·</span>{interaction.body}</div>)}</div> : <p className="mt-3 text-xs text-muted-foreground">لا يوجد تفاعل بعد.</p>}</div> })}</div>
+        <div className="space-y-3 border-t border-border pt-4"><div className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" /><p className="font-medium">المشاركات الحالية والتفاعل</p></div>{workspaceShares.length === 0 ? <p className="text-sm text-muted-foreground">لم تُنشأ مشاركة لهذا الـWorkspace بعد.</p> : workspaceShares.map((share) => { const client = clients.find((item) => item.id === share.clientId); const interactions = interactionsFor(share.id); const auditEvents = portal.auditEvents.filter((event) => event.shareId === share.id).slice(0, 3); return <div key={share.id} className="rounded-2xl border border-border bg-muted/20 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-medium">{client?.name ?? 'عميل غير متاح'}</p><p className="mt-1 text-xs text-muted-foreground">{share.projectIds.length} مشروع · {share.role} · {share.status === 'active' ? 'نشط' : share.status === 'expired' ? 'منتهي' : 'مُبطل'}</p></div><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" size="sm" onClick={() => renewShare(share)}><RefreshCw data-icon="inline-start" />{share.status === 'active' ? 'تجديد' : 'إعادة تفعيل'}</Button>{share.status === 'active' ? <><Button type="button" variant="outline" size="sm" onClick={() => rotateShare(share)}><RotateCw data-icon="inline-start" />تدوير الرابط</Button><Button type="button" variant="destructive" size="sm" onClick={() => revokeShare(share)}><Trash2 data-icon="inline-start" />إبطال</Button></> : null}</div></div><div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground"><span>أنشئ في {formatDate(share.createdAt)}</span><a href={shareUrl(share.token)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary"><ExternalLink className="h-3.5 w-3.5" />فتح البوابة</a></div>{interactions.length ? <div className="mt-3 space-y-2">{interactions.map((interaction: ClientPortalInteraction) => <div key={interaction.id} className="rounded-xl bg-background px-3 py-2 text-xs"><span className="font-semibold">{interaction.kind === 'milestone-approval' ? 'موافقة على مرحلة' : interaction.kind === 'change-request' ? 'طلب تعديل' : 'تعليق'}</span><span className="mx-1 text-muted-foreground">·</span>{interaction.body}</div>)}</div> : <p className="mt-3 text-xs text-muted-foreground">لا يوجد تفاعل بعد.</p>}{auditEvents.length ? <div className="mt-3 border-t border-border pt-3"><p className="mb-2 flex items-center gap-1.5 text-xs font-semibold"><History className="h-3.5 w-3.5" />سجل الرابط</p><div className="space-y-1">{auditEvents.map((event) => <p key={event.id} className="text-xs text-muted-foreground">{event.detail} · {formatDate(event.createdAt)}</p>)}</div></div> : null}</div> })}</div>
       </div>
     </ContentCard>
   )
