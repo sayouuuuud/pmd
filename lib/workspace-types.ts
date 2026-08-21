@@ -17,6 +17,8 @@ export type Client = {
   email: string | null
   phone: string | null
   notes: string | null
+  status?: 'lead' | 'active' | 'paused'
+  tags?: string[]
 }
 
 export type ArchivedClient = Client & {
@@ -71,6 +73,8 @@ function normalizeClient(value: unknown, workspaceId: string): Client | null {
     email: typeof item.email === 'string' ? item.email : null,
     phone: typeof item.phone === 'string' ? item.phone : null,
     notes: typeof item.notes === 'string' ? item.notes : null,
+    status: item.status === 'lead' || item.status === 'paused' ? item.status : 'active',
+    tags: Array.isArray(item.tags) ? item.tags.filter((tag): tag is string => typeof tag === 'string' && Boolean(tag.trim())).map((tag) => tag.trim()) : [],
   }
 }
 

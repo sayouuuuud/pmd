@@ -92,6 +92,9 @@ type RemoteProject = {
   status: string
   progress: number
   dueLabel: string
+  dueAt?: string | null
+  createdAt?: string | Date | null
+  updatedAt?: string | Date | null
 }
 
 type RemoteProjectUpdate = {
@@ -307,7 +310,7 @@ export function mapRemoteProject(item: RemoteProject): Project {
     if (typeof value.id !== 'string' || typeof value.title !== 'string') return []
     return [{ id: value.id, title: value.title, status: value.status === 'done' ? 'done' as const : 'pending' as const }]
   }) : []
-  return { id: item.id, title: item.title, description: item.description, goalId: item.goalId ?? undefined, clientId: item.clientId ?? undefined, nextStep: item.nextStep?.trim() || undefined, milestones, status: asProjectStatus(item.status), progress: Math.max(0, Math.min(100, item.progress)), dueLabel: item.dueLabel }
+  return { id: item.id, title: item.title, description: item.description, goalId: item.goalId ?? undefined, clientId: item.clientId ?? undefined, nextStep: item.nextStep?.trim() || undefined, milestones, status: asProjectStatus(item.status), progress: Math.max(0, Math.min(100, item.progress)), dueLabel: item.dueLabel, dueAt: item.dueAt ?? undefined, createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : undefined, updatedAt: item.updatedAt ? new Date(item.updatedAt).toISOString() : undefined }
 }
 
 function asProjectUpdateKind(value: string): ProjectUpdate['kind'] {

@@ -20,6 +20,9 @@ export function WorkspaceWorkspace() {
   const [clientName, setClientName] = useState('')
   const [clientCompany, setClientCompany] = useState('')
   const [clientEmail, setClientEmail] = useState('')
+  const [clientPhone, setClientPhone] = useState('')
+  const [clientStatus, setClientStatus] = useState<'lead' | 'active' | 'paused'>('active')
+  const [clientTags, setClientTags] = useState('')
   const [clientNotes, setClientNotes] = useState('')
   const [clientSearch, setClientSearch] = useState('')
   const [editingClientId, setEditingClientId] = useState<string | null>(null)
@@ -48,7 +51,7 @@ export function WorkspaceWorkspace() {
   const visibleClients = useMemo(() => {
     const query = clientSearch.trim().toLocaleLowerCase('ar')
     if (!query) return clients
-    return clients.filter((item) => [item.name, item.company, item.email, item.notes].filter(Boolean).some((value) => value?.toLocaleLowerCase('ar').includes(query)))
+    return clients.filter((item) => [item.name, item.company, item.email, item.phone, item.notes, ...(item.tags ?? [])].filter(Boolean).some((value) => value?.toLocaleLowerCase('ar').includes(query)))
   }, [clientSearch, clients])
 
   function persist(next: WorkspaceFallback) {
@@ -181,6 +184,9 @@ export function WorkspaceWorkspace() {
     setClientName('')
     setClientCompany('')
     setClientEmail('')
+    setClientPhone('')
+    setClientStatus('active')
+    setClientTags('')
     setClientNotes('')
   }
 
@@ -189,6 +195,9 @@ export function WorkspaceWorkspace() {
     setClientName(item.name)
     setClientCompany(item.company ?? '')
     setClientEmail(item.email ?? '')
+    setClientPhone(item.phone ?? '')
+    setClientStatus(item.status ?? 'active')
+    setClientTags((item.tags ?? []).join(', '))
     setClientNotes(item.notes ?? '')
     setClientError('')
     setNotice('')
@@ -209,7 +218,7 @@ export function WorkspaceWorkspace() {
     setClientError('')
     setSaving(true)
     setNotice('')
-    const payload = { name, company: clientCompany, email: clientEmail, notes: clientNotes }
+    const payload = { name, company: clientCompany, email: clientEmail, phone: clientPhone, status: clientStatus, tags: clientTags.split(',').map((tag) => tag.trim()).filter(Boolean), notes: clientNotes }
     if (backendAvailable && !editingClientId.startsWith('local-')) {
       try {
         const response = await fetch(`/api/clients/${encodeURIComponent(editingClientId)}`, {
@@ -227,7 +236,7 @@ export function WorkspaceWorkspace() {
         setBackendAvailable(false)
       }
     }
-    const nextClients = clients.map((item) => item.id === editingClientId ? { ...item, name: payload.name, company: payload.company || null, email: payload.email || null, notes: payload.notes || null } : item)
+    const nextClients = clients.map((item) => item.id === editingClientId ? { ...item, name: payload.name, company: payload.company || null, email: payload.email || null, phone: payload.phone || null, status: payload.status, tags: payload.tags, notes: payload.notes || null } : item)
     persist({ ...data, clientsByWorkspace: { ...data.clientsByWorkspace, [activeWorkspace.id]: nextClients } })
     resetClientEditor()
     setNotice('تم تحديث العميل محليًا.')
@@ -277,7 +286,7 @@ export function WorkspaceWorkspace() {
     setClientError('')
     setSaving(true)
     setNotice('')
-    const payload = { name, company: clientCompany, email: clientEmail, notes: clientNotes }
+    const payload = { name, company: clientCompany, email: clientEmail, phone: clientPhone, status: clientStatus, tags: clientTags.split(',').map((tag) => tag.trim()).filter(Boolean), notes: clientNotes }
     if (backendAvailable && !activeWorkspace.id.startsWith('local-')) {
       try {
         const response = await fetch(`/api/clients?workspaceId=${encodeURIComponent(activeWorkspace.id)}`, {
@@ -296,7 +305,7 @@ export function WorkspaceWorkspace() {
       }
     }
 
-    const created: Client = { id: `local-${crypto.randomUUID()}`, workspaceId: activeWorkspace.id, name, company: clientCompany || null, email: clientEmail || null, phone: null, notes: clientNotes || null }
+    const created: Client = { id: `local-${crypto.randomUUID()}`, workspaceId: activeWorkspace.id, name, company: clientCompany || null, email: clientEmail || null, phone: clientPhone || null, status: clientStatus, tags: clientTags.split(',').map((tag) => tag.trim()).filter(Boolean), notes: clientNotes || null }
     persist({
       ...data,
       clientsByWorkspace: { ...data.clientsByWorkspace, [activeWorkspace.id]: [...clients, created] },
@@ -470,11 +479,11 @@ export function WorkspaceWorkspace() {
                 <div className="flex items-start justify-between gap-3">
                   <Link href={`/workspace/clients/${encodeURIComponent(item.id)}`} className="min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <p className="truncate font-medium">{item.name}</p>
-                    {item.company ? <p className="mt-1 truncate text-xs text-muted-foreground">{item.company}</p> : null}
+                    {item.company ? <p className="mt-1 truncate text-xs text-muted-foreground">{item.company}</p> : null}<div className="mt-2 flex flex-wrap gap-1"><span className="rounded-full bg-accent px-2 py-1 text-[10px] text-accent-foreground">{item.status === 'lead' ? 'عميل محتمل' : item.status === 'paused' ? 'متوقف' : 'نشط'}</span>{(item.tags ?? []).slice(0, 3).map((tag) => <span key={tag} className="rounded-full bg-card px-2 py-1 text-[10px] text-muted-foreground">{tag}</span>)}</div>
                   </Link>
                   <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </div>
-                {item.email ? <p className="mt-3 truncate text-xs text-muted-foreground">{item.email}</p> : null}
+                {item.email ? <p className="mt-3 truncate text-xs text-muted-foreground">{item.email}</p> : null}{item.phone ? <p dir="ltr" className="mt-1 truncate text-right text-xs text-muted-foreground">{item.phone}</p> : null}
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <Link href={`/workspace/clients/${encodeURIComponent(item.id)}`} className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-2 text-xs font-semibold text-primary">فتح الملف <ArrowLeft className="h-3.5 w-3.5" /></Link>
                   {canManageClients ? <>
@@ -498,7 +507,7 @@ export function WorkspaceWorkspace() {
               <Input value={clientCompany} onChange={(event) => setClientCompany(event.target.value)} placeholder="الشركة أو النشاط" aria-label="الشركة أو النشاط" />
               <Input type="email" value={clientEmail} onChange={(event) => { setClientEmail(event.target.value); if (clientError) setClientError('') }} placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني" aria-invalid={Boolean(clientError)} aria-describedby={clientError ? 'client-form-error' : undefined} />
             </div>
-            <Textarea value={clientNotes} onChange={(event) => setClientNotes(event.target.value)} placeholder="ملاحظات أولية (اختياري)" aria-label="ملاحظات العميل" />
+            <div className="grid gap-3 sm:grid-cols-2"><Input dir="ltr" value={clientPhone} onChange={(event) => setClientPhone(event.target.value)} placeholder="رقم الهاتف" aria-label="رقم هاتف العميل" className="text-right" /><Select value={clientStatus} onChange={(event) => setClientStatus(event.target.value as 'lead' | 'active' | 'paused')} aria-label="حالة العميل"><option value="lead">عميل محتمل</option><option value="active">نشط</option><option value="paused">متوقف</option></Select></div><Input value={clientTags} onChange={(event) => setClientTags(event.target.value)} placeholder="وسوم مفصولة بفواصل" aria-label="وسوم العميل" /><Textarea value={clientNotes} onChange={(event) => setClientNotes(event.target.value)} placeholder="ملاحظات أولية (اختياري)" aria-label="ملاحظات العميل" />
             {clientError && <p id="client-form-error" role="alert" aria-live="assertive" aria-atomic="true" className="text-xs text-destructive">{clientError}</p>}
             <div className="flex flex-wrap gap-2">
               <Button type="button" onClick={() => void (editingClientId ? updateClient() : createClient())} disabled={!activeWorkspace || saving}>
