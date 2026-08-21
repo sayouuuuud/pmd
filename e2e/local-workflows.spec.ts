@@ -18,3 +18,9 @@ test('projects render derived progress surfaces', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'المشاريع' })).toBeVisible()
   await expect(page.locator('main')).toContainText(/%|٪/)
 })
+
+test('client portal rejects missing local share tokens clearly', async ({ page }) => {
+  await page.goto('/portal/missing-share')
+  await expect(page.getByRole('heading', { name: 'الرابط غير صالح' })).toBeVisible()
+  await expect(page.getByText('لم يتم العثور على مشاركة بهذا الرمز.')).toBeVisible()
+})
