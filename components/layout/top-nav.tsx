@@ -93,8 +93,21 @@ const quickAddTypes: { value: QuickAddKind; label: string }[] = [
   { value: 'task', label: 'مهمة' },
   { value: 'note', label: 'ملاحظة' },
   { value: 'finance', label: 'مصروف' },
-  { value: 'entertainment', label: 'فيلم' },
+  { value: 'entertainment', label: 'ترفيه' },
 ]
+
+const quickTemplates: Record<AppMode, { label: string; type: QuickAddKind; value: string }[]> = {
+  personal: [
+    { label: 'مهمة اليوم', type: 'task', value: 'ضيف مهمة النهاردة ترتيب أولويات اليوم' },
+    { label: 'مصروف جديد', type: 'finance', value: 'سجل مصروف ١٠٠ مشتريات' },
+    { label: 'فكرة سريعة', type: 'note', value: 'فكرة سريعة' },
+  ],
+  work: [
+    { label: 'متابعة عميل', type: 'task', value: 'متابعة العميل بكرة وإرسال آخر التحديثات' },
+    { label: 'مهمة مشروع', type: 'task', value: 'ضيف مهمة بكرة مراجعة الخطوة التالية في المشروع' },
+    { label: 'مصروف مشروع', type: 'finance', value: 'سجل مصروف ١٠٠ للمشروع' },
+  ],
+}
 
 function previewLabel(parsed: ParsedQuickAdd) {
   if (parsed.kind === 'task') return `مهمة · ${parsed.dueLabel}`
@@ -126,6 +139,9 @@ export function TopNav() {
   const [body, setBody] = useState('')
   const [projectId, setProjectId] = useState('')
   const [goalId, setGoalId] = useState('')
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
+  const [dueDate, setDueDate] = useState('')
+  const [category, setCategory] = useState('')
   const [preview, setPreview] = useState<ParsedQuickAdd | null>(null)
   const [error, setError] = useState('')
   const [gregorianDate, setGregorianDate] = useState('')
@@ -174,6 +190,9 @@ export function TopNav() {
     setBody('')
     setProjectId('')
     setGoalId('')
+    setPriority('medium')
+    setDueDate('')
+    setCategory('')
   }
 
   function changeType(nextType: QuickAddKind) {
@@ -201,9 +220,10 @@ export function TopNav() {
     if (preview.kind === 'task') {
       addTask({
         title: preview.title,
-        priority: 'medium',
-        dueLabel: preview.dueLabel ?? 'النهاردة',
-        category: 'سريع',
+        priority,
+        dueLabel: dueDate || preview.dueLabel || 'النهاردة',
+        dueAt: dueDate ? new Date(`${dueDate}T12:00:00`).toISOString() : undefined,
+        category: category.trim() || (mode === 'work' ? 'شغل' : 'شخصي'),
         projectId: projectId || undefined,
       })
     } else if (preview.kind === 'note') {
@@ -355,13 +375,33 @@ export function TopNav() {
           if (open) setQuickAddOpen(true)
           else closeQuickAdd()
         }}
-        title="إضافة سريعة"
+        title={mode === 'work' ? 'إضافة إلى مساحة الشغل' : 'إضافة إلى يومك'}
         triggerRef={quickAddTriggerRef}
-        description="اكتبها بطريقتك، راجع التفاصيل، وبعدها احفظها."
-        className="max-w-lg"
+        description="ابدأ بجملة بسيطة، ثم أضف التفاصيل التي تحتاجها فقط."
+        placement="side"
+        className="overflow-y-auto"
       >
-          <form onSubmit={submitQuickAdd} noValidate>
-            <div className={`grid gap-1 rounded-2xl bg-muted p-1 ${mode === 'work' ? 'grid-cols-3' : 'grid-cols-4'}`}>
+          <form onSubmit={submitQuickAdd} noValidate className="flex min-h-[calc(100dvh-7rem)] flex-col">
+            <div className="rounded-2xl bg-muted p-3">
+              <p className="text-xs font-semibold">{mode === 'work' ? 'سياق الشغل' : 'سياق شخصي'}</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{mode === 'work' ? 'سنربط الإضافة بالمشروع المختار ونبعد العناصر الشخصية.' : 'إضافة خفيفة ليومك بدون تفاصيل العمل.'}</p>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-xs font-medium text-muted-foreground">ابدأ بقالب</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {quickTemplates[mode].map((template) => (
+                  <Button key={template.label} type="button" variant="outline" onClick={() => {
+                    changeType(template.type)
+                    setTitle(template.value)
+                  }} className="h-auto rounded-full px-3 py-2 text-xs">
+                    <Plus data-icon="inline-start" /> {template.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className={`mt-5 grid gap-1 rounded-2xl bg-muted p-1 ${mode === 'work' ? 'grid-cols-3' : 'grid-cols-4'}`}>
               {availableQuickAddTypes.map((item) => (
                 <Button key={item.value} type="button" variant="ghost" onClick={() => changeType(item.value)} aria-pressed={type === item.value} className={`h-auto rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
                   {item.label}
@@ -393,13 +433,29 @@ export function TopNav() {
                   if (error) setError('')
                 }} aria-invalid={Boolean(error)} aria-describedby={error ? 'quick-add-error' : undefined} className="mt-3 min-h-24 w-full rounded-2xl px-4 py-3" placeholder="اكتب التفاصيل هنا..." />}
                 {type === 'task' && (
-                  <label className="mt-3 block text-sm font-medium" htmlFor="quick-add-project">
-                    المشروع المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>
-                    <Select id="quick-add-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 h-auto w-full rounded-2xl px-4 py-3">
-                      <option value="">بدون مشروع</option>
-                      {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
-                    </Select>
-                  </label>
+                  <div className="mt-4 rounded-2xl border border-border p-4">
+                    <p className="text-sm font-semibold">تفاصيل التنفيذ</p>
+                    <p className="mt-1 text-xs text-muted-foreground">اختيارية، لكنها تجعل المهمة جاهزة للتنفيذ مباشرة.</p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <label className="block text-sm font-medium" htmlFor="quick-add-priority">الأولوية
+                        <Select id="quick-add-priority" value={priority} onChange={(event) => setPriority(event.target.value as 'low' | 'medium' | 'high')} className="mt-2 h-auto w-full rounded-2xl px-3 py-3">
+                          <option value="low">منخفضة</option><option value="medium">متوسطة</option><option value="high">عالية</option>
+                        </Select>
+                      </label>
+                      <label className="block text-sm font-medium" htmlFor="quick-add-date">تاريخ التنفيذ
+                        <Input id="quick-add-date" type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} className="mt-2 h-auto rounded-2xl px-3 py-3" />
+                      </label>
+                      <label className="block text-sm font-medium" htmlFor="quick-add-project">المشروع المرتبط
+                        <Select id="quick-add-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 h-auto w-full rounded-2xl px-3 py-3">
+                          <option value="">بدون مشروع</option>
+                          {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
+                        </Select>
+                      </label>
+                      <label className="block text-sm font-medium" htmlFor="quick-add-category">التصنيف
+                        <Input id="quick-add-category" value={category} onChange={(event) => setCategory(event.target.value)} className="mt-2 h-auto rounded-2xl px-3 py-3" placeholder={mode === 'work' ? 'مثال: متابعة' : 'مثال: البيت'} />
+                      </label>
+                    </div>
+                  </div>
                 )}
                 {type === 'finance' && (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -432,6 +488,7 @@ export function TopNav() {
                 {preview.category && <p className="mt-1 text-xs text-muted-foreground">التصنيف: {preview.category}</p>}
                 {preview.recurrence && preview.recurrence !== 'none' && <p className="mt-1 text-xs text-muted-foreground">التكرار: {preview.recurrence === 'monthly' ? 'شهري' : 'أسبوعي'}</p>}
                 {(projectId || goalId) && <p className="mt-1 text-xs text-muted-foreground">{projectId ? `المشروع: ${projects.find((project) => project.id === projectId)?.title ?? 'مرتبط'}` : ''}{projectId && goalId ? ' · ' : ''}{goalId ? `الهدف: ${goals.find((goal) => goal.id === goalId)?.title ?? 'مرتبط'}` : ''}</p>}
+                {preview.kind === 'task' && <p className="mt-1 text-xs text-muted-foreground">الأولوية: {priority === 'high' ? 'عالية' : priority === 'low' ? 'منخفضة' : 'متوسطة'}{dueDate ? ` · التاريخ: ${dueDate}` : ''}{category ? ` · التصنيف: ${category}` : ''}</p>}
                 <div className="mt-5 flex justify-end gap-2">
                   <Button type="button" variant="ghost" onClick={() => setPreview(null)} className="h-auto rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">تعديل</Button>
                   <Button type="button" onClick={confirmQuickAdd} className="h-auto rounded-full px-5 py-2.5 text-sm">تأكيد وحفظ</Button>

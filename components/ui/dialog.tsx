@@ -13,6 +13,7 @@ export function Dialog({
   footer,
   className,
   hideHeader = false,
+  placement = 'center',
   triggerRef,
 }: {
   open: boolean
@@ -23,6 +24,7 @@ export function Dialog({
   footer?: ReactNode
   className?: string
   hideHeader?: boolean
+  placement?: 'center' | 'side'
   triggerRef?: RefObject<HTMLElement | null>
 }) {
   const titleId = useId()
@@ -95,7 +97,10 @@ export function Dialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/30 p-4 pt-16 backdrop-blur-sm"
+      className={cn(
+        'fixed inset-0 z-50 flex overflow-y-auto bg-foreground/30 backdrop-blur-sm',
+        placement === 'side' ? 'items-stretch justify-end p-0' : 'items-start justify-center p-4 pt-16',
+      )}
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onOpenChange(false)
@@ -104,7 +109,11 @@ export function Dialog({
       <section
         ref={dialogRef}
         tabIndex={-1}
-        className={cn('w-full max-w-lg rounded-3xl bg-card p-5 shadow-2xl', className)}
+        className={cn(
+          'w-full bg-card p-5 shadow-2xl',
+          placement === 'side' ? 'min-h-dvh max-w-2xl rounded-none sm:rounded-r-3xl' : 'max-w-lg rounded-3xl',
+          className,
+        )}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
