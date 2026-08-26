@@ -50,10 +50,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className="bg-background" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
-      </head>
       <body className={`${cairo.variable} font-sans antialiased`}>
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
         <PwaRegister />
         <ThemeProvider>
           <CommandCenterProvider>

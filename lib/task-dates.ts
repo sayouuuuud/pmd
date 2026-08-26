@@ -24,17 +24,17 @@ export function legacyLabelToDueAt(label: string, now = new Date()) {
   return date.toISOString()
 }
 
-export function taskDueAt(task: TaskDateLike) {
-  return task.dueAt ?? legacyLabelToDueAt(task.dueLabel ?? '')
+export function taskDueAt(task: TaskDateLike, now = new Date()) {
+  return task.dueAt ?? legacyLabelToDueAt(task.dueLabel ?? '', now)
 }
 
 export function isTaskOverdue(task: TaskDateLike, now = new Date()) {
-  const dueAt = taskDueAt(task)
+  const dueAt = taskDueAt(task, now)
   return Boolean(dueAt && task.status !== 'done' && new Date(dueAt).getTime() < now.getTime())
 }
 
 export function isTaskDueToday(task: TaskDateLike, now = new Date()) {
-  const dueAt = taskDueAt(task)
+  const dueAt = taskDueAt(task, now)
   return Boolean(dueAt && localDateKey(new Date(dueAt)) === localDateKey(now))
 }
 
