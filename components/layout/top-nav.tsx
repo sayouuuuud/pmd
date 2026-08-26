@@ -27,8 +27,10 @@ import {
   StickyNote,
   Target,
   Wallet,
+  UserRound,
 } from 'lucide-react'
 import { useCommandCenter } from '@/lib/command-center-store'
+import { useAppMode, type AppMode } from '@/components/layout/app-mode-provider'
 import { useTheme } from '@/components/theme/theme-provider'
 import { authClient } from '@/lib/auth-client'
 import { parseQuickAdd, type ParsedQuickAdd, type QuickAddKind } from '@/lib/quick-add-parser'
@@ -40,25 +42,40 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
-const navItems = [
-  { href: '/', label: 'الرئيسية', icon: LayoutGrid },
+const personalNavItems = [
+  { href: '/', label: 'يومي', icon: LayoutGrid },
   { href: '/daily-plan', label: 'خطة اليوم', icon: CalendarCheck2 },
-  { href: '/calendar', label: 'التقويم', icon: CalendarDays },
-  { href: '/tasks', label: 'المهام', icon: ListChecks },
-  { href: '/notes', label: 'الملاحظات', icon: StickyNote },
-  { href: '/library', label: 'المكتبة', icon: Library },
   { href: '/habits', label: 'العادات', icon: Repeat },
-  { href: '/projects', label: 'المشاريع', icon: FolderKanban },
-  { href: '/workspace', label: 'مساحة العمل', icon: BriefcaseBusiness },
   { href: '/goals', label: 'الأهداف', icon: Target },
   { href: '/journal', label: 'اليوميات', icon: BookHeart },
+  { href: '/religious', label: 'الديني', icon: Moon },
+  { href: '/entertainment', label: 'الترفيه', icon: Clapperboard },
+]
+
+const workNavItems = [
+  { href: '/workspace/dashboard', label: 'لوحة العمل', icon: LayoutGrid },
+  { href: '/projects', label: 'المشاريع', icon: FolderKanban },
+  { href: '/workspace', label: 'العملاء والفريق', icon: BriefcaseBusiness },
+  { href: '/money/billing', label: 'الفواتير', icon: Wallet },
+]
+
+const sharedNavItems = [
+  { href: '/tasks', label: 'المهام', icon: ListChecks },
+  { href: '/calendar', label: 'التقويم', icon: CalendarDays },
+  { href: '/notes', label: 'الملاحظات', icon: StickyNote },
+  { href: '/library', label: 'المكتبة', icon: Library },
+]
+
+const utilityNavItems = [
   { href: '/money', label: 'الفلوس', icon: Wallet },
   { href: '/activity', label: 'النشاط', icon: Activity },
-  { href: '/entertainment', label: 'الترفيه', icon: Clapperboard },
-  { href: '/religious', label: 'الديني', icon: Moon },
   { href: '/archive', label: 'الأرشيف', icon: Archive },
   { href: '/account', label: 'حسابي', icon: Settings },
 ]
+
+const allNavItems = [...personalNavItems, ...workNavItems, ...sharedNavItems, ...utilityNavItems]
+const workPaths = ['/workspace', '/projects', '/money/billing']
+const personalPaths = ['/daily-plan', '/habits', '/goals', '/journal', '/religious', '/entertainment']
 
 function formatGregorianDate() {
   return new Intl.DateTimeFormat('ar-EG', {
@@ -100,6 +117,7 @@ export function TopNav() {
   } = useCommandCenter()
   const { data: session } = authClient.useSession()
   const { theme, toggleTheme } = useTheme()
+  const { mode, setMode } = useAppMode()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -118,6 +136,29 @@ export function TopNav() {
   useEffect(() => {
     setGregorianDate(formatGregorianDate())
   }, [])
+
+  useEffect(() => {
+    if (workPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) setMode('work')
+    else if (pathname === '/' || personalPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) setMode('personal')
+  }, [pathname, setMode])
+
+  useEffect(() => {
+    if (mode === 'work' && type === 'entertainment') setType('task')
+  }, [mode, type])
+
+  const visibleNavItems = mode === 'work'
+    ? [...workNavItems, ...sharedNavItems]
+    : [...personalNavItems, ...sharedNavItems]
+  const availableQuickAddTypes = mode === 'work'
+    ? quickAddTypes.filter((item) => item.value !== 'entertainment')
+    : quickAddTypes
+
+  function switchMode(nextMode: AppMode) {
+    if (nextMode === mode) return
+    setMode(nextMode)
+    setMenuOpen(false)
+    router.push(nextMode === 'work' ? '/workspace/dashboard' : '/')
+  }
 
   function openQuickAdd() {
     setQuickAddOpen(true)
@@ -195,7 +236,17 @@ export function TopNav() {
       </a>
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <SyncStatus />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center rounded-full bg-card p-1" role="group" aria-label="اختيار وضع المنصة">
+              <Button type="button" variant="ghost" aria-pressed={mode === 'personal'} onClick={() => switchMode('personal')} className={mode === 'personal' ? 'h-auto rounded-full bg-foreground px-3 py-2 text-xs text-card hover:bg-foreground hover:text-card' : 'h-auto rounded-full px-3 py-2 text-xs text-muted-foreground'}>
+                <UserRound data-icon="inline-start" /> شخصي
+              </Button>
+              <Button type="button" variant="ghost" aria-pressed={mode === 'work'} onClick={() => switchMode('work')} className={mode === 'work' ? 'h-auto rounded-full bg-foreground px-3 py-2 text-xs text-card hover:bg-foreground hover:text-card' : 'h-auto rounded-full px-3 py-2 text-xs text-muted-foreground'}>
+                <BriefcaseBusiness data-icon="inline-start" /> شغل
+              </Button>
+            </div>
+            <SyncStatus />
+          </div>
           <div className="flex items-center gap-2.5 rounded-full bg-card py-1.5 pr-2 pl-4">
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
             <div className="text-right leading-tight">
@@ -238,8 +289,8 @@ export function TopNav() {
           </div>
         </div>
 
-        <nav className="flex items-center gap-1 overflow-x-auto rounded-full bg-card p-1.5 [scrollbar-width:none]" aria-label="التنقل الرئيسي">
-          {navItems.map((item) => {
+        <nav className="flex items-center gap-1 overflow-x-auto rounded-full bg-card p-1.5 [scrollbar-width:none]" aria-label={`التنقل في وضع ${mode === 'work' ? 'الشغل' : 'الاستخدام الشخصي'}`}>
+          {visibleNavItems.map((item) => {
             const isActive = isNavItemActive(pathname, item.href)
             const Icon = item.icon
             return (
@@ -266,11 +317,18 @@ export function TopNav() {
         onOpenChange={setMenuOpen}
         title="تنقل سريع"
         triggerRef={menuTriggerRef}
-        description="افتح أي مساحة من مساحات المنصة من مكان واحد."
+        description="الوضع الحالي في المقدمة، وكل أقسام المنصة ما زالت متاحة عند الحاجة."
         className="max-w-xl"
       >
-        <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="روابط التنقل السريع">
-          {navItems.map((item) => {
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-muted p-2">
+          <p className="px-2 text-xs font-medium text-muted-foreground">وضع المنصة</p>
+          <div className="flex items-center rounded-full bg-card p-1">
+            <Button type="button" variant="ghost" aria-pressed={mode === 'personal'} onClick={() => switchMode('personal')} className={mode === 'personal' ? 'h-auto rounded-full bg-foreground px-3 py-1.5 text-xs text-card' : 'h-auto rounded-full px-3 py-1.5 text-xs'}>شخصي</Button>
+            <Button type="button" variant="ghost" aria-pressed={mode === 'work'} onClick={() => switchMode('work')} className={mode === 'work' ? 'h-auto rounded-full bg-foreground px-3 py-1.5 text-xs text-card' : 'h-auto rounded-full px-3 py-1.5 text-xs'}>شغل</Button>
+          </div>
+        </div>
+        <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="كل أقسام المنصة">
+          {allNavItems.map((item) => {
             const Icon = item.icon
             const isActive = isNavItemActive(pathname, item.href)
             return (
@@ -303,8 +361,8 @@ export function TopNav() {
         className="max-w-lg"
       >
           <form onSubmit={submitQuickAdd} noValidate>
-            <div className="grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
-              {quickAddTypes.map((item) => (
+            <div className={`grid gap-1 rounded-2xl bg-muted p-1 ${mode === 'work' ? 'grid-cols-3' : 'grid-cols-4'}`}>
+              {availableQuickAddTypes.map((item) => (
                 <Button key={item.value} type="button" variant="ghost" onClick={() => changeType(item.value)} aria-pressed={type === item.value} className={`h-auto rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
                   {item.label}
                 </Button>

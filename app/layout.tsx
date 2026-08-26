@@ -5,6 +5,7 @@ import './globals.css'
 import { CommandCenterProvider } from '@/lib/command-center-store'
 import { PwaRegister } from '@/components/pwa/pwa-register'
 import { ThemeProvider, themeBootstrapScript } from '@/components/theme/theme-provider'
+import { AppModeProvider } from '@/components/layout/app-mode-provider'
 
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
@@ -54,9 +55,11 @@ export default function RootLayout({
         <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
         <PwaRegister />
         <ThemeProvider>
-          <CommandCenterProvider>
-            {children}
-          </CommandCenterProvider>
+          <AppModeProvider>
+            <CommandCenterProvider>
+              {children}
+            </CommandCenterProvider>
+          </AppModeProvider>
         </ThemeProvider>
         {process.env.VERCEL === '1' && <Analytics />}
       </body>
