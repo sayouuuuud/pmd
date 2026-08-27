@@ -13,6 +13,7 @@ export function Dialog({
   footer,
   className,
   hideHeader = false,
+  placement = 'center',
   triggerRef,
 }: {
   open: boolean
@@ -23,6 +24,7 @@ export function Dialog({
   footer?: ReactNode
   className?: string
   hideHeader?: boolean
+  placement?: 'center' | 'side'
   triggerRef?: RefObject<HTMLElement | null>
 }) {
   const titleId = useId()
@@ -95,7 +97,10 @@ export function Dialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/30 p-4 pt-16 backdrop-blur-sm"
+      className={cn(
+        'fixed inset-0 z-50 flex overflow-y-auto bg-foreground/30 backdrop-blur-sm',
+        placement === 'side' ? 'items-stretch justify-end p-0' : 'items-start justify-center p-4 pt-16',
+      )}
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onOpenChange(false)
@@ -104,7 +109,11 @@ export function Dialog({
       <section
         ref={dialogRef}
         tabIndex={-1}
-        className={cn('w-full max-w-lg rounded-3xl bg-card p-5 shadow-2xl', className)}
+        className={cn(
+          'w-full bg-card p-4 text-card-foreground shadow-2xl sm:p-6',
+          placement === 'side' ? 'min-h-dvh max-w-2xl rounded-none border-s border-border sm:rounded-s-3xl' : 'max-w-lg rounded-3xl border border-border',
+          className,
+        )}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -122,7 +131,7 @@ export function Dialog({
               type="button"
               aria-label="إغلاق النافذة"
               onClick={() => onOpenChange(false)}
-              className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="h-4 w-4" />
             </button>

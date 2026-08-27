@@ -556,7 +556,7 @@ const initialResources: Resource[] = [
 
 const initialNotes: Note[] = [
   { id: 'note-1', title: 'أفكار مشروع التطبيق الجديد', body: 'لازم أراجع فكرة الاشتراكات وأشوف التسعير المناسب قبل نهاية الأسبوع.', tag: 'شغل', pinned: true, createdAt: 'منذ ساعتين' },
-  { id: 'note-2', title: '��ائمة مشتريات البيت', body: 'تمر، سمبوسة، عصائر، وحاجات تانية للسحور.', tag: 'شخصي', pinned: true, createdAt: 'أمس' },
+  { id: 'note-2', title: 'قائمة مشتريات البيت', body: 'تمر، سمبوسة، عصائر، وحاجات تانية للسحور.', tag: 'شخصي', pinned: true, createdAt: 'أمس' },
   { id: 'note-3', title: 'فكرة للمراجعة الأسبوعية', body: 'أقفل الإشعارات في أول ساعتين من يوم العمل.', tag: 'تطوير', pinned: false, createdAt: 'منذ 3 أيام' },
 ]
 
@@ -985,7 +985,7 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
         setActivitySettings(next.activitySettings)
         return { ok: true, message: 'تمت استعادة النسخة الاحتياطية محليًا.' }
       } catch {
-        return { ok: false, message: 'تعذر ق��اءة ملف النسخة الاحتياطية.' }
+        return { ok: false, message: 'تعذر قراءة ملف النسخة الاحتياطية.' }
       }
     },
     resetLocalData: () => {
@@ -1135,6 +1135,13 @@ export function CommandCenterProvider({ children }: { children: React.ReactNode 
       setTasks((items) => items.map((task) => selected.has(task.id) ? { ...task, ...patch, updatedAt } : task))
       setPlanItems((items) => items.map((item) => item.sourceId && selected.has(item.sourceId) && patch.status ? { ...item, status: patch.status === 'done' ? 'done' : 'pending' } : item))
       ids.forEach((id) => runTrackedSync({ id: `task:update:${id}`, entity: 'المهام', action: 'تحديث جماعي', entityId: id }, () => updateRemoteTask(id, { ...patch, updatedAt })))
+    },
+    bulkDeleteTasks: (ids) => {
+      const selected = new Set(ids)
+      if (selected.size === 0) return
+      setTasks((items) => items.filter((task) => !selected.has(task.id)).map((task) => ({ ...task, dependencyIds: task.dependencyIds?.filter((id) => !selected.has(id)) })))
+      setPlanItems((items) => items.filter((item) => !item.sourceId || !selected.has(item.sourceId)))
+      ids.forEach((id) => runTrackedSync({ id: `task:delete:${id}`, entity: 'المهام', action: 'حذف جماعي نهائي', entityId: id }, () => archiveRemoteTask(id)))
     },
     bulkArchiveTasks: (ids) => {
       const selected = new Set(ids)

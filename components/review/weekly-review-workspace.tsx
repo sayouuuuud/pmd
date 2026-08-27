@@ -102,7 +102,7 @@ export function WeeklyReviewWorkspace() {
           </div>
         </ContentCard>
 
-        <ContentCard className="xl:col-span-5" title="ما الذي يحتاج قرارًا؟" description="لا تنقل كل شيء تلقائيًا للأسبو�� القادم">
+        <ContentCard className="xl:col-span-5" title="ما الذي يحتاج قرارًا؟" description="لا تنقل كل شيء تلقائيًا للأسبوع القادم">
           <div className="space-y-3">
             <ReviewLine text={`${metrics.openTasks} مهام مفتوحة تحتاج ترتيبًا.`} />
             <ReviewLine text={`${metrics.activeProjects.length} مشاريع ما زالت قيد الحركة.`} />

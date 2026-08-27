@@ -27,8 +27,10 @@ import {
   StickyNote,
   Target,
   Wallet,
+  UserRound,
 } from 'lucide-react'
 import { useCommandCenter } from '@/lib/command-center-store'
+import { useAppMode, type AppMode } from '@/components/layout/app-mode-provider'
 import { useTheme } from '@/components/theme/theme-provider'
 import { authClient } from '@/lib/auth-client'
 import { parseQuickAdd, type ParsedQuickAdd, type QuickAddKind } from '@/lib/quick-add-parser'
@@ -40,25 +42,40 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
-const navItems = [
-  { href: '/', label: 'الرئيسية', icon: LayoutGrid },
+const personalNavItems = [
+  { href: '/', label: 'يومي', icon: LayoutGrid },
   { href: '/daily-plan', label: 'خطة اليوم', icon: CalendarCheck2 },
-  { href: '/calendar', label: 'التقويم', icon: CalendarDays },
-  { href: '/tasks', label: 'المهام', icon: ListChecks },
-  { href: '/notes', label: 'الملاحظات', icon: StickyNote },
-  { href: '/library', label: 'المكتبة', icon: Library },
   { href: '/habits', label: 'العادات', icon: Repeat },
-  { href: '/projects', label: 'المشاريع', icon: FolderKanban },
-  { href: '/workspace', label: 'مساحة العمل', icon: BriefcaseBusiness },
   { href: '/goals', label: 'الأهداف', icon: Target },
   { href: '/journal', label: 'اليوميات', icon: BookHeart },
+  { href: '/religious', label: 'الديني', icon: Moon },
+  { href: '/entertainment', label: 'الترفيه', icon: Clapperboard },
+]
+
+const workNavItems = [
+  { href: '/workspace/dashboard', label: 'لوحة العمل', icon: LayoutGrid },
+  { href: '/projects', label: 'المشاريع', icon: FolderKanban },
+  { href: '/workspace', label: 'العملاء والفريق', icon: BriefcaseBusiness },
+  { href: '/money/billing', label: 'الفواتير', icon: Wallet },
+]
+
+const sharedNavItems = [
+  { href: '/tasks', label: 'المهام', icon: ListChecks },
+  { href: '/calendar', label: 'التقويم', icon: CalendarDays },
+  { href: '/notes', label: 'الملاحظات', icon: StickyNote },
+  { href: '/library', label: 'المكتبة', icon: Library },
+]
+
+const utilityNavItems = [
   { href: '/money', label: 'الفلوس', icon: Wallet },
   { href: '/activity', label: 'النشاط', icon: Activity },
-  { href: '/entertainment', label: 'الترفيه', icon: Clapperboard },
-  { href: '/religious', label: 'الديني', icon: Moon },
   { href: '/archive', label: 'الأرشيف', icon: Archive },
   { href: '/account', label: 'حسابي', icon: Settings },
 ]
+
+const allNavItems = [...personalNavItems, ...workNavItems, ...sharedNavItems, ...utilityNavItems]
+const workPaths = ['/workspace', '/projects', '/money/billing']
+const personalPaths = ['/daily-plan', '/habits', '/goals', '/journal', '/religious', '/entertainment']
 
 function formatGregorianDate() {
   return new Intl.DateTimeFormat('ar-EG', {
@@ -76,8 +93,21 @@ const quickAddTypes: { value: QuickAddKind; label: string }[] = [
   { value: 'task', label: 'مهمة' },
   { value: 'note', label: 'ملاحظة' },
   { value: 'finance', label: 'مصروف' },
-  { value: 'entertainment', label: 'فيلم' },
+  { value: 'entertainment', label: 'ترفيه' },
 ]
+
+const quickTemplates: Record<AppMode, { label: string; type: QuickAddKind; value: string }[]> = {
+  personal: [
+    { label: 'مهمة اليوم', type: 'task', value: 'ضيف مهمة النهاردة ترتيب أولويات اليوم' },
+    { label: 'مصروف جديد', type: 'finance', value: 'سجل مصروف ١٠٠ مشتريات' },
+    { label: 'فكرة سريعة', type: 'note', value: 'فكرة سريعة' },
+  ],
+  work: [
+    { label: 'متابعة عميل', type: 'task', value: 'متابعة العميل بكرة وإرسال آخر التحديثات' },
+    { label: 'مهمة مشروع', type: 'task', value: 'ضيف مهمة بكرة مراجعة الخطوة التالية في المشروع' },
+    { label: 'مصروف مشروع', type: 'finance', value: 'سجل مصروف ١٠٠ للمشروع' },
+  ],
+}
 
 function previewLabel(parsed: ParsedQuickAdd) {
   if (parsed.kind === 'task') return `مهمة · ${parsed.dueLabel}`
@@ -100,6 +130,7 @@ export function TopNav() {
   } = useCommandCenter()
   const { data: session } = authClient.useSession()
   const { theme, toggleTheme } = useTheme()
+  const { mode, setMode } = useAppMode()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -108,6 +139,9 @@ export function TopNav() {
   const [body, setBody] = useState('')
   const [projectId, setProjectId] = useState('')
   const [goalId, setGoalId] = useState('')
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
+  const [dueDate, setDueDate] = useState('')
+  const [category, setCategory] = useState('')
   const [preview, setPreview] = useState<ParsedQuickAdd | null>(null)
   const [error, setError] = useState('')
   const [gregorianDate, setGregorianDate] = useState('')
@@ -118,6 +152,29 @@ export function TopNav() {
   useEffect(() => {
     setGregorianDate(formatGregorianDate())
   }, [])
+
+  useEffect(() => {
+    if (workPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) setMode('work')
+    else if (pathname === '/' || personalPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) setMode('personal')
+  }, [pathname, setMode])
+
+  useEffect(() => {
+    if (mode === 'work' && type === 'entertainment') setType('task')
+  }, [mode, type])
+
+  const visibleNavItems = mode === 'work'
+    ? [...workNavItems, ...sharedNavItems]
+    : [...personalNavItems, ...sharedNavItems]
+  const availableQuickAddTypes = mode === 'work'
+    ? quickAddTypes.filter((item) => item.value !== 'entertainment')
+    : quickAddTypes
+
+  function switchMode(nextMode: AppMode) {
+    if (nextMode === mode) return
+    setMode(nextMode)
+    setMenuOpen(false)
+    router.push(nextMode === 'work' ? '/workspace/dashboard' : '/')
+  }
 
   function openQuickAdd() {
     setQuickAddOpen(true)
@@ -133,6 +190,9 @@ export function TopNav() {
     setBody('')
     setProjectId('')
     setGoalId('')
+    setPriority('medium')
+    setDueDate('')
+    setCategory('')
   }
 
   function changeType(nextType: QuickAddKind) {
@@ -160,9 +220,10 @@ export function TopNav() {
     if (preview.kind === 'task') {
       addTask({
         title: preview.title,
-        priority: 'medium',
-        dueLabel: preview.dueLabel ?? 'النهاردة',
-        category: 'سريع',
+        priority,
+        dueLabel: dueDate || preview.dueLabel || 'النهاردة',
+        dueAt: dueDate ? new Date(`${dueDate}T12:00:00`).toISOString() : undefined,
+        category: category.trim() || (mode === 'work' ? 'شغل' : 'شخصي'),
         projectId: projectId || undefined,
       })
     } else if (preview.kind === 'note') {
@@ -194,9 +255,19 @@ export function TopNav() {
         الانتقال إلى المحتوى الرئيسي
       </a>
       <header className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <SyncStatus />
-          <div className="flex items-center gap-2.5 rounded-full bg-card py-1.5 pr-2 pl-4">
+        <div className="grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-full bg-card p-1" role="group" aria-label="اختيار وضع المنصة">
+              <Button type="button" variant="ghost" aria-pressed={mode === 'personal'} onClick={() => switchMode('personal')} className={mode === 'personal' ? 'h-auto rounded-full bg-foreground px-3 py-2 text-xs text-card hover:bg-foreground hover:text-card' : 'h-auto rounded-full px-3 py-2 text-xs text-muted-foreground'}>
+                <UserRound data-icon="inline-start" /> شخصي
+              </Button>
+              <Button type="button" variant="ghost" aria-pressed={mode === 'work'} onClick={() => switchMode('work')} className={mode === 'work' ? 'h-auto rounded-full bg-foreground px-3 py-2 text-xs text-card hover:bg-foreground hover:text-card' : 'h-auto rounded-full px-3 py-2 text-xs text-muted-foreground'}>
+                <BriefcaseBusiness data-icon="inline-start" /> شغل
+              </Button>
+            </div>
+            <SyncStatus />
+          </div>
+          <div className="flex min-w-0 items-center gap-2.5 justify-self-start rounded-full border border-border bg-card py-1.5 pr-2 pl-4 lg:justify-self-center">
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
             <div className="text-right leading-tight">
               <p className="text-sm font-semibold">{session?.user?.name || 'مساحتي'}</p>
@@ -207,7 +278,7 @@ export function TopNav() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex max-w-full items-center gap-2 overflow-x-auto pb-1 lg:justify-self-end lg:pb-0 [scrollbar-width:none]">
             <Button
               type="button"
               variant="ghost"
@@ -238,8 +309,8 @@ export function TopNav() {
           </div>
         </div>
 
-        <nav className="flex items-center gap-1 overflow-x-auto rounded-full bg-card p-1.5 [scrollbar-width:none]" aria-label="التنقل الرئيسي">
-          {navItems.map((item) => {
+        <nav className="flex items-center gap-1 overflow-x-auto rounded-full bg-card p-1.5 [scrollbar-width:none]" aria-label={`التنقل في وضع ${mode === 'work' ? 'الشغل' : 'الاستخدام الشخصي'}`}>
+          {visibleNavItems.map((item) => {
             const isActive = isNavItemActive(pathname, item.href)
             const Icon = item.icon
             return (
@@ -266,11 +337,18 @@ export function TopNav() {
         onOpenChange={setMenuOpen}
         title="تنقل سريع"
         triggerRef={menuTriggerRef}
-        description="افتح أي مساحة من مساحات المنصة من مكان واحد."
+        description="الوضع الحالي في المقدمة، وكل أقسام المنصة ما زالت متاحة عند الحاجة."
         className="max-w-xl"
       >
-        <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="روابط التنقل السريع">
-          {navItems.map((item) => {
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-muted p-2">
+          <p className="px-2 text-xs font-medium text-muted-foreground">وضع المنصة</p>
+          <div className="flex items-center rounded-full bg-card p-1">
+            <Button type="button" variant="ghost" aria-pressed={mode === 'personal'} onClick={() => switchMode('personal')} className={mode === 'personal' ? 'h-auto rounded-full bg-foreground px-3 py-1.5 text-xs text-card' : 'h-auto rounded-full px-3 py-1.5 text-xs'}>شخصي</Button>
+            <Button type="button" variant="ghost" aria-pressed={mode === 'work'} onClick={() => switchMode('work')} className={mode === 'work' ? 'h-auto rounded-full bg-foreground px-3 py-1.5 text-xs text-card' : 'h-auto rounded-full px-3 py-1.5 text-xs'}>شغل</Button>
+          </div>
+        </div>
+        <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="كل أقسام المنصة">
+          {allNavItems.map((item) => {
             const Icon = item.icon
             const isActive = isNavItemActive(pathname, item.href)
             return (
@@ -297,14 +375,34 @@ export function TopNav() {
           if (open) setQuickAddOpen(true)
           else closeQuickAdd()
         }}
-        title="إضافة سريعة"
+        title={mode === 'work' ? 'إضافة إلى مساحة الشغل' : 'إضافة إلى يومك'}
         triggerRef={quickAddTriggerRef}
-        description="اكتبها بطريقتك، راجع التفاصيل، وبعدها احفظها."
-        className="max-w-lg"
+        description="ابدأ بجملة بسيطة، ثم أضف التفاصيل التي تحتاجها فقط."
+        placement="side"
+        className="overflow-y-auto"
       >
-          <form onSubmit={submitQuickAdd} noValidate>
-            <div className="grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
-              {quickAddTypes.map((item) => (
+          <form onSubmit={submitQuickAdd} noValidate className="flex min-h-[calc(100dvh-7rem)] flex-col">
+            <div className="rounded-2xl bg-muted p-3">
+              <p className="text-xs font-semibold">{mode === 'work' ? 'سياق الشغل' : 'سياق شخصي'}</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{mode === 'work' ? 'سنربط الإضافة بالمشروع المختار ونبعد العناصر الشخصية.' : 'إضافة خفيفة ليومك بدون تفاصيل العمل.'}</p>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-xs font-medium text-muted-foreground">ابدأ بقالب</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {quickTemplates[mode].map((template) => (
+                  <Button key={template.label} type="button" variant="outline" onClick={() => {
+                    changeType(template.type)
+                    setTitle(template.value)
+                  }} className="h-auto rounded-full px-3 py-2 text-xs">
+                    <Plus data-icon="inline-start" /> {template.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className={`mt-5 grid gap-1 rounded-2xl bg-muted p-1 ${mode === 'work' ? 'grid-cols-3' : 'grid-cols-4'}`}>
+              {availableQuickAddTypes.map((item) => (
                 <Button key={item.value} type="button" variant="ghost" onClick={() => changeType(item.value)} aria-pressed={type === item.value} className={`h-auto rounded-xl px-2 py-2 text-xs sm:text-sm ${type === item.value ? 'bg-card font-semibold shadow-sm' : 'text-muted-foreground'}`}>
                   {item.label}
                 </Button>
@@ -335,13 +433,29 @@ export function TopNav() {
                   if (error) setError('')
                 }} aria-invalid={Boolean(error)} aria-describedby={error ? 'quick-add-error' : undefined} className="mt-3 min-h-24 w-full rounded-2xl px-4 py-3" placeholder="اكتب التفاصيل هنا..." />}
                 {type === 'task' && (
-                  <label className="mt-3 block text-sm font-medium" htmlFor="quick-add-project">
-                    المشروع المرتبط <span className="font-normal text-muted-foreground">(اختياري)</span>
-                    <Select id="quick-add-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 h-auto w-full rounded-2xl px-4 py-3">
-                      <option value="">بدون مشروع</option>
-                      {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
-                    </Select>
-                  </label>
+                  <div className="mt-4 rounded-2xl border border-border p-4">
+                    <p className="text-sm font-semibold">تفاصيل التنفيذ</p>
+                    <p className="mt-1 text-xs text-muted-foreground">اختيارية، لكنها تجعل المهمة جاهزة للتنفيذ مباشرة.</p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <label className="block text-sm font-medium" htmlFor="quick-add-priority">الأولوية
+                        <Select id="quick-add-priority" value={priority} onChange={(event) => setPriority(event.target.value as 'low' | 'medium' | 'high')} className="mt-2 h-auto w-full rounded-2xl px-3 py-3">
+                          <option value="low">منخفضة</option><option value="medium">متوسطة</option><option value="high">عالية</option>
+                        </Select>
+                      </label>
+                      <label className="block text-sm font-medium" htmlFor="quick-add-date">تاريخ التنفيذ
+                        <Input id="quick-add-date" type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} className="mt-2 h-auto rounded-2xl px-3 py-3" />
+                      </label>
+                      <label className="block text-sm font-medium" htmlFor="quick-add-project">المشروع المرتبط
+                        <Select id="quick-add-project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="mt-2 h-auto w-full rounded-2xl px-3 py-3">
+                          <option value="">بدون مشروع</option>
+                          {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
+                        </Select>
+                      </label>
+                      <label className="block text-sm font-medium" htmlFor="quick-add-category">التصنيف
+                        <Input id="quick-add-category" value={category} onChange={(event) => setCategory(event.target.value)} className="mt-2 h-auto rounded-2xl px-3 py-3" placeholder={mode === 'work' ? 'مثال: متابعة' : 'مثال: البيت'} />
+                      </label>
+                    </div>
+                  </div>
                 )}
                 {type === 'finance' && (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -374,6 +488,7 @@ export function TopNav() {
                 {preview.category && <p className="mt-1 text-xs text-muted-foreground">التصنيف: {preview.category}</p>}
                 {preview.recurrence && preview.recurrence !== 'none' && <p className="mt-1 text-xs text-muted-foreground">التكرار: {preview.recurrence === 'monthly' ? 'شهري' : 'أسبوعي'}</p>}
                 {(projectId || goalId) && <p className="mt-1 text-xs text-muted-foreground">{projectId ? `المشروع: ${projects.find((project) => project.id === projectId)?.title ?? 'مرتبط'}` : ''}{projectId && goalId ? ' · ' : ''}{goalId ? `الهدف: ${goals.find((goal) => goal.id === goalId)?.title ?? 'مرتبط'}` : ''}</p>}
+                {preview.kind === 'task' && <p className="mt-1 text-xs text-muted-foreground">الأولوية: {priority === 'high' ? 'عالية' : priority === 'low' ? 'منخفضة' : 'متوسطة'}{dueDate ? ` · التاريخ: ${dueDate}` : ''}{category ? ` · التصنيف: ${category}` : ''}</p>}
                 <div className="mt-5 flex justify-end gap-2">
                   <Button type="button" variant="ghost" onClick={() => setPreview(null)} className="h-auto rounded-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted">تعديل</Button>
                   <Button type="button" onClick={confirmQuickAdd} className="h-auto rounded-full px-5 py-2.5 text-sm">تأكيد وحفظ</Button>

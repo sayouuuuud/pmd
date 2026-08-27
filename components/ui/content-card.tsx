@@ -17,10 +17,10 @@ export function ContentCard({
   return (
     <section className={cn('min-w-0 overflow-hidden rounded-3xl bg-card p-4 shadow-[0_8px_30px_rgba(23,23,26,0.03)] sm:p-5', className)}>
       {(title || description || action) && (
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div>
+        <div className="mb-4 flex min-w-0 items-start justify-between gap-3">
+          <div className="min-w-0">
             {title && <h2 className="text-base font-semibold">{title}</h2>}
-            {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
+            {description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>}
           </div>
           {action}
         </div>

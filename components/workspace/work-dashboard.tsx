@@ -75,11 +75,10 @@ export function WorkDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-card p-3">
         <div>
-          <p className="text-sm text-muted-foreground">{workspaceName}</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">لوحة العمل</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">صورة واحدة للعملاء والمشاريع والمهام والدفعات، بدون خلطها مع لوحة حياتك الشخصية.</p>
+          <p className="text-sm font-semibold">{workspaceName}</p>
+          <p className="mt-1 text-xs text-muted-foreground">سياق العمل الحالي</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className={`rounded-full px-3 py-1.5 text-xs font-medium ${backendAvailable ? 'bg-positive/15 text-positive-foreground' : 'bg-warning/15 text-warning-foreground'}`}>{backendAvailable ? 'مزامنة العملاء مفعّلة' : 'بيانات محلية مؤقتة'}</span>
