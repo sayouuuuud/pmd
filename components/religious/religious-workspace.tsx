@@ -412,7 +412,7 @@ export function ReligiousWorkspace() {
           <span>يتم حفظ تقدمك وإعداداتك فقط. نصوص القرآن والأذكار الخارجية لا تُخزّن محليًا كنص موثوق.</span>
           {timingDate && <span>التاريخ: {timingDate}{hijriDate ? ` · هجري: ${hijriDate}` : ''}</span>}
         </div>
-        {nextPrayer && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/25 bg-primary/10 px-3 py-3"><div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-primary" /><div><p className="text-xs font-semibold text-surface-dark-foreground">الصلاة القادمة: {nextPrayer.name}{nextPrayer.tomorrow ? ' · غدًا' : ''}</p><p className="mt-1 text-xs text-surface-dark-foreground/70">موعدها {nextPrayer.time}</p></div></div><strong className="rounded-xl bg-primary px-3 py-2 text-sm text-primary-foreground" aria-label={`الوقت المتبقي لصلاة ${nextPrayer.name}`}>{formatPrayerCountdown(nextPrayer.remainingMs)}</strong></div>}
+        {nextPrayer && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/25 bg-primary/10 px-3 py-3"><div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-primary" /><div><p className="text-xs font-semibold text-surface-dark-foreground">الصلاة القادمة: {nextPrayer.name}{nextPrayer.tomorrow ? ' · غدًا' : ''}</p><p className="mt-1 text-xs text-surface-dark-foreground/70">موعدها {nextPrayer.time}</p></div></div><strong className="shrink-0 rounded-xl bg-primary px-3 py-2 text-sm text-primary-foreground" aria-label={`الوقت المتبقي لصلاة ${nextPrayer.name}`}>{formatPrayerCountdown(nextPrayer.remainingMs)}</strong></div>}
       </ContentCard>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm">
@@ -435,13 +435,13 @@ export function ReligiousWorkspace() {
                 const Icon = prayerIcons[prayer.name] ?? Clock3
                 const done = isPrayerCompletedStatus(prayer.status)
                 const statusLabel = prayerStatusLabels[prayer.status]
-                return <div key={prayer.id} className={`flex items-center gap-3 rounded-2xl border p-3 text-right transition-colors ${done ? 'border-primary/30 bg-primary/8' : prayer.status === 'missed' ? 'border-destructive/30 bg-destructive/5' : 'border-border bg-background'}`}>
-                  <Button type="button" variant="ghost" aria-pressed={done} onClick={() => togglePrayer(prayer.id)} className="h-auto min-w-0 flex-1 justify-start gap-3 p-0 text-right">
+                return <div key={prayer.id} className={`flex min-w-0 flex-col gap-3 rounded-2xl border p-3 text-right transition-colors sm:flex-row sm:items-center ${done ? 'border-primary/30 bg-primary/8' : prayer.status === 'missed' ? 'border-destructive/30 bg-destructive/5' : 'border-border bg-background'}`}>
+                  <Button type="button" variant="ghost" aria-pressed={done} onClick={() => togglePrayer(prayer.id)} className="h-auto min-w-0 flex-1 justify-start gap-3 whitespace-normal rounded-xl p-1 text-right hover:bg-muted/60">
                     <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${done ? 'bg-primary text-primary-foreground' : prayer.status === 'missed' ? 'bg-destructive/10 text-destructive' : 'bg-accent text-accent-foreground'}`}><Icon className="h-5 w-5" /></span>
                     <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">صلاة {prayer.name}</span><span className="mt-1 block text-xs text-muted-foreground">{prayer.time} · {statusLabel}</span></span>
                     <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${done ? 'border-primary bg-primary text-primary-foreground' : prayer.status === 'missed' ? 'border-destructive text-destructive' : 'border-border'}`}>{done && <Check className="h-3.5 w-3.5" />}</span>
                   </Button>
-                  <Select aria-label={`حالة صلاة ${prayer.name}`} value={prayer.status} onChange={(event) => togglePrayer(prayer.id, event.currentTarget.value as PrayerStatus)} className="w-24 shrink-0 rounded-xl border-border bg-background px-2 py-2 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <Select aria-label={`حالة صلاة ${prayer.name}`} value={prayer.status} onChange={(event) => togglePrayer(prayer.id, event.currentTarget.value as PrayerStatus)} className="w-full shrink-0 rounded-xl border-border bg-background px-2 py-2 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-24">
                     {prayerStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </Select>
                 </div>

@@ -110,8 +110,8 @@ export function Dialog({
         ref={dialogRef}
         tabIndex={-1}
         className={cn(
-          'w-full bg-card p-5 shadow-2xl',
-          placement === 'side' ? 'min-h-dvh max-w-2xl rounded-none sm:rounded-r-3xl' : 'max-w-lg rounded-3xl',
+          'w-full bg-card p-4 text-card-foreground shadow-2xl sm:p-6',
+          placement === 'side' ? 'min-h-dvh max-w-2xl rounded-none border-s border-border sm:rounded-s-3xl' : 'max-w-lg rounded-3xl border border-border',
           className,
         )}
         role="dialog"
@@ -131,7 +131,7 @@ export function Dialog({
               type="button"
               aria-label="إغلاق النافذة"
               onClick={() => onOpenChange(false)}
-              className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="h-4 w-4" />
             </button>

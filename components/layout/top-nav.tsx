@@ -255,8 +255,8 @@ export function TopNav() {
         الانتقال إلى المحتوى الرئيسي
       </a>
       <header className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+        <div className="grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <div className="flex items-center rounded-full bg-card p-1" role="group" aria-label="اختيار وضع المنصة">
               <Button type="button" variant="ghost" aria-pressed={mode === 'personal'} onClick={() => switchMode('personal')} className={mode === 'personal' ? 'h-auto rounded-full bg-foreground px-3 py-2 text-xs text-card hover:bg-foreground hover:text-card' : 'h-auto rounded-full px-3 py-2 text-xs text-muted-foreground'}>
                 <UserRound data-icon="inline-start" /> شخصي
@@ -267,7 +267,7 @@ export function TopNav() {
             </div>
             <SyncStatus />
           </div>
-          <div className="flex items-center gap-2.5 rounded-full bg-card py-1.5 pr-2 pl-4">
+          <div className="flex min-w-0 items-center gap-2.5 justify-self-start rounded-full border border-border bg-card py-1.5 pr-2 pl-4 lg:justify-self-center">
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
             <div className="text-right leading-tight">
               <p className="text-sm font-semibold">{session?.user?.name || 'مساحتي'}</p>
@@ -278,7 +278,7 @@ export function TopNav() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex max-w-full items-center gap-2 overflow-x-auto pb-1 lg:justify-self-end lg:pb-0 [scrollbar-width:none]">
             <Button
               type="button"
               variant="ghost"
